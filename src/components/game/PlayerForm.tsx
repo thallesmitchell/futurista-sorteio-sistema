@@ -8,20 +8,22 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Player } from '@/contexts/GameContext';
+import { Player, useGame } from '@/contexts/GameContext';
 
 interface PlayerFormProps {
-  onAddPlayer: (name: string, numbersArray: number[]) => void;
-  onAddCombination: (playerId: string, numbersArray: number[]) => void;
-  processNumberString: (numberStr: string) => number[];
-  players: Player[];
+  onAddPlayer?: (name: string, numbersArray: number[]) => void;
+  onAddCombination?: (playerId: string, numbersArray: number[]) => void;
+  processNumberString?: (numberStr: string) => number[];
+  players?: Player[];
+  gameId?: string;
 }
 
 export const PlayerForm: React.FC<PlayerFormProps> = ({ 
-  onAddPlayer, 
-  onAddCombination, 
-  processNumberString,
-  players
+  onAddPlayer: externalAddPlayer,
+  onAddCombination: externalAddCombination,
+  processNumberString: externalProcessNumberString,
+  players: externalPlayers,
+  gameId
 }) => {
   const [playerName, setPlayerName] = useState('');
   const [playerNumbers, setPlayerNumbers] = useState('');
@@ -29,6 +31,28 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
   const [selectedPlayerId, setSelectedPlayerId] = useState('');
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { addPlayer, addPlayerCombination, games } = useGame();
+  
+  // Use context or props
+  const game = gameId ? games.find(g => g.id === gameId) : null;
+  const players = externalPlayers || (game ? game.players : []);
+  
+  // Process numbers function
+  const processNumberString = (numberStr: string) => {
+    if (externalProcessNumberString) {
+      return externalProcessNumberString(numberStr);
+    }
+    
+    // Default implementation
+    const cleanedStr = numberStr.replace(/[^\d,.\s]/g, '');
+    const numbersArray = cleanedStr
+      .split(/[,.\s]+/)
+      .filter(n => n.trim() !== '')
+      .map(n => parseInt(n.trim(), 10))
+      .filter(n => !isNaN(n) && n >= 1 && n <= 80);
+    
+    return numbersArray;
+  };
 
   // Reset selected player when switching to new player mode
   useEffect(() => {
@@ -85,8 +109,15 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
           return;
         }
         
-        // Adicionar novo jogador
-        onAddPlayer(playerName, numbersArray);
+        // Adicionar novo jogador (use external or context)
+        if (externalAddPlayer) {
+          externalAddPlayer(playerName, numbersArray);
+        } else if (gameId) {
+          addPlayer(gameId, {
+            name: playerName,
+            combinations: [{ numbers: numbersArray, hits: 0 }]
+          });
+        }
         
         // Limpar formulário
         setPlayerName('');
@@ -103,12 +134,23 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
           return;
         }
         
-        // Adicionar combinação
-        onAddCombination(selectedPlayerId, numbersArray);
+        // Adicionar combinação (use external or context)
+        if (externalAddCombination) {
+          externalAddCombination(selectedPlayerId, numbersArray);
+        } else if (gameId) {
+          addPlayerCombination(gameId, selectedPlayerId, numbersArray);
+        }
         
         // Limpar apenas os números
         setPlayerNumbers('');
       }
+      
+      toast({
+        title: formMode === 'new' ? "Jogador adicionado" : "Combinação adicionada",
+        description: formMode === 'new' 
+          ? "O jogador foi cadastrado com sucesso" 
+          : "A combinação foi adicionada com sucesso",
+      });
       
     } catch (error) {
       toast({

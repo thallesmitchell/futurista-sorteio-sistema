@@ -10,19 +10,20 @@ import { Input } from '@/components/ui/input';
 interface PlayerEditModalProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  playerToEdit: Player | null;
-  editPlayerNumbers: string;
-  setEditPlayerNumbers: (value: string) => void;
-  onSave: () => void;
+  player: Player | null;
+  editPlayerNumbers?: string;
+  setEditPlayerNumbers?: (value: string) => void;
+  onSave?: () => void;
+  gameId?: string;
 }
 
 export const PlayerEditModal: React.FC<PlayerEditModalProps> = ({
   isOpen,
   setIsOpen,
-  playerToEdit,
-  editPlayerNumbers,
-  setEditPlayerNumbers,
-  onSave
+  player,
+  editPlayerNumbers = "",
+  setEditPlayerNumbers = () => {},
+  onSave = () => {}
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -30,7 +31,7 @@ export const PlayerEditModal: React.FC<PlayerEditModalProps> = ({
         <DialogHeader>
           <DialogTitle>Editar Jogador</DialogTitle>
           <DialogDescription>
-            Edite os números escolhidos pelo jogador {playerToEdit?.name}.
+            Edite os números escolhidos pelo jogador {player?.name}.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">

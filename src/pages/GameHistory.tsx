@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import { useGame } from '@/contexts/GameContext';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TabsContent } from '@/components/ui/tabs';
 import { TabsController } from '@/components/game/TabsController';
@@ -161,9 +160,7 @@ export default function GameHistory() {
               variant="destructive"
               size="default"
               onSuccess={handleDeleteSuccess}
-            >
-              Excluir Jogo
-            </DeleteGameButton>
+            />
           </div>
         </div>
 
@@ -195,6 +192,7 @@ export default function GameHistory() {
         setIsOpen={setIsWinnersModalOpen}
         winners={winners}
         allDrawnNumbers={allDrawnNumbers}
+        onClose={() => setIsWinnersModalOpen(false)}
       />
     </MainLayout>
   );

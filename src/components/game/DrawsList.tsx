@@ -6,9 +6,13 @@ import { NumberBadge } from './NumberBadge';
 
 interface DrawsListProps {
   draws: DailyDraw[];
+  isReadOnly?: boolean;
 }
 
-export const DrawsList: React.FC<DrawsListProps> = ({ draws }) => {
+export const DrawsList: React.FC<DrawsListProps> = ({ 
+  draws,
+  isReadOnly = false
+}) => {
   return (
     <Card className="futuristic-card">
       <CardHeader>

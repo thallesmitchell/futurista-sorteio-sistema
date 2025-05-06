@@ -5,22 +5,46 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useGame } from '@/contexts/GameContext';
 
 interface DrawFormProps {
-  onAddDraw: (date: string, numbersArray: number[]) => void;
-  processNumberString: (numberStr: string) => number[];
+  onAddDraw?: (date: string, numbersArray: number[]) => void;
+  processNumberString?: (numberStr: string) => number[];
+  gameId?: string;
 }
 
-export const DrawForm: React.FC<DrawFormProps> = ({ onAddDraw, processNumberString }) => {
+export const DrawForm: React.FC<DrawFormProps> = ({ 
+  onAddDraw: externalAddDraw, 
+  processNumberString: externalProcessNumberString,
+  gameId
+}) => {
   const [drawNumbers, setDrawNumbers] = useState('');
   const [drawDate, setDrawDate] = useState('');
   const { toast } = useToast();
+  const { addDailyDraw } = useGame();
 
   // Inicializar data do sorteio com hoje ao montar o componente
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     setDrawDate(today);
   }, []);
+
+  // Process numbers function
+  const processNumberString = (numberStr: string) => {
+    if (externalProcessNumberString) {
+      return externalProcessNumberString(numberStr);
+    }
+    
+    // Default implementation
+    const cleanedStr = numberStr.replace(/[^\d,.\s]/g, '');
+    const numbersArray = cleanedStr
+      .split(/[,.\s]+/)
+      .filter(n => n.trim() !== '')
+      .map(n => parseInt(n.trim(), 10))
+      .filter(n => !isNaN(n) && n >= 1 && n <= 80);
+    
+    return numbersArray;
+  };
 
   const handleDrawSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,12 +83,23 @@ export const DrawForm: React.FC<DrawFormProps> = ({ onAddDraw, processNumberStri
         return;
       }
       
-      // Adicionar sorteio
-      onAddDraw(drawDate, uniqueNumbers);
+      // Adicionar sorteio (use external function or context)
+      if (externalAddDraw) {
+        externalAddDraw(drawDate, uniqueNumbers);
+      } else if (gameId) {
+        addDailyDraw(gameId, {
+          date: drawDate,
+          numbers: uniqueNumbers
+        });
+      }
       
       // Limpar formulário
       setDrawNumbers('');
       
+      toast({
+        title: "Sorteio registrado",
+        description: "O sorteio foi registrado com sucesso",
+      });
     } catch (error) {
       toast({
         title: "Erro ao registrar sorteio",

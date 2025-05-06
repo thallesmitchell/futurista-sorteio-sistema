@@ -26,6 +26,7 @@ export default function GameAdmin() {
   const [isWinnersModalOpen, setIsWinnersModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
+  const [editPlayerNumbers, setEditPlayerNumbers] = useState('');
 
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
@@ -189,7 +190,10 @@ export default function GameAdmin() {
         isOpen={isEditModalOpen}
         setIsOpen={setIsEditModalOpen}
         player={playerToEdit}
+        editPlayerNumbers={editPlayerNumbers}
+        setEditPlayerNumbers={setEditPlayerNumbers}
         gameId={game.id}
+        onSave={() => {}}
       />
 
       {/* Winners Modal */}
@@ -198,6 +202,7 @@ export default function GameAdmin() {
         setIsOpen={setIsWinnersModalOpen}
         winners={winners}
         allDrawnNumbers={allDrawnNumbers}
+        onClose={() => setIsWinnersModalOpen(false)}
       />
 
       {/* Confirm Close Modal */}
