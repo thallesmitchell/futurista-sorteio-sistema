@@ -65,7 +65,7 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                       )}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      {player.combinations.length} sequências | Acertos máximos: {Math.max(...player.combinations.map(c => c.hits))}
+                      {player.combinations.length} sequências | Acertos máximos: {Math.max(...player.combinations.map(c => c.hits || 0), 0)}
                     </p>
                   </div>
                   <Button 

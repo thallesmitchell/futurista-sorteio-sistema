@@ -9,8 +9,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 // Componente para exibir confetes (animação de vitória)
 const Confetti = () => {
-  const confettiCount = 100;
-  const colors = ['#ff0080', '#7b1fa2', '#00bcd4', '#ff9100', '#8bc34a'];
+  const confettiCount = 150; // Aumentado para mais confetes
+  const colors = ['#ff0080', '#7b1fa2', '#00bcd4', '#ff9100', '#8bc34a', '#4caf50', '#e91e63'];
   
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
@@ -68,9 +68,9 @@ export const WinnersModal: React.FC<WinnersModalProps> = ({
                 .map((winningCombo, comboIndex) => (
                   <div 
                     key={`${winner.id}-${comboIndex}`} 
-                    className="bg-green-500/10 p-3 rounded-lg border-2 border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.3)]"
+                    className="bg-green-500/10 p-3 rounded-lg border-2 border-green-500/50 shadow-[0_0_10px_rgba(34,197,94,0.3)] animate-pulse-slow"
                   >
-                    <h3 className="text-base md:text-xl font-bold flex items-center gap-2">
+                    <h3 className="text-base md:text-xl font-bold flex items-center gap-2 text-green-500">
                       <Trophy className="h-5 w-5 text-green-500" />
                       {winner.name}
                     </h3>

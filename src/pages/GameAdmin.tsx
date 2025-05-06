@@ -102,6 +102,7 @@ export default function GameAdmin() {
       // Atualizar as sequências do jogador
       if (sequences.length > 0) {
         await updatePlayerSequences(game.id, playerToEdit.id, sequences);
+        setIsEditModalOpen(false);
       }
     } catch (error) {
       console.error("Erro ao salvar sequências:", error);

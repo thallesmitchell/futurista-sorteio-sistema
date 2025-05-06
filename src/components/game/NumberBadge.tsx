@@ -28,14 +28,14 @@ export const NumberBadge = ({ number, hits = 0, isHit, className = '', variant =
     secondary: 'bg-secondary text-secondary-foreground'
   };
   
-  // Adicionar classes para quando tem hits ou isHit - agora com estilos distintos
+  // Adicionar classes para quando tem hits ou isHit - com estilos corrigidos
   let hitClasses = '';
   if (hits > 0 || isHit) {
-    // Acertos com fundo verde e efeito de sombra brilhante
-    hitClasses = 'bg-green-500 text-white border-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] ring-2 ring-green-500/50 ring-offset-1';
+    // Acertos com fundo verde sólido
+    hitClasses = 'bg-green-500 text-white border-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]';
   } else {
-    // Números regulares com apenas contorno verde, fundo escuro e fonte branca
-    hitClasses = 'border-green-500 text-white bg-background';
+    // Números não acertados com apenas contorno verde, fundo escuro e fonte branca
+    hitClasses = 'border border-green-500 text-white bg-background';
   }
   
   return (
