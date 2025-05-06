@@ -2,11 +2,17 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
 
 // Definindo tipos para nossos dados
+export interface CombinationWithHits {
+  numbers: number[];
+  hits: number;
+}
+
 export interface Player {
   id: string;
   name: string;
-  numbers: number[];
-  hits: number;
+  combinations: CombinationWithHits[];
+  hits?: number; // Mantido para compatibilidade
+  numbers?: number[]; // Mantido para compatibilidade
 }
 
 export interface DailyDraw {
@@ -32,7 +38,8 @@ interface GameContextType {
   setCurrentGame: (game: Game | null) => void;
   addGame: (game: Omit<Game, 'id'>) => Game;
   updateGame: (id: string, game: Partial<Game>) => void;
-  addPlayer: (gameId: string, player: Omit<Player, 'id' | 'hits'>) => void;
+  addPlayer: (gameId: string, player: Omit<Player, 'id'>) => void;
+  addPlayerCombination: (gameId: string, playerId: string, numbers: number[]) => void;
   updatePlayer: (gameId: string, playerId: string, player: Partial<Player>) => void;
   addDailyDraw: (gameId: string, draw: Omit<DailyDraw, 'id'>) => void;
   checkWinners: (gameId: string) => Player[];
@@ -47,7 +54,29 @@ const generateId = () => Math.random().toString(36).substr(2, 9);
 // Função para buscar jogos do localStorage
 const getGamesFromStorage = (): Game[] => {
   const storedGames = localStorage.getItem('games');
-  return storedGames ? JSON.parse(storedGames) : [];
+  if (!storedGames) return [];
+  
+  const parsedGames = JSON.parse(storedGames);
+  
+  // Converter jogadores antigos para o novo formato
+  return parsedGames.map((game: Game) => ({
+    ...game,
+    players: game.players.map((player: any) => {
+      // Se o jogador já tem o campo combinations, retorná-lo como está
+      if (player.combinations) return player;
+      
+      // Caso contrário, converter o formato antigo para o novo
+      return {
+        ...player,
+        combinations: [
+          {
+            numbers: player.numbers || [],
+            hits: player.hits || 0
+          }
+        ]
+      };
+    })
+  }));
 };
 
 // Função para salvar jogos no localStorage
@@ -87,16 +116,15 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const addPlayer = (gameId: string, player: Omit<Player, 'id' | 'hits'>) => {
-    const newPlayer = {
+  const addPlayer = (gameId: string, player: Omit<Player, 'id'>) => {
+    const newPlayer: Player = {
       ...player,
       id: generateId(),
-      hits: 0
+      combinations: player.combinations || []
     };
     
     const updatedGames = games.map(game => {
       if (game.id === gameId) {
-        // Não verificamos duplicatas de números entre jogadores, essa regra foi removida
         return {
           ...game,
           players: [...game.players, newPlayer]
@@ -117,6 +145,62 @@ export function GameProvider({ children }: { children: ReactNode }) {
     }
     
     return newPlayer;
+  };
+
+  // Adicionar uma nova combinação a um jogador existente
+  const addPlayerCombination = (gameId: string, playerId: string, numbers: number[]) => {
+    const updatedGames = games.map(game => {
+      if (game.id === gameId) {
+        return {
+          ...game,
+          players: game.players.map(player => {
+            if (player.id === playerId) {
+              // Verificar acertos da nova combinação
+              const drawnNumbers = game.dailyDraws.flatMap(draw => draw.numbers);
+              const hits = numbers.filter(n => drawnNumbers.includes(n)).length;
+              
+              // Adicionar nova combinação
+              return {
+                ...player,
+                combinations: [
+                  ...player.combinations,
+                  { numbers, hits }
+                ]
+              };
+            }
+            return player;
+          })
+        };
+      }
+      return game;
+    });
+    
+    setGames(updatedGames);
+    saveGamesToStorage(updatedGames);
+    
+    // Atualizar o jogo atual se for o que está sendo editado
+    if (currentGame && currentGame.id === gameId) {
+      setCurrentGame({
+        ...currentGame,
+        players: currentGame.players.map(player => {
+          if (player.id === playerId) {
+            // Verificar acertos da nova combinação
+            const drawnNumbers = currentGame.dailyDraws.flatMap(draw => draw.numbers);
+            const hits = numbers.filter(n => drawnNumbers.includes(n)).length;
+            
+            // Adicionar nova combinação
+            return {
+              ...player,
+              combinations: [
+                ...player.combinations,
+                { numbers, hits }
+              ]
+            };
+          }
+          return player;
+        })
+      });
+    }
   };
 
   const updatePlayer = (gameId: string, playerId: string, playerUpdates: Partial<Player>) => {
@@ -156,10 +240,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (game.id === gameId) {
         // Atualizar acertos dos jogadores
         const updatedPlayers = game.players.map(player => {
-          const newHits = draw.numbers.filter(n => player.numbers.includes(n)).length;
+          // Atualizar acertos para cada combinação
+          const updatedCombinations = player.combinations.map(combo => {
+            const newHits = draw.numbers.filter(n => combo.numbers.includes(n)).length;
+            return {
+              ...combo,
+              hits: combo.hits + newHits
+            };
+          });
+          
+          // Calcular total de hits para compatibilidade
+          const totalHits = updatedCombinations.reduce((sum, combo) => sum + combo.hits, 0);
+          
           return {
             ...player,
-            hits: player.hits + newHits
+            combinations: updatedCombinations,
+            hits: totalHits // Mantido para compatibilidade
           };
         });
         
@@ -178,10 +274,22 @@ export function GameProvider({ children }: { children: ReactNode }) {
     // Atualizar o jogo atual se for o que está sendo editado
     if (currentGame && currentGame.id === gameId) {
       const updatedPlayers = currentGame.players.map(player => {
-        const newHits = draw.numbers.filter(n => player.numbers.includes(n)).length;
+        // Atualizar acertos para cada combinação
+        const updatedCombinations = player.combinations.map(combo => {
+          const newHits = draw.numbers.filter(n => combo.numbers.includes(n)).length;
+          return {
+            ...combo,
+            hits: combo.hits + newHits
+          };
+        });
+        
+        // Calcular total de hits para compatibilidade
+        const totalHits = updatedCombinations.reduce((sum, combo) => sum + combo.hits, 0);
+        
         return {
           ...player,
-          hits: player.hits + newHits
+          combinations: updatedCombinations,
+          hits: totalHits // Mantido para compatibilidade
         };
       });
       
@@ -205,7 +313,10 @@ export function GameProvider({ children }: { children: ReactNode }) {
     const game = games.find(g => g.id === gameId);
     if (!game) return [];
     
-    const winners = game.players.filter(player => player.hits >= 6);
+    // Agora um vencedor é um jogador com pelo menos uma combinação com 6 acertos
+    const winners = game.players.filter(player => 
+      player.combinations.some(combo => combo.hits === 6)
+    );
     
     if (winners.length > 0 && game.status === 'active') {
       // Atualizar o jogo com os vencedores
@@ -246,6 +357,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
       addGame,
       updateGame,
       addPlayer,
+      addPlayerCombination,
       updatePlayer,
       addDailyDraw,
       checkWinners

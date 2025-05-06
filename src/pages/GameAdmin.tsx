@@ -9,12 +9,24 @@ import { TabsController } from '@/components/game/TabsController';
 import { PlayerEditModal } from '@/components/game/PlayerEditModal';
 import { ConfirmCloseModal } from '@/components/game/ConfirmCloseModal';
 import { WinnersModal } from '@/components/game/WinnersModal';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function GameAdmin() {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { games, currentGame, setCurrentGame, updateGame, addPlayer, updatePlayer, addDailyDraw, checkWinners } = useGame();
+  const { 
+    games, 
+    currentGame, 
+    setCurrentGame, 
+    updateGame, 
+    addPlayer, 
+    addPlayerCombination, 
+    updatePlayer, 
+    addDailyDraw, 
+    checkWinners 
+  } = useGame();
+  const isMobile = useIsMobile();
   
   // Estados para edição de jogador
   const [isEditingPlayer, setIsEditingPlayer] = useState(false);
@@ -39,8 +51,10 @@ export default function GameAdmin() {
     if (game) {
       setCurrentGame(game);
       
-      // Verificar jogadores com 6 ou mais acertos
-      const potentialWinners = game.players.filter(p => p.hits >= 6);
+      // Verificar jogadores com combinações de 6 acertos
+      const potentialWinners = game.players.filter(p => 
+        p.combinations && p.combinations.some(combo => combo.hits === 6)
+      );
       setCurrentWinners(potentialWinners);
       
       // Verificar se já existe vencedores
@@ -95,7 +109,7 @@ export default function GameAdmin() {
       // Adicionar jogador
       addPlayer(currentGame.id, {
         name: name,
-        numbers: numbersArray
+        combinations: [{ numbers: numbersArray, hits: 0 }]
       });
       
       toast({
@@ -111,10 +125,37 @@ export default function GameAdmin() {
     }
   };
   
+  // Handler para adicionar uma nova combinação a um jogador existente
+  const handleAddCombination = (playerId: string, numbersArray: number[]) => {
+    try {
+      // Adicionar combinação ao jogador
+      addPlayerCombination(currentGame.id, playerId, numbersArray);
+      
+      const player = currentGame.players.find(p => p.id === playerId);
+      if (player) {
+        toast({
+          title: "Combinação adicionada",
+          description: `Nova combinação adicionada para ${player.name}`
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro ao adicionar combinação",
+        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido",
+        variant: "destructive"
+      });
+    }
+  };
+  
   // Manipuladores para edição de jogador
   const handleOpenEditPlayerModal = (player: Player) => {
     setPlayerToEdit(player);
-    setEditPlayerNumbers(player.numbers.join(', '));
+    // Para manter compatibilidade, vamos apenas exibir a primeira combinação no editor por enquanto
+    if (player.combinations && player.combinations.length > 0) {
+      setEditPlayerNumbers(player.combinations[0].numbers.join(', '));
+    } else {
+      setEditPlayerNumbers('');
+    }
     setIsEditingPlayer(true);
   };
   
@@ -125,10 +166,10 @@ export default function GameAdmin() {
       // Validar e converter números
       const numbersArray = processNumberString(editPlayerNumbers);
       
-      if (numbersArray.length === 0) {
+      if (numbersArray.length !== 6) {
         toast({
-          title: "Números inválidos",
-          description: "Insira números válidos separados por vírgula ou ponto",
+          title: "Quantidade inválida de números",
+          description: "Você precisa selecionar exatamente 6 números",
           variant: "destructive"
         });
         return;
@@ -145,10 +186,19 @@ export default function GameAdmin() {
         return;
       }
       
-      // Atualizar jogador
-      updatePlayer(currentGame.id, playerToEdit.id, {
-        numbers: uniqueNumbers
-      });
+      // Para manter compatibilidade, atualizar apenas a primeira combinação
+      if (playerToEdit.combinations && playerToEdit.combinations.length > 0) {
+        const updatedCombinations = [...playerToEdit.combinations];
+        updatedCombinations[0] = { 
+          ...updatedCombinations[0],
+          numbers: uniqueNumbers
+        };
+        
+        // Atualizar jogador
+        updatePlayer(currentGame.id, playerToEdit.id, {
+          combinations: updatedCombinations
+        });
+      }
       
       // Fechar modal
       setIsEditingPlayer(false);
@@ -181,7 +231,12 @@ export default function GameAdmin() {
       
       // Verificar vencedores
       const gameWinners = checkWinners(currentGame.id);
-      setCurrentWinners(currentGame.players.filter(p => p.hits >= 6));
+      
+      // Atualizar lista de vencedores em potencial
+      const potentialWinners = currentGame.players.filter(p => 
+        p.combinations && p.combinations.some(combo => combo.hits === 6)
+      );
+      setCurrentWinners(potentialWinners);
       
       if (gameWinners.length > 0) {
         setWinners(gameWinners);
@@ -232,24 +287,26 @@ export default function GameAdmin() {
 
   return (
     <MainLayout>
-      <div className="space-y-6 animate-fade-in">
-        <div className="flex items-center justify-between flex-wrap gap-4">
+      <div className="space-y-4 md:space-y-6 animate-fade-in">
+        <div className="flex items-center justify-between flex-wrap gap-2 md:gap-4">
           <div>
-            <h1 className="text-3xl font-bold">{currentGame.name}</h1>
-            <p className="text-muted-foreground">
+            <h1 className={`${isMobile ? "text-xl" : "text-3xl"} font-bold`}>{currentGame.name}</h1>
+            <p className={`${isMobile ? "text-xs" : "text-sm"} text-muted-foreground`}>
               Iniciado em {new Date(currentGame.startDate).toLocaleDateString()}
             </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2 md:gap-3">
             <Button 
               variant="outline" 
               onClick={() => navigate('/dashboard')}
+              className={isMobile ? "text-xs px-2 py-1 h-8" : ""}
             >
-              Voltar para Dashboard
+              Voltar
             </Button>
             <Button 
               variant="destructive" 
               onClick={() => setIsConfirmingClose(true)}
+              className={isMobile ? "text-xs px-2 py-1 h-8" : ""}
             >
               Encerrar Jogo
             </Button>
@@ -263,6 +320,7 @@ export default function GameAdmin() {
           currentWinners={currentWinners}
           processNumberString={processNumberString}
           onAddPlayer={handleAddPlayer}
+          onAddCombination={handleAddCombination}
           onEditPlayer={handleOpenEditPlayerModal}
           onAddDraw={handleAddDraw}
         />
