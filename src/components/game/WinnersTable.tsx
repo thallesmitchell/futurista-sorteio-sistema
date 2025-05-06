@@ -37,7 +37,7 @@ export const WinnersTable: React.FC<WinnersTableProps> = ({ winners, allDrawnNum
             </TableHeader>
             <TableBody>
               {winners.map(winner => (
-                // Find combinations with 6 hits
+                // Find combinations that have exactly 6 hits (winning combinations)
                 winner.combinations
                   .filter(combo => combo.hits === 6)
                   .map((winningCombo, comboIndex) => (
@@ -48,8 +48,10 @@ export const WinnersTable: React.FC<WinnersTableProps> = ({ winners, allDrawnNum
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1 md:gap-2">
+                          {/* Only show the numbers from this combination that were actually hit */}
                           {winningCombo.numbers
                             .filter(n => allDrawnNumbers.includes(n))
+                            .sort((a, b) => a - b)
                             .map(number => (
                               <NumberBadge key={number} number={number} isHit={true} />
                             ))}

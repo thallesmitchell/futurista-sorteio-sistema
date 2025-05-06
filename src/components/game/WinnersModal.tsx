@@ -62,22 +62,21 @@ export const WinnersModal: React.FC<WinnersModalProps> = ({
         <div className="py-2 md:py-4 max-h-[60vh] overflow-y-auto">
           <div className="space-y-3 md:space-y-4">
             {winners.map(winner => (
-              // For each winner, find combinations with 6 hits
+              // For each winner, find combinations with exactly 6 hits
               winner.combinations
                 .filter(combo => combo.hits === 6)
                 .map((winningCombo, comboIndex) => (
                   <div key={`${winner.id}-${comboIndex}`} className="bg-primary/10 p-3 rounded-lg">
                     <h3 className="text-base md:text-xl font-bold">{winner.name}</h3>
-                    <p className="text-xs md:text-sm text-muted-foreground">Combinação {comboIndex + 1}</p>
+                    <p className="text-xs md:text-sm text-muted-foreground">Combinação {comboIndex + 1} - 6 acertos!</p>
                     <div className="flex flex-wrap gap-1 md:gap-2 mt-2">
                       {winningCombo.numbers
-                        .filter(n => allDrawnNumbers.includes(n))
                         .sort((a, b) => a - b)
                         .map(number => (
                           <NumberBadge 
                             key={number} 
                             number={number} 
-                            isHit={true} 
+                            isHit={allDrawnNumbers.includes(number)} 
                           />
                         ))}
                     </div>

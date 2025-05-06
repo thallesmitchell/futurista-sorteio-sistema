@@ -49,16 +49,16 @@ export const PlayersList: React.FC<PlayersListProps> = ({
         {players.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
             {players.map(player => {
-              // Check if any combination has 6 hits
-              const isWinner = player.combinations.some(combo => combo.hits === 6);
+              // Check if any single combination has exactly 6 hits
+              const hasWinningCombination = player.combinations.some(combo => combo.hits === 6);
               
               return (
-                <Card key={player.id} className={`overflow-hidden ${isWinner ? 'border border-primary' : 'border border-border/30'}`}>
-                  <CardHeader className={`${isMobile ? "p-2" : "p-4"} ${isWinner ? 'bg-primary/20' : 'bg-muted/20'}`}>
+                <Card key={player.id} className={`overflow-hidden ${hasWinningCombination ? 'border border-primary' : 'border border-border/30'}`}>
+                  <CardHeader className={`${isMobile ? "p-2" : "p-4"} ${hasWinningCombination ? 'bg-primary/20' : 'bg-muted/20'}`}>
                     <div className="flex justify-between items-center">
                       <CardTitle className={`${isMobile ? "text-base" : "text-lg"} flex items-center`}>
                         {player.name}
-                        {isWinner && <Trophy className="h-4 w-4 ml-2 text-primary" />}
+                        {hasWinningCombination && <Trophy className="h-4 w-4 ml-2 text-primary" />}
                       </CardTitle>
                       <Button 
                         variant="ghost" 
@@ -70,25 +70,36 @@ export const PlayersList: React.FC<PlayersListProps> = ({
                     </div>
                   </CardHeader>
                   <CardContent className={`${isMobile ? "p-2 max-h-60 overflow-y-auto" : "p-4"}`}>
-                    {player.combinations.map((combination, index) => (
-                      <div key={index} className={`mb-2 ${combination.hits === 6 ? 'p-1 bg-primary/10 rounded-md' : ''}`}>
-                        <div className="flex flex-wrap gap-1 md:gap-2">
-                          <div className="w-full flex justify-between items-center mb-1">
-                            <span className={`text-xs ${combination.hits === 6 ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
-                              Combinação {index + 1}: {combination.hits} acertos
-                            </span>
+                    {player.combinations.map((combination, index) => {
+                      // Check how many hits this specific combination has
+                      const hitCount = combination.hits;
+                      // Check if this specific combination is a winning one (has exactly 6 hits)
+                      const isWinningCombination = hitCount === 6;
+                      
+                      return (
+                        <div 
+                          key={index} 
+                          className={`mb-2 ${isWinningCombination ? 'p-1 bg-primary/10 rounded-md' : ''}`}
+                        >
+                          <div className="flex flex-wrap gap-1 md:gap-2">
+                            <div className="w-full flex justify-between items-center mb-1">
+                              <span className={`text-xs ${isWinningCombination ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                                Combinação {index + 1}: {hitCount} acertos
+                                {isWinningCombination && ' - VENCEDOR!'}
+                              </span>
+                            </div>
+                            {combination.numbers.sort((a, b) => a - b).map(number => (
+                              <NumberBadge 
+                                key={number} 
+                                number={number} 
+                                isHit={allDrawnNumbers.includes(number)} 
+                              />
+                            ))}
                           </div>
-                          {combination.numbers.sort((a, b) => a - b).map(number => (
-                            <NumberBadge 
-                              key={number} 
-                              number={number} 
-                              isHit={allDrawnNumbers.includes(number)} 
-                            />
-                          ))}
+                          {index < player.combinations.length - 1 && <hr className="my-2 border-border/30" />}
                         </div>
-                        {index < player.combinations.length - 1 && <hr className="my-2 border-border/30" />}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </CardContent>
                 </Card>
               );

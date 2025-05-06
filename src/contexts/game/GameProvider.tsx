@@ -1,3 +1,4 @@
+
 import { ReactNode, useState } from 'react';
 import { GameContext } from './GameContext';
 import { Game, Player, DailyDraw } from './types';
@@ -236,7 +237,8 @@ export function GameProvider({ children }: GameProviderProps) {
     const game = games.find(g => g.id === gameId);
     if (!game) return [];
     
-    // A winner is a player with at least one combination with 6 hits
+    // FIXED: A winner is a player with at least one combination that has exactly 6 hits
+    // (not a player with 6 total hits across multiple combinations)
     const winners = game.players.filter(player => 
       player.combinations.some(combo => combo.hits === 6)
     );
