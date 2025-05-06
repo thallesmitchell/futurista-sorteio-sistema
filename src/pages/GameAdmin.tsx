@@ -1,353 +1,210 @@
 
-import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import MainLayout from '@/layouts/MainLayout';
-import { useGame, Player, DailyDraw } from '@/contexts/GameContext';
-import { useToast } from "@/components/ui/use-toast";
+import { useGame } from '@/contexts/GameContext';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { TabsContent } from '@/components/ui/tabs';
 import { TabsController } from '@/components/game/TabsController';
+import { PlayerForm } from '@/components/game/PlayerForm';
+import { DrawForm } from '@/components/game/DrawForm';
+import { DrawsList } from '@/components/game/DrawsList';
+import { PlayersList } from '@/components/game/PlayersList';
 import { PlayerEditModal } from '@/components/game/PlayerEditModal';
-import { ConfirmCloseModal } from '@/components/game/ConfirmCloseModal';
 import { WinnersModal } from '@/components/game/WinnersModal';
-import { useIsMobile } from '@/hooks/use-mobile';
+import { ConfirmCloseModal } from '@/components/game/ConfirmCloseModal';
+import { ArrowLeft, Trophy } from 'lucide-react';
+import { Player } from '@/contexts/GameContext';
+import { DeleteGameButton } from '@/components/game/DeleteGameButton';
 
 export default function GameAdmin() {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { 
-    games, 
-    currentGame, 
-    setCurrentGame, 
-    updateGame, 
-    addPlayer, 
-    addPlayerCombination, 
-    updatePlayer, 
-    addDailyDraw, 
-    checkWinners 
-  } = useGame();
-  const isMobile = useIsMobile();
-  
-  // Estados para edição de jogador
-  const [isEditingPlayer, setIsEditingPlayer] = useState(false);
+  const { games, setCurrentGame, updateGame } = useGame();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isWinnersModalOpen, setIsWinnersModalOpen] = useState(false);
+  const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
-  const [editPlayerNumbers, setEditPlayerNumbers] = useState('');
-  
-  // Estado para confirmação de encerramento
-  const [isConfirmingClose, setIsConfirmingClose] = useState(false);
-  
-  // Estado para mostrar modal de vencedores
-  const [showWinnersModal, setShowWinnersModal] = useState(false);
-  const [winners, setWinners] = useState<Player[]>([]);
-  
-  // Estado para rastrear ganhadores durante o jogo
-  const [currentWinners, setCurrentWinners] = useState<Player[]>([]);
 
-  // Carregar jogo atual quando o componente montar ou o ID mudar
+  const game = games.find(g => g.id === gameId);
+  const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
+
+  // Set current game for context
   useEffect(() => {
-    if (!gameId) return;
-    
-    const game = games.find(g => g.id === gameId);
     if (game) {
-      setCurrentGame(game);
-      
-      // Verificar jogadores com combinações de 6 acertos
-      const potentialWinners = game.players.filter(p => 
-        p.combinations && p.combinations.some(combo => combo.hits === 6)
-      );
-      setCurrentWinners(potentialWinners);
-      
-      // Verificar se já existe vencedores
-      if (game.winners && game.winners.length > 0) {
-        setWinners(game.winners);
-        setShowWinnersModal(true);
+      if (game.status === 'closed') {
+        // Redirect to history view if game is closed
+        navigate(`/history/${game.id}`);
+        return;
       }
+      setCurrentGame(game);
     } else {
-      toast({
-        title: "Jogo não encontrado",
-        description: "O jogo solicitado não existe ou foi removido.",
-        variant: "destructive"
-      });
+      // If game not found, redirect to dashboard
       navigate('/dashboard');
     }
-  }, [gameId, games, setCurrentGame, navigate, toast]);
-  
-  if (!currentGame) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center h-[80vh]">
-          <p className="text-muted-foreground">Carregando jogo...</p>
-        </div>
-      </MainLayout>
-    );
-  }
-  
-  // Verificar se o jogo está fechado
-  if (currentGame.status === 'closed') {
-    navigate(`/history/${gameId}`);
-    return null;
-  }
-
-  // Verificar números já sorteados
-  const allDrawnNumbers = currentGame.dailyDraws.flatMap(draw => draw.numbers);
-
-  // Função para processar string de números, aceitando vírgula ou ponto como separador
-  const processNumberString = (numberStr: string): number[] => {
-    // Substituir pontos por vírgulas
-    const normalizedStr = numberStr.replace(/\./g, ',');
     
-    // Processar os números
-    return normalizedStr
-      .split(',')
-      .map(n => parseInt(n.trim()))
-      .filter(n => !isNaN(n) && n > 0 && n <= 80); // Números de 1 a 80 são válidos
-  };
+    // Cleanup on unmount
+    return () => {
+      setCurrentGame(null);
+    };
+  }, [game, gameId, navigate, setCurrentGame]);
 
-  // Manipuladores para o formulário de jogador
-  const handleAddPlayer = (name: string, numbersArray: number[]) => {
-    try {
-      // Adicionar jogador
-      addPlayer(currentGame.id, {
-        name: name,
-        combinations: [{ numbers: numbersArray, hits: 0 }]
-      });
-      
-      toast({
-        title: "Jogador adicionado",
-        description: `${name} foi adicionado com sucesso`
-      });
-    } catch (error) {
-      toast({
-        title: "Erro ao adicionar jogador",
-        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  // Handler para adicionar uma nova combinação a um jogador existente
-  const handleAddCombination = (playerId: string, numbersArray: number[]) => {
-    try {
-      // Adicionar combinação ao jogador
-      addPlayerCombination(currentGame.id, playerId, numbersArray);
-      
-      const player = currentGame.players.find(p => p.id === playerId);
-      if (player) {
-        toast({
-          title: "Combinação adicionada",
-          description: `Nova combinação adicionada para ${player.name}`
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Erro ao adicionar combinação",
-        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  // Manipuladores para edição de jogador
-  const handleOpenEditPlayerModal = (player: Player) => {
+  // Show 404 if game not found
+  if (!game || game.status === 'closed') {
+    return null; // Will redirect in useEffect
+  }
+
+  const handleEditPlayer = (player: Player) => {
     setPlayerToEdit(player);
-    // Para manter compatibilidade, vamos apenas exibir a primeira combinação no editor por enquanto
-    if (player.combinations && player.combinations.length > 0) {
-      setEditPlayerNumbers(player.combinations[0].numbers.join(', '));
-    } else {
-      setEditPlayerNumbers('');
-    }
-    setIsEditingPlayer(true);
-  };
-  
-  const handleSavePlayerEdit = () => {
-    if (!playerToEdit) return;
-    
-    try {
-      // Validar e converter números
-      const numbersArray = processNumberString(editPlayerNumbers);
-      
-      if (numbersArray.length !== 6) {
-        toast({
-          title: "Quantidade inválida de números",
-          description: "Você precisa selecionar exatamente 6 números",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Verificar duplicatas
-      const uniqueNumbers = [...new Set(numbersArray)];
-      if (uniqueNumbers.length !== numbersArray.length) {
-        toast({
-          title: "Números duplicados",
-          description: "Remova os números duplicados da lista",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Para manter compatibilidade, atualizar apenas a primeira combinação
-      if (playerToEdit.combinations && playerToEdit.combinations.length > 0) {
-        const updatedCombinations = [...playerToEdit.combinations];
-        updatedCombinations[0] = { 
-          ...updatedCombinations[0],
-          numbers: uniqueNumbers
-        };
-        
-        // Atualizar jogador
-        updatePlayer(currentGame.id, playerToEdit.id, {
-          combinations: updatedCombinations
-        });
-      }
-      
-      // Fechar modal
-      setIsEditingPlayer(false);
-      setPlayerToEdit(null);
-      
-      toast({
-        title: "Jogador atualizado",
-        description: `Os números de ${playerToEdit.name} foram atualizados`
-      });
-      
-    } catch (error) {
-      toast({
-        title: "Erro ao editar jogador",
-        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido",
-        variant: "destructive"
-      });
-    }
+    setIsEditModalOpen(true);
   };
 
-  // Manipuladores para o sorteio diário
-  const handleAddDraw = (date: string, numbersArray: number[]) => {
-    try {
-      // Adicionar sorteio
-      const newDraw: Omit<DailyDraw, 'id'> = {
-        date: date,
-        numbers: numbersArray
-      };
-      
-      addDailyDraw(currentGame.id, newDraw);
-      
-      // Verificar vencedores
-      const gameWinners = checkWinners(currentGame.id);
-      
-      // Atualizar lista de vencedores em potencial
-      const potentialWinners = currentGame.players.filter(p => 
-        p.combinations && p.combinations.some(combo => combo.hits === 6)
-      );
-      setCurrentWinners(potentialWinners);
-      
-      if (gameWinners.length > 0) {
-        setWinners(gameWinners);
-        setShowWinnersModal(true);
-      }
-      
-      toast({
-        title: "Sorteio registrado",
-        description: `O sorteio do dia ${new Date(date).toLocaleDateString()} foi registrado`
-      });
-      
-    } catch (error) {
-      toast({
-        title: "Erro ao registrar sorteio",
-        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido",
-        variant: "destructive"
-      });
-    }
-  };
-  
-  // Encerrar jogo
   const handleCloseGame = () => {
-    updateGame(currentGame.id, {
+    updateGame(game.id, {
       status: 'closed',
       endDate: new Date().toISOString()
     });
-    
-    toast({
-      title: "Jogo encerrado",
-      description: `O jogo "${currentGame.name}" foi encerrado com sucesso`
-    });
-    
-    navigate(`/history/${currentGame.id}`);
+    setIsCloseModalOpen(false);
+    // Redirect to history view
+    navigate(`/history/${game.id}`);
   };
 
-  // Manipulador para fechar o modal de vencedores
-  const handleWinnerModalClose = () => {
-    setShowWinnersModal(false);
-    if (winners.length > 0) {
-      updateGame(currentGame.id, {
-        status: 'closed',
-        endDate: new Date().toISOString(),
-        winners
-      });
-      navigate(`/history/${currentGame.id}`);
-    }
+  const handleDeleteSuccess = () => {
+    navigate('/dashboard');
   };
+
+  const winners = game.winners || [];
 
   return (
     <MainLayout>
-      <div className="space-y-4 md:space-y-6 animate-fade-in">
-        <div className="flex items-center justify-between flex-wrap gap-2 md:gap-4">
-          <div>
-            <h1 className={`${isMobile ? "text-xl" : "text-3xl"} font-bold`}>{currentGame.name}</h1>
-            <p className={`${isMobile ? "text-xs" : "text-sm"} text-muted-foreground`}>
-              Iniciado em {new Date(currentGame.startDate).toLocaleDateString()}
-            </p>
+      <div className="space-y-6 animate-fade-in">
+        {/* Game Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="text-2xl font-bold">{game.name}</h1>
+              
+              {winners.length > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="ml-2 bg-primary/10 text-primary hover:bg-primary/20"
+                  onClick={() => setIsWinnersModalOpen(true)}
+                >
+                  <Trophy className="mr-1 h-4 w-4" />
+                  {winners.length} Ganhador{winners.length !== 1 ? 'es' : ''}
+                </Button>
+              )}
+            </div>
+            
+            <div className="flex flex-wrap gap-4 text-sm">
+              <div className="flex items-center">
+                <span className="text-muted-foreground mr-2">Criado em:</span>
+                <span>{new Date(game.startDate).toLocaleDateString()}</span>
+              </div>
+              
+              <div className="flex items-center">
+                <span className="text-muted-foreground mr-2">Jogadores:</span>
+                <span>{game.players.length}</span>
+              </div>
+              
+              <div className="flex items-center">
+                <span className="text-muted-foreground mr-2">Sorteios:</span>
+                <span>{game.dailyDraws.length}</span>
+              </div>
+            </div>
           </div>
-          <div className="flex gap-2 md:gap-3">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/dashboard')}
-              className={isMobile ? "text-xs px-2 py-1 h-8" : ""}
-            >
-              Voltar
-            </Button>
+          
+          <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
+            <DeleteGameButton 
+              gameId={game.id}
+              variant="outline"
+              size="default"
+              onSuccess={handleDeleteSuccess}
+            />
+            
             <Button 
               variant="destructive" 
-              onClick={() => setIsConfirmingClose(true)}
-              className={isMobile ? "text-xs px-2 py-1 h-8" : ""}
+              onClick={() => setIsCloseModalOpen(true)}
+              disabled={winners.length > 0}
             >
-              Encerrar Jogo
+              {winners.length > 0 ? 'Jogo Encerrado' : 'Encerrar Jogo'}
             </Button>
           </div>
         </div>
 
-        <TabsController 
-          players={currentGame.players}
-          dailyDraws={currentGame.dailyDraws}
-          allDrawnNumbers={allDrawnNumbers}
-          currentWinners={currentWinners}
-          processNumberString={processNumberString}
-          onAddPlayer={handleAddPlayer}
-          onAddCombination={handleAddCombination}
-          onEditPlayer={handleOpenEditPlayerModal}
-          onAddDraw={handleAddDraw}
-        />
+        {/* Game Forms */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="futuristic-card">
+            <CardHeader>
+              <CardTitle>Adicionar Jogador</CardTitle>
+              <CardDescription>
+                Cadastre um novo jogador com suas combinações
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PlayerForm gameId={game.id} />
+            </CardContent>
+          </Card>
+
+          <Card className="futuristic-card">
+            <CardHeader>
+              <CardTitle>Registrar Sorteio</CardTitle>
+              <CardDescription>
+                Registre os números sorteados no dia
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DrawForm gameId={game.id} />
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Game Content */}
+        <TabsController>
+          <TabsContent value="players">
+            <PlayersList 
+              players={game.players} 
+              allDrawnNumbers={allDrawnNumbers}
+              onEditPlayer={handleEditPlayer}
+              currentWinners={winners}
+            />
+          </TabsContent>
+          
+          <TabsContent value="draws">
+            <DrawsList 
+              draws={game.dailyDraws || []} 
+              isReadOnly={false}
+            />
+          </TabsContent>
+        </TabsController>
       </div>
 
-      {/* Modals */}
+      {/* Edit Player Modal */}
       <PlayerEditModal 
-        isOpen={isEditingPlayer}
-        setIsOpen={setIsEditingPlayer}
-        playerToEdit={playerToEdit}
-        editPlayerNumbers={editPlayerNumbers}
-        setEditPlayerNumbers={setEditPlayerNumbers}
-        onSave={handleSavePlayerEdit}
+        isOpen={isEditModalOpen}
+        setIsOpen={setIsEditModalOpen}
+        player={playerToEdit}
+        gameId={game.id}
       />
 
-      <ConfirmCloseModal 
-        isOpen={isConfirmingClose}
-        setIsOpen={setIsConfirmingClose}
-        onConfirm={handleCloseGame}
-      />
-
+      {/* Winners Modal */}
       <WinnersModal 
-        isOpen={showWinnersModal}
-        setIsOpen={setShowWinnersModal}
+        isOpen={isWinnersModalOpen}
+        setIsOpen={setIsWinnersModalOpen}
         winners={winners}
         allDrawnNumbers={allDrawnNumbers}
-        onClose={handleWinnerModalClose}
+      />
+
+      {/* Confirm Close Modal */}
+      <ConfirmCloseModal 
+        isOpen={isCloseModalOpen}
+        setIsOpen={setIsCloseModalOpen}
+        onConfirm={handleCloseGame}
       />
     </MainLayout>
   );
