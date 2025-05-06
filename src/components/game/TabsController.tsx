@@ -1,7 +1,7 @@
 
 import React, { ReactNode } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, FileText, Users } from 'lucide-react';
+import { Calendar, Users } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface TabsControllerProps {
@@ -27,7 +27,7 @@ export const TabsController: React.FC<TabsControllerProps> = ({
   return (
     <Tabs defaultValue={defaultValue} className="w-full">
       <TabsList 
-        className={`grid w-full grid-cols-${tabsList.length} mb-6 p-1 rounded-xl border border-primary/20 bg-muted/30 backdrop-blur-sm`}
+        className="grid w-full grid-cols-2 mb-6 p-1 rounded-xl border border-primary/20 bg-muted/30 backdrop-blur-sm"
       >
         {tabsList.map(tab => (
           <TabsTrigger 

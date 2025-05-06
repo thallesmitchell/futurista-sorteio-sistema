@@ -66,51 +66,50 @@ export const GameReport: React.FC<GameReportProps> = ({
     // Get all drawn numbers
     const allDrawnNumbers = game.dailyDraws.flatMap(draw => draw.numbers);
     
-    // Create player boxes container with two columns
-    const playersContainer = document.createElement('div');
-    playersContainer.style.display = 'flex';
-    playersContainer.style.flexWrap = 'wrap';
-    playersContainer.style.justifyContent = 'space-between';
-    playersContainer.style.gap = '15px';
-    
-    // Sort players alphabetically
-    const sortedPlayers = [...game.players].sort((a, b) => 
-      a.name.localeCompare(b.name)
-    );
-    
     // Extract winners if any
     const winners = game.winners || [];
     const winnerIds = winners.map(w => w.id);
     
     // If there are winners, show them at the top
     if (winners.length > 0) {
+      const winnersSection = document.createElement('div');
+      winnersSection.style.marginBottom = '20px';
+      
       winners.forEach(winner => {
         const winnerBox = createPlayerBox(winner, allDrawnNumbers, true);
         // Winner box takes full width
         winnerBox.style.width = '100%';
-        winnerBox.style.marginBottom = '20px';
-        reportElement.appendChild(winnerBox);
+        winnerBox.style.marginBottom = '10px';
+        winnersSection.appendChild(winnerBox);
       });
+      
+      reportElement.appendChild(winnersSection);
     }
+    
+    // Sort players alphabetically
+    const sortedPlayers = [...game.players].sort((a, b) => 
+      a.name.localeCompare(b.name)
+    );
     
     // Add regular players (excluding winners)
     const regularPlayers = sortedPlayers.filter(p => !winnerIds.includes(p.id));
+    
+    // Create two-column layout for regular players
+    const playersContainer = document.createElement('div');
+    playersContainer.style.display = 'flex';
+    playersContainer.style.flexWrap = 'wrap';
+    playersContainer.style.gap = '10px';
     
     // Create left column
     const leftColumn = document.createElement('div');
     leftColumn.style.flex = '1';
     leftColumn.style.minWidth = '45%';
-    leftColumn.style.display = 'flex';
-    leftColumn.style.flexDirection = 'column';
-    leftColumn.style.gap = '15px';
+    leftColumn.style.marginRight = '10px';
     
     // Create right column
     const rightColumn = document.createElement('div');
     rightColumn.style.flex = '1';
     rightColumn.style.minWidth = '45%';
-    rightColumn.style.display = 'flex';
-    rightColumn.style.flexDirection = 'column';
-    rightColumn.style.gap = '15px';
     
     // Distribute players between columns
     regularPlayers.forEach((player, index) => {
@@ -134,7 +133,7 @@ export const GameReport: React.FC<GameReportProps> = ({
       playerBox.style.backgroundColor = isWinner ? '#1db954' : '#e9f5e9';
       playerBox.style.borderRadius = '10px';
       playerBox.style.overflow = 'hidden';
-      playerBox.style.marginBottom = '15px';
+      playerBox.style.marginBottom = '10px';
       playerBox.style.breakInside = 'avoid'; // Prevent box from breaking across pages
       
       // Player name header
@@ -156,13 +155,13 @@ export const GameReport: React.FC<GameReportProps> = ({
       
       // Player combinations
       const combinationsContainer = document.createElement('div');
-      combinationsContainer.style.padding = '15px';
+      combinationsContainer.style.padding = '10px';
       
       if (player.combinations && player.combinations.length > 0) {
         player.combinations.forEach(combo => {
           const comboRow = document.createElement('div');
           comboRow.style.display = 'flex';
-          comboRow.style.marginBottom = '8px';
+          comboRow.style.marginBottom = '5px';
           comboRow.style.fontFamily = 'monospace';
           
           // Create numbered balls
@@ -176,9 +175,9 @@ export const GameReport: React.FC<GameReportProps> = ({
             ball.style.display = 'inline-flex';
             ball.style.justifyContent = 'center';
             ball.style.alignItems = 'center';
-            ball.style.margin = '0 5px';
+            ball.style.margin = '0 3px';
             ball.style.fontWeight = 'bold';
-            ball.style.fontSize = '14px';
+            ball.style.fontSize = '12px';
             ball.style.fontFamily = 'monospace';
             
             // Format the number with leading zero
@@ -192,6 +191,7 @@ export const GameReport: React.FC<GameReportProps> = ({
               // Regular ball
               ball.style.backgroundColor = 'transparent';
               ball.style.color = '#000000';
+              ball.style.border = '1px solid #0e4429';
             }
             
             ball.textContent = formattedNumber;
@@ -209,61 +209,16 @@ export const GameReport: React.FC<GameReportProps> = ({
       
       playerBox.appendChild(combinationsContainer);
       
-      // Add trophy icons if winner
-      if (isWinner) {
-        const trophyLeft = document.createElement('div');
-        trophyLeft.innerHTML = `
-          <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="1" fill="none">
-            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-            <path d="M4 22h16"></path>
-            <path d="M10 22v-6.3a.7.7 0 0 1 .7-.7h2.6a.7.7 0 0 1 .7.7V22"></path>
-            <path d="M7 10v4a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3v-4"></path>
-            <path d="M18 4c-.5-2-2.5-3-5.5-3h-1C8.5 1 6.5 2 6 4"></path>
-            <path d="M18 10V4"></path>
-            <path d="M6 10V4"></path>
-          </svg>
-        `;
-        trophyLeft.style.position = 'absolute';
-        trophyLeft.style.left = '20px';
-        trophyLeft.style.top = '50%';
-        trophyLeft.style.transform = 'translateY(-50%)';
-        trophyLeft.style.color = '#0e4429';
-        
-        const trophyRight = document.createElement('div');
-        trophyRight.innerHTML = `
-          <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="1" fill="none">
-            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
-            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
-            <path d="M4 22h16"></path>
-            <path d="M10 22v-6.3a.7.7 0 0 1 .7-.7h2.6a.7.7 0 0 1 .7.7V22"></path>
-            <path d="M7 10v4a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3v-4"></path>
-            <path d="M18 4c-.5-2-2.5-3-5.5-3h-1C8.5 1 6.5 2 6 4"></path>
-            <path d="M18 10V4"></path>
-            <path d="M6 10V4"></path>
-          </svg>
-        `;
-        trophyRight.style.position = 'absolute';
-        trophyRight.style.right = '20px';
-        trophyRight.style.top = '50%';
-        trophyRight.style.transform = 'translateY(-50%)';
-        trophyRight.style.color = '#0e4429';
-        
-        playerBox.style.position = 'relative';
-        playerBox.appendChild(trophyLeft);
-        playerBox.appendChild(trophyRight);
-      }
-      
       return playerBox;
     }
     
-    // Generate PDF with 9:16 aspect ratio
+    // Generate PDF for mobile-friendly format
     const options = {
       margin: 10,
       filename: `${reportTitle.toLowerCase().replace(/\s+/g, '-')}-${game.name.replace(/\s+/g, '-')}-${formattedDate.replace(/\//g, '-')}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: [90, 160], orientation: 'portrait' } // 9:16 aspect ratio
+      jsPDF: { unit: 'mm', format: [90, 160], orientation: 'portrait' } // Mobile-friendly format
     };
     
     html2pdf().from(reportElement).set(options).save()

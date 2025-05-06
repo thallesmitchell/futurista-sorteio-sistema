@@ -14,14 +14,14 @@ export const NumberBadge: React.FC<NumberBadgeProps> = ({ number, isHit }) => {
     <span 
       className={`
         inline-flex items-center justify-center rounded-full 
-        ${isMobile ? 'w-6 h-6 text-xs' : 'w-8 h-8 text-sm'} 
+        ${isMobile ? 'w-7 h-7 text-xs' : 'w-9 h-9 text-sm'} 
         ${isHit 
-          ? 'bg-primary text-primary-foreground' 
-          : 'bg-muted/50 text-foreground backdrop-blur-sm'}
-        font-medium
+          ? 'bg-primary text-primary-foreground font-semibold' 
+          : 'bg-muted/30 text-foreground border border-primary/30 backdrop-blur-sm'}
+        font-medium transition-all duration-300
       `}
     >
-      {number}
+      {String(number).padStart(2, '0')}
     </span>
   );
 };

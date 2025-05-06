@@ -5,7 +5,7 @@ import MainLayout from '@/layouts/MainLayout';
 import { useGame } from '@/contexts/GameContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { TabsContent } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TabsController } from '@/components/game/TabsController';
 import { PlayerForm } from '@/components/game/PlayerForm';
 import { DrawForm } from '@/components/game/DrawForm';
@@ -14,7 +14,7 @@ import { PlayersList } from '@/components/game/PlayersList';
 import { PlayerEditModal } from '@/components/game/PlayerEditModal';
 import { WinnersModal } from '@/components/game/WinnersModal';
 import { ConfirmCloseModal } from '@/components/game/ConfirmCloseModal';
-import { ArrowLeft, FileText, Plus, Trophy, Users } from 'lucide-react';
+import { ArrowLeft, FileText, Plus, Trophy, Users, CalendarDays, UserPlus } from 'lucide-react';
 import { Player } from '@/contexts/GameContext';
 import { DeleteGameButton } from '@/components/game/DeleteGameButton';
 import { GameReport } from '@/components/game/GameReport';
@@ -141,18 +141,29 @@ export default function GameAdmin() {
           </div>
         </div>
 
-        {/* Game Forms */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="p-5 backdrop-blur-sm bg-card/40 border-primary/20">
-            <h2 className="text-lg font-medium mb-4">Cadastrar Novo Jogador</h2>
-            <PlayerForm gameId={game.id} />
-          </Card>
-          
-          <Card className="p-5 backdrop-blur-sm bg-card/40 border-primary/20">
-            <h2 className="text-lg font-medium mb-4">Registrar Sorteio Diário</h2>
-            <DrawForm gameId={game.id} />
-          </Card>
-        </div>
+        {/* Game Forms - Now as tabs */}
+        <Card className="p-5 backdrop-blur-sm bg-card/40 border-primary/20">
+          <Tabs defaultValue="players" className="w-full">
+            <TabsList className="grid grid-cols-2 mb-4">
+              <TabsTrigger value="players" className="data-[state=active]:bg-primary/20">
+                <UserPlus className="mr-2 h-4 w-4" />
+                Cadastrar Novo Jogador
+              </TabsTrigger>
+              <TabsTrigger value="draws" className="data-[state=active]:bg-primary/20">
+                <CalendarDays className="mr-2 h-4 w-4" />
+                Registrar Sorteio Diário
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="players">
+              <PlayerForm gameId={game.id} />
+            </TabsContent>
+            
+            <TabsContent value="draws">
+              <DrawForm gameId={game.id} />
+            </TabsContent>
+          </Tabs>
+        </Card>
 
         {/* Game Content */}
         <TabsController defaultValue="players">
