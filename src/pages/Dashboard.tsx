@@ -10,9 +10,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from '@/components/ui/use-toast';
 import { useForm } from 'react-hook-form';
 import { DeleteGameButton } from '@/components/game/DeleteGameButton';
+import { GameReport } from '@/components/game/GameReport';
 
 // Import icons
-import { CalendarPlus, ChevronRight, Plus, Settings } from 'lucide-react';
+import { CalendarPlus, ChevronRight, FileText, LayoutList, Plus, Settings } from 'lucide-react';
+import { Game } from '@/contexts/GameContext';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -64,6 +67,56 @@ export default function Dashboard() {
     }
   }, [open, form]);
 
+  const renderGameList = (gamesList: Game[], isHistory: boolean = false) => {
+    if (gamesList.length === 0) {
+      return (
+        <div className="text-center py-8 text-muted-foreground">
+          <p>{isHistory ? "Nenhum jogo encerrado recentemente." : "Nenhum jogo ativo no momento."}</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="border rounded-lg overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[300px]">Nome do Jogo</TableHead>
+              <TableHead className="hidden sm:table-cell">{isHistory ? "Encerrado em" : "Iniciado em"}</TableHead>
+              <TableHead className="hidden md:table-cell">Jogadores</TableHead>
+              <TableHead className="hidden md:table-cell">Sorteios</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {gamesList.map(game => (
+              <TableRow key={game.id} className="hover:bg-muted/50">
+                <TableCell className="font-medium">{game.name}</TableCell>
+                <TableCell className="hidden sm:table-cell">
+                  {new Date(isHistory ? game.endDate! : game.startDate).toLocaleDateString()}
+                </TableCell>
+                <TableCell className="hidden md:table-cell">{game.players.length}</TableCell>
+                <TableCell className="hidden md:table-cell">{game.dailyDraws.length}</TableCell>
+                <TableCell className="text-right space-x-1">
+                  <DeleteGameButton gameId={game.id} variant="ghost" size="sm" />
+                  <GameReport game={game} variant="ghost" size="sm" />
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => navigate(isHistory ? `/history/${game.id}` : `/admin/${game.id}`)}
+                  >
+                    {isHistory ? "Visualizar" : "Administrar"}
+                    <ChevronRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    );
+  };
+
   return (
     <MainLayout>
       <div className="space-y-8 animate-fade-in">
@@ -113,58 +166,20 @@ export default function Dashboard() {
         
         {/* Active Games */}
         <Card className="futuristic-card">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <CalendarPlus className="mr-2 h-5 w-5" /> 
-              Jogos Ativos
-            </CardTitle>
-            <CardDescription>
-              Jogos em andamento no momento
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center">
+                <CalendarPlus className="mr-2 h-5 w-5" /> 
+                Jogos Ativos
+              </CardTitle>
+              <CardDescription>
+                Jogos em andamento no momento
+              </CardDescription>
+            </div>
+            <LayoutList className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {activeGames.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {activeGames.map((game) => (
-                  <Card key={game.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">{game.name}</CardTitle>
-                      <CardDescription>
-                        Iniciado em {new Date(game.startDate).toLocaleDateString()}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pb-2">
-                      <div className="text-sm">
-                        <div className="flex justify-between mb-1">
-                          <span>Total de jogadores:</span>
-                          <span className="font-medium">{game.players.length}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Sorteios realizados:</span>
-                          <span className="font-medium">{game.dailyDraws.length}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="flex justify-between">
-                      <DeleteGameButton gameId={game.id} variant="ghost" size="sm" />
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="ml-auto" 
-                        onClick={() => navigate(`/admin/${game.id}`)}
-                      >
-                        Administrar
-                        <Settings className="ml-2 h-4 w-4" />
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>Nenhum jogo ativo no momento.</p>
-              </div>
-            )}
+            {renderGameList(activeGames)}
           </CardContent>
           <CardFooter className="border-t pt-4">
             <Button variant="outline" className="ml-auto" onClick={() => navigate('/history')}>
@@ -176,57 +191,19 @@ export default function Dashboard() {
         
         {/* Recent Closed Games */}
         <Card className="futuristic-card">
-          <CardHeader>
-            <CardTitle>Jogos Recentemente Encerrados</CardTitle>
-            <CardDescription>
-              Os 3 últimos jogos encerrados
-            </CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Jogos Recentemente Encerrados</CardTitle>
+              <CardDescription>
+                Os últimos jogos encerrados
+              </CardDescription>
+            </div>
+            <LayoutList className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            {closedGames.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {closedGames.slice(0, 3).map((game) => (
-                  <Card key={game.id} className="hover:shadow-md transition-shadow">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg">{game.name}</CardTitle>
-                      <CardDescription>
-                        Encerrado em {new Date(game.endDate!).toLocaleDateString()}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pb-2">
-                      <div className="text-sm">
-                        <div className="flex justify-between mb-1">
-                          <span>Total de jogadores:</span>
-                          <span className="font-medium">{game.players.length}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Ganhadores:</span>
-                          <span className="font-medium">{game.winners.length}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter className="flex justify-between">
-                      <DeleteGameButton gameId={game.id} variant="ghost" size="sm" />
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="ml-auto" 
-                        onClick={() => navigate(`/history/${game.id}`)}
-                      >
-                        Visualizar
-                        <ChevronRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>Nenhum jogo encerrado recentemente.</p>
-              </div>
-            )}
+            {renderGameList(closedGames.slice(0, 5), true)}
           </CardContent>
-          {closedGames.length > 3 && (
+          {closedGames.length > 5 && (
             <CardFooter className="border-t pt-4">
               <Button variant="outline" className="ml-auto" onClick={() => navigate('/history')}>
                 Ver todos os {closedGames.length} jogos encerrados

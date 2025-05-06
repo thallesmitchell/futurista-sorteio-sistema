@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import { useGame } from '@/contexts/GameContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { TabsContent } from '@/components/ui/tabs';
 import { TabsController } from '@/components/game/TabsController';
@@ -14,9 +14,10 @@ import { PlayersList } from '@/components/game/PlayersList';
 import { PlayerEditModal } from '@/components/game/PlayerEditModal';
 import { WinnersModal } from '@/components/game/WinnersModal';
 import { ConfirmCloseModal } from '@/components/game/ConfirmCloseModal';
-import { ArrowLeft, Trophy } from 'lucide-react';
+import { ArrowLeft, FileText, Plus, Trophy, Users } from 'lucide-react';
 import { Player } from '@/contexts/GameContext';
 import { DeleteGameButton } from '@/components/game/DeleteGameButton';
+import { GameReport } from '@/components/game/GameReport';
 
 export default function GameAdmin() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -27,6 +28,7 @@ export default function GameAdmin() {
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
   const [editPlayerNumbers, setEditPlayerNumbers] = useState('');
+  const [formTabsValue, setFormTabsValue] = useState('addPlayer');
 
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
@@ -69,10 +71,6 @@ export default function GameAdmin() {
     setIsCloseModalOpen(false);
     // Redirect to history view
     navigate(`/history/${game.id}`);
-  };
-
-  const handleDeleteSuccess = () => {
-    navigate('/dashboard');
   };
 
   const winners = game.winners || [];
@@ -121,11 +119,17 @@ export default function GameAdmin() {
           </div>
           
           <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
+            <GameReport
+              game={game}
+              variant="outline"
+              size="default"
+            />
+
             <DeleteGameButton 
               gameId={game.id}
               variant="outline"
               size="default"
-              onSuccess={handleDeleteSuccess}
+              onSuccess={() => navigate('/dashboard')}
             />
             
             <Button 
@@ -138,35 +142,24 @@ export default function GameAdmin() {
           </div>
         </div>
 
-        {/* Game Forms */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card className="futuristic-card">
-            <CardHeader>
-              <CardTitle>Adicionar Jogador</CardTitle>
-              <CardDescription>
-                Cadastre um novo jogador com suas combinações
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PlayerForm gameId={game.id} />
-            </CardContent>
-          </Card>
-
-          <Card className="futuristic-card">
-            <CardHeader>
-              <CardTitle>Registrar Sorteio</CardTitle>
-              <CardDescription>
-                Registre os números sorteados no dia
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DrawForm gameId={game.id} />
-            </CardContent>
-          </Card>
-        </div>
+        {/* Game Forms as Tabs */}
+        <TabsController 
+          defaultValue="addPlayer"
+          tabsList={[
+            { id: "addPlayer", label: "Adicionar Jogador", icon: Users },
+            { id: "addDraw", label: "Registrar Sorteio", icon: FileText }
+          ]}
+        >
+          <TabsContent value="addPlayer" className="mt-6">
+            <PlayerForm gameId={game.id} />
+          </TabsContent>
+          <TabsContent value="addDraw" className="mt-6">
+            <DrawForm gameId={game.id} />
+          </TabsContent>
+        </TabsController>
 
         {/* Game Content */}
-        <TabsController>
+        <TabsController defaultValue="players">
           <TabsContent value="players">
             <PlayersList 
               players={game.players} 
@@ -178,7 +171,7 @@ export default function GameAdmin() {
           
           <TabsContent value="draws">
             <DrawsList 
-              draws={game.dailyDraws || []} 
+              draws={game.dailyDraws || []}
               isReadOnly={false}
             />
           </TabsContent>
