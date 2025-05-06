@@ -28,7 +28,6 @@ export default function GameAdmin() {
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
   const [editPlayerNumbers, setEditPlayerNumbers] = useState('');
-  const [formTabsValue, setFormTabsValue] = useState('addPlayer');
 
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
@@ -142,21 +141,18 @@ export default function GameAdmin() {
           </div>
         </div>
 
-        {/* Game Forms as Tabs */}
-        <TabsController 
-          defaultValue="addPlayer"
-          tabsList={[
-            { id: "addPlayer", label: "Adicionar Jogador", icon: Users },
-            { id: "addDraw", label: "Registrar Sorteio", icon: FileText }
-          ]}
-        >
-          <TabsContent value="addPlayer" className="mt-6">
+        {/* Game Forms */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="p-5 backdrop-blur-sm bg-card/40 border-primary/20">
+            <h2 className="text-lg font-medium mb-4">Cadastrar Novo Jogador</h2>
             <PlayerForm gameId={game.id} />
-          </TabsContent>
-          <TabsContent value="addDraw" className="mt-6">
+          </Card>
+          
+          <Card className="p-5 backdrop-blur-sm bg-card/40 border-primary/20">
+            <h2 className="text-lg font-medium mb-4">Registrar Sorteio Diário</h2>
             <DrawForm gameId={game.id} />
-          </TabsContent>
-        </TabsController>
+          </Card>
+        </div>
 
         {/* Game Content */}
         <TabsController defaultValue="players">

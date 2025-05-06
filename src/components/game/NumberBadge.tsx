@@ -16,8 +16,8 @@ export const NumberBadge: React.FC<NumberBadgeProps> = ({ number, isHit }) => {
         inline-flex items-center justify-center rounded-full 
         ${isMobile ? 'w-6 h-6 text-xs' : 'w-8 h-8 text-sm'} 
         ${isHit 
-          ? 'bg-primary text-primary-foreground animate-pulse-glow' 
-          : 'bg-muted text-muted-foreground'}
+          ? 'bg-primary text-primary-foreground' 
+          : 'bg-muted/50 text-foreground backdrop-blur-sm'}
         font-medium
       `}
     >

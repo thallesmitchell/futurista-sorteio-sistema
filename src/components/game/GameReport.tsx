@@ -22,221 +22,245 @@ export const GameReport: React.FC<GameReportProps> = ({
   const { toast } = useToast();
   
   const generateReport = () => {
-    const reportDate = new Date().toLocaleDateString();
+    // Get current date for the report
+    const currentDate = new Date();
+    const formattedDate = `${String(currentDate.getDate()).padStart(2, '0')}/${String(currentDate.getMonth() + 1).padStart(2, '0')}/${currentDate.getFullYear()}`;
+    const reportTitle = game.winners && game.winners.length > 0 ? "Resultado final" : "Parcial do dia";
     
-    // Create the report content
+    // Create report container
     const reportElement = document.createElement('div');
+    reportElement.style.fontFamily = 'monospace';
     reportElement.style.padding = '20px';
-    reportElement.style.fontFamily = 'Arial, sans-serif';
-    reportElement.style.color = '#000';
+    reportElement.style.backgroundColor = '#ffffff';
+    
+    // Header with logo and title
+    const header = document.createElement('div');
+    header.style.display = 'flex';
+    header.style.justifyContent = 'space-between';
+    header.style.alignItems = 'center';
+    header.style.marginBottom = '30px';
+    
+    // Left logo
+    const leftLogo = document.createElement('img');
+    leftLogo.src = '/lovable-uploads/b7f54603-ff4e-4280-8c96-a36a94acf7c6.png';
+    leftLogo.style.height = '80px';
+    header.appendChild(leftLogo);
     
     // Title
-    const title = document.createElement('h1');
-    title.textContent = `Parcial do dia ${reportDate}`;
+    const title = document.createElement('div');
     title.style.textAlign = 'center';
-    title.style.marginBottom = '20px';
+    title.style.fontWeight = 'bold';
     title.style.fontSize = '24px';
-    reportElement.appendChild(title);
+    title.innerHTML = `${reportTitle}<br/>${formattedDate.replace(/\//g, '/')}`;
+    title.style.fontFamily = 'monospace';
+    header.appendChild(title);
     
-    // Game info
-    const gameInfo = document.createElement('div');
-    gameInfo.style.marginBottom = '25px';
-    gameInfo.style.textAlign = 'center';
+    // Right logo
+    const rightLogo = document.createElement('img');
+    rightLogo.src = '/lovable-uploads/b7f54603-ff4e-4280-8c96-a36a94acf7c6.png';
+    rightLogo.style.height = '80px';
+    header.appendChild(rightLogo);
     
-    const gameName = document.createElement('h2');
-    gameName.textContent = game.name;
-    gameName.style.fontSize = '20px';
-    gameName.style.marginBottom = '8px';
-    gameInfo.appendChild(gameName);
-    
-    const gameDetails = document.createElement('div');
-    gameDetails.innerHTML = `
-      <p>Iniciado em ${new Date(game.startDate).toLocaleDateString()}</p>
-      <p>Total de jogadores: ${game.players.length}</p>
-      <p>Sorteios realizados: ${game.dailyDraws.length}</p>
-    `;
-    gameDetails.style.fontSize = '14px';
-    gameDetails.style.color = '#555';
-    gameInfo.appendChild(gameDetails);
-    
-    reportElement.appendChild(gameInfo);
+    reportElement.appendChild(header);
     
     // Get all drawn numbers
     const allDrawnNumbers = game.dailyDraws.flatMap(draw => draw.numbers);
     
-    // Players and their combinations
-    if (game.players.length > 0) {
-      const playersSection = document.createElement('div');
-      
-      game.players.forEach((player, index) => {
-        const playerCard = document.createElement('div');
-        playerCard.style.padding = '16px';
-        playerCard.style.marginBottom = '20px';
-        playerCard.style.border = '1px solid #e2e8f0';
-        playerCard.style.borderRadius = '8px';
-        playerCard.style.backgroundColor = '#f8fafc';
-        
-        // Player name
-        const playerName = document.createElement('h3');
-        playerName.textContent = player.name;
-        playerName.style.fontSize = '18px';
-        playerName.style.marginBottom = '10px';
-        playerCard.appendChild(playerName);
-        
-        // Combinations
-        if (player.combinations && player.combinations.length > 0) {
-          const combinationsContainer = document.createElement('div');
-          
-          player.combinations.forEach((combo, comboIdx) => {
-            const comboDiv = document.createElement('div');
-            comboDiv.style.marginBottom = '10px';
-            
-            // Combo header
-            const comboHeader = document.createElement('div');
-            comboHeader.textContent = `Combinação ${comboIdx + 1}:`;
-            comboHeader.style.fontSize = '14px';
-            comboHeader.style.marginBottom = '5px';
-            comboDiv.appendChild(comboHeader);
-            
-            // Numbers display
-            const numbersContainer = document.createElement('div');
-            numbersContainer.style.display = 'flex';
-            numbersContainer.style.flexWrap = 'wrap';
-            numbersContainer.style.gap = '6px';
-            
-            const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
-            
-            sortedNumbers.forEach(number => {
-              const isHit = allDrawnNumbers.includes(number);
-              
-              const numberBadge = document.createElement('div');
-              numberBadge.textContent = number.toString();
-              numberBadge.style.width = '32px';
-              numberBadge.style.height = '32px';
-              numberBadge.style.display = 'flex';
-              numberBadge.style.alignItems = 'center';
-              numberBadge.style.justifyContent = 'center';
-              numberBadge.style.borderRadius = '50%';
-              numberBadge.style.fontWeight = '600';
-              numberBadge.style.fontSize = '14px';
-              
-              // Style based on hit status
-              if (isHit) {
-                numberBadge.style.backgroundColor = '#10b981'; // green
-                numberBadge.style.color = '#ffffff';
-              } else {
-                numberBadge.style.backgroundColor = '#f1f5f9'; // light gray
-                numberBadge.style.border = '1px solid #cbd5e1';
-                numberBadge.style.color = '#334155';
-              }
-              
-              numbersContainer.appendChild(numberBadge);
-            });
-            
-            comboDiv.appendChild(numbersContainer);
-            
-            // Display hits count
-            const hitsCount = document.createElement('div');
-            hitsCount.textContent = `Acertos: ${combo.hits}`;
-            hitsCount.style.fontSize = '14px';
-            hitsCount.style.marginTop = '6px';
-            hitsCount.style.color = combo.hits > 0 ? '#10b981' : '#64748b';
-            hitsCount.style.fontWeight = combo.hits > 0 ? '600' : '400';
-            comboDiv.appendChild(hitsCount);
-            
-            combinationsContainer.appendChild(comboDiv);
-          });
-          
-          playerCard.appendChild(combinationsContainer);
-        } else {
-          const noCombo = document.createElement('p');
-          noCombo.textContent = 'Sem combinações registradas';
-          noCombo.style.color = '#64748b';
-          noCombo.style.fontSize = '14px';
-          playerCard.appendChild(noCombo);
-        }
-        
-        playersSection.appendChild(playerCard);
+    // Create player boxes container with two columns
+    const playersContainer = document.createElement('div');
+    playersContainer.style.display = 'flex';
+    playersContainer.style.flexWrap = 'wrap';
+    playersContainer.style.justifyContent = 'space-between';
+    playersContainer.style.gap = '15px';
+    
+    // Sort players alphabetically
+    const sortedPlayers = [...game.players].sort((a, b) => 
+      a.name.localeCompare(b.name)
+    );
+    
+    // Extract winners if any
+    const winners = game.winners || [];
+    const winnerIds = winners.map(w => w.id);
+    
+    // If there are winners, show them at the top
+    if (winners.length > 0) {
+      winners.forEach(winner => {
+        const winnerBox = createPlayerBox(winner, allDrawnNumbers, true);
+        // Winner box takes full width
+        winnerBox.style.width = '100%';
+        winnerBox.style.marginBottom = '20px';
+        reportElement.appendChild(winnerBox);
       });
-      
-      reportElement.appendChild(playersSection);
-    } else {
-      const noPlayers = document.createElement('p');
-      noPlayers.textContent = 'Nenhum jogador registrado';
-      noPlayers.style.textAlign = 'center';
-      noPlayers.style.color = '#64748b';
-      noPlayers.style.padding = '30px 0';
-      reportElement.appendChild(noPlayers);
     }
     
-    // Daily draws
-    if (game.dailyDraws && game.dailyDraws.length > 0) {
-      const drawsSection = document.createElement('div');
-      drawsSection.style.marginTop = '30px';
+    // Add regular players (excluding winners)
+    const regularPlayers = sortedPlayers.filter(p => !winnerIds.includes(p.id));
+    
+    // Create left column
+    const leftColumn = document.createElement('div');
+    leftColumn.style.flex = '1';
+    leftColumn.style.minWidth = '45%';
+    leftColumn.style.display = 'flex';
+    leftColumn.style.flexDirection = 'column';
+    leftColumn.style.gap = '15px';
+    
+    // Create right column
+    const rightColumn = document.createElement('div');
+    rightColumn.style.flex = '1';
+    rightColumn.style.minWidth = '45%';
+    rightColumn.style.display = 'flex';
+    rightColumn.style.flexDirection = 'column';
+    rightColumn.style.gap = '15px';
+    
+    // Distribute players between columns
+    regularPlayers.forEach((player, index) => {
+      const playerBox = createPlayerBox(player, allDrawnNumbers, false);
       
-      const drawsTitle = document.createElement('h3');
-      drawsTitle.textContent = 'Sorteios Realizados';
-      drawsTitle.style.fontSize = '18px';
-      drawsTitle.style.marginBottom = '15px';
-      drawsTitle.style.textAlign = 'center';
-      drawsSection.appendChild(drawsTitle);
+      // Alternate between left and right columns
+      if (index % 2 === 0) {
+        leftColumn.appendChild(playerBox);
+      } else {
+        rightColumn.appendChild(playerBox);
+      }
+    });
+    
+    playersContainer.appendChild(leftColumn);
+    playersContainer.appendChild(rightColumn);
+    reportElement.appendChild(playersContainer);
+    
+    // Function to create player box
+    function createPlayerBox(player, allDrawnNumbers, isWinner) {
+      const playerBox = document.createElement('div');
+      playerBox.style.backgroundColor = isWinner ? '#1db954' : '#e9f5e9';
+      playerBox.style.borderRadius = '10px';
+      playerBox.style.overflow = 'hidden';
+      playerBox.style.marginBottom = '15px';
+      playerBox.style.breakInside = 'avoid'; // Prevent box from breaking across pages
       
-      // Sort draws by date (most recent first)
-      const sortedDraws = [...game.dailyDraws]
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      // Player name header
+      const nameHeader = document.createElement('div');
+      nameHeader.style.backgroundColor = '#0e4429';
+      nameHeader.style.color = '#ffffff';
+      nameHeader.style.padding = '8px 15px';
+      nameHeader.style.fontWeight = 'bold';
+      nameHeader.style.textAlign = 'center';
+      nameHeader.style.fontFamily = 'monospace';
       
-      sortedDraws.forEach(draw => {
-        const drawCard = document.createElement('div');
-        drawCard.style.padding = '12px';
-        drawCard.style.marginBottom = '12px';
-        drawCard.style.border = '1px solid #e2e8f0';
-        drawCard.style.borderRadius = '8px';
-        drawCard.style.backgroundColor = '#f8fafc';
-        
-        // Draw date
-        const drawDate = document.createElement('div');
-        drawDate.textContent = `Sorteio do dia ${new Date(draw.date).toLocaleDateString()}`;
-        drawDate.style.fontSize = '16px';
-        drawDate.style.marginBottom = '10px';
-        drawDate.style.fontWeight = '500';
-        drawCard.appendChild(drawDate);
-        
-        // Numbers display
-        const numbersContainer = document.createElement('div');
-        numbersContainer.style.display = 'flex';
-        numbersContainer.style.flexWrap = 'wrap';
-        numbersContainer.style.gap = '6px';
-        
-        const sortedNumbers = [...draw.numbers].sort((a, b) => a - b);
-        
-        sortedNumbers.forEach(number => {
-          const numberBadge = document.createElement('div');
-          numberBadge.textContent = number.toString();
-          numberBadge.style.width = '32px';
-          numberBadge.style.height = '32px';
-          numberBadge.style.display = 'flex';
-          numberBadge.style.alignItems = 'center';
-          numberBadge.style.justifyContent = 'center';
-          numberBadge.style.borderRadius = '50%';
-          numberBadge.style.backgroundColor = '#7c3aed'; // purple
-          numberBadge.style.color = '#ffffff';
-          numberBadge.style.fontWeight = '600';
-          numberBadge.style.fontSize = '14px';
+      if (isWinner) {
+        nameHeader.textContent = `VENCEDOR — ${player.name}`;
+      } else {
+        nameHeader.textContent = player.name;
+      }
+      
+      playerBox.appendChild(nameHeader);
+      
+      // Player combinations
+      const combinationsContainer = document.createElement('div');
+      combinationsContainer.style.padding = '15px';
+      
+      if (player.combinations && player.combinations.length > 0) {
+        player.combinations.forEach(combo => {
+          const comboRow = document.createElement('div');
+          comboRow.style.display = 'flex';
+          comboRow.style.marginBottom = '8px';
+          comboRow.style.fontFamily = 'monospace';
           
-          numbersContainer.appendChild(numberBadge);
+          // Create numbered balls
+          combo.numbers.forEach(number => {
+            const isHit = allDrawnNumbers.includes(number);
+            
+            const ball = document.createElement('div');
+            ball.style.width = '30px';
+            ball.style.height = '30px';
+            ball.style.borderRadius = '50%';
+            ball.style.display = 'inline-flex';
+            ball.style.justifyContent = 'center';
+            ball.style.alignItems = 'center';
+            ball.style.margin = '0 5px';
+            ball.style.fontWeight = 'bold';
+            ball.style.fontSize = '14px';
+            ball.style.fontFamily = 'monospace';
+            
+            // Format the number with leading zero
+            const formattedNumber = String(number).padStart(2, '0');
+            
+            if (isHit) {
+              // Highlighted ball for hits
+              ball.style.backgroundColor = '#1db954';
+              ball.style.color = '#ffffff';
+            } else {
+              // Regular ball
+              ball.style.backgroundColor = 'transparent';
+              ball.style.color = '#000000';
+            }
+            
+            ball.textContent = formattedNumber;
+            comboRow.appendChild(ball);
+          });
+          
+          combinationsContainer.appendChild(comboRow);
         });
-        
-        drawCard.appendChild(numbersContainer);
-        drawsSection.appendChild(drawCard);
-      });
+      } else {
+        const noCombo = document.createElement('p');
+        noCombo.textContent = 'Sem combinações';
+        noCombo.style.textAlign = 'center';
+        combinationsContainer.appendChild(noCombo);
+      }
       
-      reportElement.appendChild(drawsSection);
+      playerBox.appendChild(combinationsContainer);
+      
+      // Add trophy icons if winner
+      if (isWinner) {
+        const trophyLeft = document.createElement('div');
+        trophyLeft.innerHTML = `
+          <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="1" fill="none">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+            <path d="M4 22h16"></path>
+            <path d="M10 22v-6.3a.7.7 0 0 1 .7-.7h2.6a.7.7 0 0 1 .7.7V22"></path>
+            <path d="M7 10v4a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3v-4"></path>
+            <path d="M18 4c-.5-2-2.5-3-5.5-3h-1C8.5 1 6.5 2 6 4"></path>
+            <path d="M18 10V4"></path>
+            <path d="M6 10V4"></path>
+          </svg>
+        `;
+        trophyLeft.style.position = 'absolute';
+        trophyLeft.style.left = '20px';
+        trophyLeft.style.top = '50%';
+        trophyLeft.style.transform = 'translateY(-50%)';
+        trophyLeft.style.color = '#0e4429';
+        
+        const trophyRight = document.createElement('div');
+        trophyRight.innerHTML = `
+          <svg viewBox="0 0 24 24" width="40" height="40" stroke="currentColor" stroke-width="1" fill="none">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+            <path d="M4 22h16"></path>
+            <path d="M10 22v-6.3a.7.7 0 0 1 .7-.7h2.6a.7.7 0 0 1 .7.7V22"></path>
+            <path d="M7 10v4a3 3 0 0 0 3 3h4a3 3 0 0 0 3-3v-4"></path>
+            <path d="M18 4c-.5-2-2.5-3-5.5-3h-1C8.5 1 6.5 2 6 4"></path>
+            <path d="M18 10V4"></path>
+            <path d="M6 10V4"></path>
+          </svg>
+        `;
+        trophyRight.style.position = 'absolute';
+        trophyRight.style.right = '20px';
+        trophyRight.style.top = '50%';
+        trophyRight.style.transform = 'translateY(-50%)';
+        trophyRight.style.color = '#0e4429';
+        
+        playerBox.style.position = 'relative';
+        playerBox.appendChild(trophyLeft);
+        playerBox.appendChild(trophyRight);
+      }
+      
+      return playerBox;
     }
     
     // Generate PDF with 9:16 aspect ratio
     const options = {
       margin: 10,
-      filename: `parcial-${game.name.replace(/\s+/g, '-').toLowerCase()}-${reportDate.replace(/\//g, '-')}.pdf`,
+      filename: `${reportTitle.toLowerCase().replace(/\s+/g, '-')}-${game.name.replace(/\s+/g, '-')}-${formattedDate.replace(/\//g, '-')}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
       jsPDF: { unit: 'mm', format: [90, 160], orientation: 'portrait' } // 9:16 aspect ratio
@@ -245,17 +269,17 @@ export const GameReport: React.FC<GameReportProps> = ({
     html2pdf().from(reportElement).set(options).save()
       .then(() => {
         toast({
-          title: "Relatório gerado",
-          description: "O PDF foi baixado com sucesso",
+          title: "Relatório gerado com sucesso",
+          description: "O PDF foi baixado para o seu dispositivo",
         });
       })
       .catch(error => {
+        console.error("Erro ao gerar PDF:", error);
         toast({
           title: "Erro ao gerar relatório",
           description: "Ocorreu um problema ao gerar o PDF",
           variant: "destructive"
         });
-        console.error("PDF generation error:", error);
       });
   };
   

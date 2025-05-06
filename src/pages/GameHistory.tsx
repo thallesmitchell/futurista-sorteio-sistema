@@ -13,6 +13,7 @@ import html2pdf from 'html2pdf.js';
 import { ArrowLeft, Download, Trophy } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { DeleteGameButton } from '@/components/game/DeleteGameButton';
+import { GameReport } from '@/components/game/GameReport';
 
 export default function GameHistory() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -45,54 +46,6 @@ export default function GameHistory() {
   }
 
   const winners = game.winners || [];
-
-  const handleGeneratePdf = async () => {
-    try {
-      // Create a clone of the current page content for PDF generation
-      const element = document.querySelector('.pdf-container')?.cloneNode(true) as HTMLElement;
-      
-      if (!element) {
-        toast({
-          title: "Erro ao gerar PDF",
-          description: "Não foi possível gerar o relatório.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Remove any buttons or non-printable elements from the clone
-      const buttons = element.querySelectorAll('button');
-      buttons.forEach(button => button.remove());
-      
-      // Configure PDF options
-      const options = {
-        filename: `relatorio-${game.name}-${new Date().toISOString().split('T')[0]}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-      };
-      
-      // Generate PDF
-      toast({
-        title: "Gerando PDF",
-        description: "Aguarde enquanto o relatório é gerado...",
-      });
-      
-      await html2pdf().from(element).set(options).save();
-      
-      toast({
-        title: "Relatório gerado com sucesso!",
-        description: "O arquivo PDF foi baixado para o seu dispositivo.",
-      });
-    } catch (error) {
-      console.error("Erro ao gerar PDF:", error);
-      toast({
-        title: "Erro ao gerar PDF",
-        description: "Ocorreu um erro ao gerar o relatório.",
-        variant: "destructive",
-      });
-    }
-  };
 
   const handleDeleteSuccess = () => {
     navigate('/history');
@@ -147,13 +100,11 @@ export default function GameHistory() {
           </div>
           
           <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
-            <Button 
-              variant="outline" 
-              onClick={handleGeneratePdf}
-            >
-              <Download className="mr-1 h-4 w-4" /> 
-              Gerar Relatório
-            </Button>
+            <GameReport
+              game={game}
+              variant="outline"
+              size="default"
+            />
             
             <DeleteGameButton 
               gameId={game.id}
@@ -165,7 +116,7 @@ export default function GameHistory() {
         </div>
 
         {/* Game Content */}
-        <div className="pdf-container">
+        <div className="backdrop-blur-sm bg-card/40 border border-primary/20 rounded-xl p-6">
           <TabsController>
             <TabsContent value="players">
               <PlayersList 
