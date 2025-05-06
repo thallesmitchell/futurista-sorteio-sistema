@@ -26,20 +26,24 @@ export const TabsController: React.FC<TabsControllerProps> = ({
 
   return (
     <Tabs defaultValue={defaultValue} className="w-full">
-      <TabsList className={`grid grid-cols-${tabsList.length} mb-4 md:mb-8`}>
+      <TabsList 
+        className={`grid w-full grid-cols-${tabsList.length} mb-6 p-1 rounded-xl border border-primary/20 bg-muted/30 backdrop-blur-sm`}
+      >
         {tabsList.map(tab => (
           <TabsTrigger 
             key={tab.id}
             value={tab.id} 
-            className={`${isMobile ? "text-sm py-2" : "text-lg py-3"}`}
+            className={`${isMobile ? "text-xs py-2" : "text-sm py-3"} data-[state=active]:tab-active transition-all duration-300`}
           >
-            <tab.icon className={`${isMobile ? "mr-1 h-4 w-4" : "mr-2 h-5 w-5"}`} />
+            <tab.icon className={`${isMobile ? "mr-1 h-3.5 w-3.5" : "mr-2 h-4 w-4"}`} />
             {tab.label}
           </TabsTrigger>
         ))}
       </TabsList>
       
-      {children}
+      <div className="transition-all duration-300">
+        {children}
+      </div>
     </Tabs>
   );
 };

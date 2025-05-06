@@ -72,7 +72,13 @@ export default {
 					cyan: '#00bcd4',
 					pink: '#e91e63',
 					dark: '#121212',
-					'dark-accent': '#1e1e1e'
+					'dark-accent': '#1e1e1e',
+					green: '#4caf50',
+					'neon-green': '#7FFF00',
+					'bright-green': '#39FF14',
+					'lime-green': '#32CD32',
+					'teal': '#008080',
+					'dark-green': '#006400'
 				}
 			},
 			borderRadius: {
@@ -107,11 +113,15 @@ export default {
 				},
 				'pulse-glow': {
 					'0%, 100%': { 
-						boxShadow: '0 0 15px 5px rgba(123, 31, 162, 0.5)',
+						boxShadow: '0 0 15px 5px rgba(120, 255, 0, 0.5)',
 					},
 					'50%': { 
-						boxShadow: '0 0 25px 10px rgba(123, 31, 162, 0.8)',
+						boxShadow: '0 0 25px 10px rgba(120, 255, 0, 0.8)',
 					},
+				},
+				'glow': {
+					'0%, 100%': { filter: 'brightness(1)' },
+					'50%': { filter: 'brightness(1.2)' },
 				},
 				confetti: {
 					'0%': { transform: 'translateY(0) rotate(0deg)', opacity: '1' },
@@ -126,16 +136,21 @@ export default {
 				'bounce-soft': 'bounce-soft 2s ease-in-out infinite',
 				'number-roll': 'number-roll 0.5s ease-out forwards',
 				'pulse-glow': 'pulse-glow 2s infinite',
+				'glow': 'glow 2s ease-in-out infinite',
 				'confetti': 'confetti 3s ease-out forwards',
 			},
 			backgroundImage: {
 				'futuristic-gradient': 'linear-gradient(135deg, #1a237e, #7b1fa2)',
 				'futuristic-accent': 'linear-gradient(135deg, #7b1fa2, #00bcd4)',
 				'futuristic-dark': 'linear-gradient(135deg, #121212, #1e1e1e)',
+				'pix-gradient': 'linear-gradient(135deg, #006400, #32CD32)',
+				'pix-dark': 'linear-gradient(135deg, #002200, #004400)',
+				'pix-glow': 'linear-gradient(135deg, #39FF14, #00bcd4)',
 			},
 			boxShadow: {
 				'neomorphic': '10px 10px 20px rgba(0, 0, 0, 0.2), -10px -10px 20px rgba(255, 255, 255, 0.05)',
-				'inner-glow': 'inset 0 0 15px rgba(123, 31, 162, 0.5)',
+				'inner-glow': 'inset 0 0 15px rgba(120, 255, 0, 0.5)',
+				'neon': '0 0 10px rgba(120, 255, 0, 0.7), 0 0 20px rgba(120, 255, 0, 0.5)',
 			},
 		}
 	},
