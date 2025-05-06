@@ -15,15 +15,6 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         <div className="absolute top-[40%] right-[30%] w-48 h-48 bg-primary/5 rounded-full filter blur-2xl"></div>
       </div>
       
-      {/* Logo */}
-      <div className="absolute top-8 left-1/2 transform -translate-x-1/2">
-        <img 
-          src="/lovable-uploads/b7f54603-ff4e-4280-8c96-a36a94acf7c6.png" 
-          alt="Pix Acumulado" 
-          className="h-20"
-        />
-      </div>
-      
       <div className="z-10 w-full max-w-md">
         <div className="backdrop-blur-xl bg-card/40 border border-primary/20 rounded-xl p-6 shadow-lg">
           {children}

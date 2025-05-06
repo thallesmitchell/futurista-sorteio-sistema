@@ -5,14 +5,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import LoginPage from './LoginPage';
 
 const Index = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard');
+      // Redirect super admins to their dashboard
+      if (isSuperAdmin) {
+        navigate('/super-admin');
+      } else {
+        // Regular admins go to the regular dashboard
+        navigate('/dashboard');
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isSuperAdmin, navigate]);
 
   return <LoginPage />;
 };
