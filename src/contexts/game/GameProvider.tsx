@@ -106,12 +106,15 @@ export function GameProvider({ children }: GameProviderProps) {
             );
           }
 
+          // Garantir que o status seja sempre 'active' ou 'closed'
+          const gameStatus = game.status === 'active' ? 'active' : 'closed';
+
           return {
             id: game.id,
             name: game.name,
             startDate: game.start_date,
             endDate: game.end_date,
-            status: game.status,
+            status: gameStatus, // Convertendo explicitamente para o tipo correto
             players,
             dailyDraws,
             winners
@@ -179,7 +182,7 @@ export function GameProvider({ children }: GameProviderProps) {
     }
   };
 
-  const updateGame = async (id: string, gameUpdates: Partial<Game>) => {
+  const updateGame = async (id: string, gameUpdates: Partial<Game>): Promise<void> => {
     try {
       // Atualizar o jogo no Supabase
       const { error } = await supabase
@@ -214,7 +217,7 @@ export function GameProvider({ children }: GameProviderProps) {
     }
   };
 
-  const addPlayer = async (gameId: string, player: Omit<Player, 'id'>) => {
+  const addPlayer = async (gameId: string, player: Omit<Player, 'id'>): Promise<Player | undefined> => {
     try {
       // Inserir o jogador no Supabase
       const { data: playerData, error: playerError } = await supabase
@@ -294,7 +297,7 @@ export function GameProvider({ children }: GameProviderProps) {
     }
   };
 
-  const addPlayerCombination = async (gameId: string, playerId: string, numbers: number[]) => {
+  const addPlayerCombination = async (gameId: string, playerId: string, numbers: number[]): Promise<void> => {
     try {
       const game = games.find(g => g.id === gameId);
       if (!game) throw new Error('Jogo não encontrado');
@@ -369,7 +372,7 @@ export function GameProvider({ children }: GameProviderProps) {
     }
   };
 
-  const updatePlayer = async (gameId: string, playerId: string, playerUpdates: Partial<Player>) => {
+  const updatePlayer = async (gameId: string, playerId: string, playerUpdates: Partial<Player>): Promise<void> => {
     try {
       // Atualizar o jogador no Supabase
       if (playerUpdates.name) {
@@ -415,7 +418,7 @@ export function GameProvider({ children }: GameProviderProps) {
     }
   };
 
-  const addDailyDraw = async (gameId: string, draw: Omit<DailyDraw, 'id'>) => {
+  const addDailyDraw = async (gameId: string, draw: Omit<DailyDraw, 'id'>): Promise<DailyDraw | undefined> => {
     try {
       const game = games.find(g => g.id === gameId);
       if (!game) throw new Error('Jogo não encontrado');
@@ -554,7 +557,7 @@ export function GameProvider({ children }: GameProviderProps) {
             return {
               ...g,
               winners,
-              status: 'closed',
+              status: 'closed' as const, // Garantindo o tipo correto
               endDate: new Date().toISOString()
             };
           }

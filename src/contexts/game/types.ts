@@ -35,12 +35,12 @@ export interface GameContextType {
   games: Game[];
   currentGame: Game | null;
   setCurrentGame: (game: Game | null) => void;
-  addGame: (game: Omit<Game, 'id'>) => Game;
-  updateGame: (id: string, game: Partial<Game>) => void;
-  deleteGame: (id: string) => boolean;
-  addPlayer: (gameId: string, player: Omit<Player, 'id'>) => void;
-  addPlayerCombination: (gameId: string, playerId: string, numbers: number[]) => void;
-  updatePlayer: (gameId: string, playerId: string, player: Partial<Player>) => void;
-  addDailyDraw: (gameId: string, draw: Omit<DailyDraw, 'id'>) => void;
-  checkWinners: (gameId: string) => Player[];
+  addGame: (game: Omit<Game, 'id'>) => Promise<Game>; // Atualizado para Promise
+  updateGame: (id: string, game: Partial<Game>) => Promise<void>; // Atualizado para Promise
+  deleteGame: (id: string) => Promise<boolean>; // Atualizado para Promise
+  addPlayer: (gameId: string, player: Omit<Player, 'id'>) => Promise<Player | undefined>; // Atualizado para Promise
+  addPlayerCombination: (gameId: string, playerId: string, numbers: number[]) => Promise<void>; // Atualizado para Promise
+  updatePlayer: (gameId: string, playerId: string, player: Partial<Player>) => Promise<void>; // Atualizado para Promise
+  addDailyDraw: (gameId: string, draw: Omit<DailyDraw, 'id'>) => Promise<DailyDraw | undefined>; // Atualizado para Promise
+  checkWinners: (gameId: string) => Promise<Player[]>; // Atualizado para Promise
 }
