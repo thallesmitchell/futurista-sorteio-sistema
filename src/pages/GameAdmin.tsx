@@ -26,12 +26,13 @@ export default function GameAdmin() {
   const [newWinnerFound, setNewWinnerFound] = useState(false);
   const { toast } = useToast();
   const playerEditHandlerRef = useRef<any>(null);
+  const winnersCheckedRef = useRef(false);
 
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
   const winners = game?.winners || [];
 
-  // Set current game for context and check for newly found winners
+  // Set current game for context and check for winners when game data changes
   useEffect(() => {
     if (game) {
       if (game.status === 'closed') {
@@ -39,10 +40,12 @@ export default function GameAdmin() {
         navigate(`/history/${game.id}`);
         return;
       }
+      
       setCurrentGame(game);
       
-      // Check for new winners that haven't been notified yet
-      if (winners.length > 0 && !newWinnerFound) {
+      // Check for winners if they exist and haven't been notified yet
+      if (winners.length > 0 && !winnersCheckedRef.current) {
+        winnersCheckedRef.current = true;
         setNewWinnerFound(true);
         setIsWinnersModalOpen(true);
         toast({
@@ -59,8 +62,9 @@ export default function GameAdmin() {
     // Cleanup on unmount
     return () => {
       setCurrentGame(null);
+      winnersCheckedRef.current = false;
     };
-  }, [game, gameId, navigate, setCurrentGame, winners, newWinnerFound, toast]);
+  }, [game, gameId, navigate, setCurrentGame, winners, toast]);
 
   // Show 404 if game not found
   if (!game || game.status === 'closed') {

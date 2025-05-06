@@ -29,7 +29,7 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
   if (!winningEntries.length) return null;
 
   return (
-    <Card className="w-full border-2 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)] bg-green-500/10 overflow-hidden animate-pulse-slow">
+    <Card className="w-full border-2 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)] bg-green-500/10 overflow-hidden mb-4">
       <div className="p-3 md:p-4 space-y-2 md:space-y-3">
         <div className="flex items-center justify-center gap-2 text-center">
           <Trophy className="h-5 w-5 md:h-6 md:w-6 text-green-500" />

@@ -68,7 +68,7 @@ export const GameReport: React.FC<GameReportProps> = ({
     }
     
     // Make a deep copy of the game to avoid reference issues
-    const fullGame = JSON.parse(JSON.stringify(game));
+    const fullGame = structuredClone(game);
     
     generateGameReport(fullGame, { themeColor: profileData.themeColor })
       .then(() => {

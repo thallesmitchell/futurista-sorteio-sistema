@@ -1,4 +1,3 @@
-
 import html2pdf from 'html2pdf.js';
 import { Game, Player } from '@/contexts/game/types';
 
@@ -54,13 +53,13 @@ export const generateGameReport = async (game: Game, options: GeneratePdfOptions
   const pdfOptions = {
     margin: 0, // Remove margins completely
     filename: `${reportTitle.toLowerCase().replace(/\s+/g, '-')}-${game.name.replace(/\s+/g, '-')}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
+    image: { type: 'jpeg', quality: 0.85 }, // Reduced quality for better compression
     html2canvas: { scale: 2, useCORS: true },
     jsPDF: { 
       unit: 'mm', 
       format: 'a4', 
       orientation: 'portrait',
-      compress: true,
+      compress: true, // Enable compression
       background: '#0F111A' // Set background color for the PDF
     },
     pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
@@ -187,8 +186,8 @@ const createNumberBall = (number: number, color: string, isHit: boolean): HTMLEl
   
   // Number styling based on hit status
   if (isHit) {
-    ball.style.backgroundColor = 'white';
-    ball.style.color = color;
+    ball.style.backgroundColor = color; // Changed to green background for hit numbers
+    ball.style.color = 'white'; // White text for contrast
     ball.style.border = `2px solid ${color}`;
   } else {
     ball.style.backgroundColor = '#1A1F2C';
@@ -203,8 +202,8 @@ const createNumberBall = (number: number, color: string, isHit: boolean): HTMLEl
   innerSpan.style.justifyContent = 'center';
   innerSpan.style.alignItems = 'center';
   innerSpan.style.height = '100%';
-  // Apply a slight vertical adjustment to visually center the text
-  innerSpan.style.paddingTop = '2px'; 
+  // Apply a significant vertical adjustment to center the text (-7px)
+  innerSpan.style.marginTop = '-7px'; 
   
   ball.appendChild(innerSpan);
   return ball;
