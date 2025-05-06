@@ -15,7 +15,7 @@ interface GeneratePdfOptions {
 export const generateGameReport = async (game: Game, options: GeneratePdfOptions = {}): Promise<void> => {
   // Get current date for the report
   const currentDate = new Date();
-  const reportTitle = game.winners && game.winners.length > 0 ? "Resultado" : "Parcial";
+  const reportTitle = "Resultado";
   
   // Format date as in the example (06/maio/2025)
   const months = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", 
@@ -60,7 +60,8 @@ export const generateGameReport = async (game: Game, options: GeneratePdfOptions
       unit: 'mm', 
       format: 'a4', 
       orientation: 'portrait',
-      compress: true 
+      compress: true,
+      background: '#0F111A' // Set background color for the PDF
     },
     pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
   };
@@ -264,7 +265,7 @@ const addPlayersToReport = (
           comboRow.appendChild(ball);
         });
         
-        // Removed hits label as requested
+        // No hits label as requested by the user
         
         combinationsContainer.appendChild(comboRow);
       });

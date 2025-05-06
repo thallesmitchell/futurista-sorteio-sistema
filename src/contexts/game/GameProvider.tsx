@@ -1,4 +1,3 @@
-
 import { ReactNode, useState, useEffect } from 'react';
 import { GameContext } from './GameContext';
 import { Game, Player, DailyDraw } from './types';
@@ -27,6 +26,30 @@ export function GameProvider({ children }: GameProviderProps) {
       setCurrentGame(null);
     }
   }, [isAuthenticated, user]);
+
+  // Recalcula hits de todas as combinações dos jogadores baseado em todos os números sorteados
+  const recalculatePlayerHits = (game: Game): Game => {
+    if (!game.dailyDraws || game.dailyDraws.length === 0) return game;
+    
+    const allDrawnNumbers = game.dailyDraws.flatMap(draw => draw.numbers);
+    
+    const updatedPlayers = game.players.map(player => {
+      const updatedCombinations = player.combinations.map(combo => {
+        const hits = combo.numbers.filter(num => allDrawnNumbers.includes(num)).length;
+        return { ...combo, hits };
+      });
+      
+      return {
+        ...player,
+        combinations: updatedCombinations
+      };
+    });
+    
+    return {
+      ...game,
+      players: updatedPlayers
+    };
+  };
 
   const loadGamesFromSupabase = async () => {
     setIsLoading(true);
@@ -69,7 +92,7 @@ export function GameProvider({ children }: GameProviderProps) {
                 name: player.name,
                 combinations: (combinationsData || []).map(combo => ({
                   numbers: combo.numbers,
-                  hits: combo.hits
+                  hits: combo.hits || 0
                 }))
               } as Player;
             })
@@ -107,19 +130,74 @@ export function GameProvider({ children }: GameProviderProps) {
           }
 
           // Garantir que o status seja sempre 'active' ou 'closed'
-          const gameStatus = game.status === 'active' ? 'active' : 'closed';
-
-          return {
+          let gameStatus = game.status === 'active' ? 'active' : 'closed';
+          
+          let gameWithRecalculatedHits = {
             id: game.id,
             name: game.name,
             startDate: game.start_date,
             endDate: game.end_date,
-            status: gameStatus, // Convertendo explicitamente para o tipo correto
+            status: gameStatus,
             players,
             dailyDraws,
             winners,
             owner_id: game.owner_id
           } as Game;
+          
+          // Recalcular hits para todas as combinações
+          gameWithRecalculatedHits = recalculatePlayerHits(gameWithRecalculatedHits);
+          
+          // Se houver jogadores com 6 acertos, verificar se são vencedores
+          const potentialWinners = gameWithRecalculatedHits.players.filter(player => 
+            player.combinations.some(combo => combo.hits === 6)
+          );
+          
+          // Se houver potenciais vencedores e o jogo ainda estiver ativo, registrar e atualizar status
+          if (potentialWinners.length > 0 && gameStatus === 'active') {
+            gameWithRecalculatedHits.winners = potentialWinners;
+            gameWithRecalculatedHits.status = 'closed';
+            gameWithRecalculatedHits.endDate = new Date().toISOString();
+            
+            // Atualizar status do jogo no banco de dados
+            await supabase
+              .from('games')
+              .update({
+                status: 'closed',
+                end_date: new Date().toISOString()
+              })
+              .eq('id', game.id);
+            
+            // Registrar vencedores no banco de dados
+            for (const winner of potentialWinners) {
+              // Encontrar as combinações vencedoras
+              const winningCombinations = winner.combinations.filter(combo => combo.hits === 6);
+              
+              for (const combo of winningCombinations) {
+                // Encontrar a combinação específica no banco de dados
+                const { data: comboData } = await supabase
+                  .from('player_combinations')
+                  .select('id')
+                  .eq('player_id', winner.id)
+                  .eq('numbers', combo.numbers)
+                  .single();
+                  
+                if (comboData) {
+                  // Registrar o vencedor
+                  await supabase
+                    .from('winners')
+                    .insert({
+                      game_id: game.id,
+                      player_id: winner.id,
+                      combination_id: comboData.id
+                    })
+                    .select()
+                    .maybeSingle();
+                }
+              }
+            }
+          }
+          
+          return gameWithRecalculatedHits;
         })
       );
 
@@ -326,32 +404,7 @@ export function GameProvider({ children }: GameProviderProps) {
       // Atualizar a lista local
       const updatedGames = games.map(game => {
         if (game.id === gameId) {
-          return {
-            ...game,
-            players: game.players.map(player => {
-              if (player.id === playerId) {
-                return {
-                  ...player,
-                  combinations: [
-                    ...player.combinations,
-                    { numbers, hits }
-                  ]
-                };
-              }
-              return player;
-            })
-          };
-        }
-        return game;
-      });
-      
-      setGames(updatedGames);
-      
-      // Atualizar jogo atual se estiver sendo editado
-      if (currentGame && currentGame.id === gameId) {
-        setCurrentGame({
-          ...currentGame,
-          players: currentGame.players.map(player => {
+          const updatedPlayers = game.players.map(player => {
             if (player.id === playerId) {
               return {
                 ...player,
@@ -362,8 +415,69 @@ export function GameProvider({ children }: GameProviderProps) {
               };
             }
             return player;
-          })
+          });
+          
+          // Verifique se há um vencedor (6 acertos)
+          const hasWinner = updatedPlayers.some(player => 
+            player.combinations.some(combo => combo.hits === 6)
+          );
+          
+          // Se houver vencedor, atualize o status do jogo
+          if (hasWinner) {
+            game.status = 'closed';
+            game.endDate = new Date().toISOString();
+            
+            // Também atualizar no banco de dados
+            supabase
+              .from('games')
+              .update({
+                status: 'closed',
+                end_date: new Date().toISOString()
+              })
+              .eq('id', gameId);
+          }
+          
+          return {
+            ...game,
+            players: updatedPlayers
+          };
+        }
+        return game;
+      });
+      
+      setGames(updatedGames);
+      
+      // Atualizar jogo atual se estiver sendo editado
+      if (currentGame && currentGame.id === gameId) {
+        const updatedPlayers = currentGame.players.map(player => {
+          if (player.id === playerId) {
+            return {
+              ...player,
+              combinations: [
+                ...player.combinations,
+                { numbers, hits }
+              ]
+            };
+          }
+          return player;
         });
+        
+        // Verificar se há um vencedor
+        const hasWinner = updatedPlayers.some(player => 
+          player.combinations.some(combo => combo.hits === 6)
+        );
+        
+        setCurrentGame({
+          ...currentGame,
+          players: updatedPlayers,
+          status: hasWinner ? 'closed' : currentGame.status,
+          endDate: hasWinner ? new Date().toISOString() : currentGame.endDate
+        });
+        
+        // Se houver vencedor, verificar vencedores completos
+        if (hasWinner) {
+          await checkWinners(gameId);
+        }
       }
     } catch (error) {
       console.error('Erro ao adicionar combinação:', error);
@@ -535,35 +649,27 @@ export function GameProvider({ children }: GameProviderProps) {
         numbers: drawData.numbers
       };
       
-      // Atualizar os hits dos jogadores
-      for (const player of game.players) {
+      // Atualizar todos os players do jogo com os novos hits
+      const updatedGame = { ...game, dailyDraws: [...game.dailyDraws, newDraw] };
+      const gameWithUpdatedHits = recalculatePlayerHits(updatedGame);
+      
+      // Atualizar os hits no banco de dados
+      for (const player of gameWithUpdatedHits.players) {
         for (const combo of player.combinations) {
-          // Calcular novos hits
-          const newHits = draw.numbers.filter(n => combo.numbers.includes(n)).length;
-          
-          if (newHits > 0) {
-            // Atualizar hits no Supabase
-            await supabase
-              .from('player_combinations')
-              .update({ 
-                hits: combo.hits + newHits 
-              })
-              .eq('player_id', player.id)
-              .eq('numbers', combo.numbers);
-              
-            // Atualizar combo localmente
-            combo.hits += newHits;
-          }
+          await supabase
+            .from('player_combinations')
+            .update({ 
+              hits: combo.hits 
+            })
+            .eq('player_id', player.id)
+            .eq('numbers', combo.numbers);
         }
       }
 
       // Atualizar a lista local
       const updatedGames = games.map(g => {
         if (g.id === gameId) {
-          return {
-            ...g,
-            dailyDraws: [...g.dailyDraws, newDraw]
-          };
+          return gameWithUpdatedHits;
         }
         return g;
       });
@@ -572,17 +678,11 @@ export function GameProvider({ children }: GameProviderProps) {
       
       // Atualizar jogo atual se estiver sendo editado
       if (currentGame && currentGame.id === gameId) {
-        setCurrentGame({
-          ...currentGame,
-          dailyDraws: [...currentGame.dailyDraws, newDraw]
-        });
+        setCurrentGame(gameWithUpdatedHits);
       }
       
       // Verificar vencedores
-      const updatedGame = updatedGames.find(g => g.id === gameId);
-      if (updatedGame) {
-        await checkWinners(gameId);
-      }
+      await checkWinners(gameId);
       
       return newDraw;
     } catch (error) {
@@ -598,8 +698,11 @@ export function GameProvider({ children }: GameProviderProps) {
 
   const checkWinners = async (gameId: string): Promise<Player[]> => {
     try {
-      const game = games.find(g => g.id === gameId);
-      if (!game) return [];
+      const gameIndex = games.findIndex(g => g.id === gameId);
+      if (gameIndex === -1) return [];
+      
+      // Usando o jogo atualizado com os hits recalculados
+      const game = recalculatePlayerHits(games[gameIndex]);
       
       // Um vencedor é um jogador com pelo menos uma combinação que tem exatamente 6 acertos
       const winners = game.players.filter(player => 
@@ -628,33 +731,40 @@ export function GameProvider({ children }: GameProviderProps) {
               .select('id')
               .eq('player_id', winner.id)
               .eq('numbers', combo.numbers)
-              .single();
+              .maybeSingle();
               
             if (comboData) {
-              // Registrar o vencedor
-              await supabase
+              // Verificar se o vencedor já está registrado
+              const { data: existingWinner } = await supabase
                 .from('winners')
-                .insert({
-                  game_id: gameId,
-                  player_id: winner.id,
-                  combination_id: comboData.id
-                });
+                .select('*')
+                .eq('game_id', gameId)
+                .eq('player_id', winner.id)
+                .eq('combination_id', comboData.id)
+                .maybeSingle();
+                
+              // Registrar o vencedor apenas se ainda não estiver registrado
+              if (!existingWinner) {
+                await supabase
+                  .from('winners')
+                  .insert({
+                    game_id: gameId,
+                    player_id: winner.id,
+                    combination_id: comboData.id
+                  });
+              }
             }
           }
         }
         
         // Atualizar a lista local
-        const updatedGames = games.map(g => {
-          if (g.id === gameId) {
-            return {
-              ...g,
-              winners,
-              status: 'closed' as const, // Garantindo o tipo correto
-              endDate: new Date().toISOString()
-            };
-          }
-          return g;
-        });
+        const updatedGames = [...games];
+        updatedGames[gameIndex] = {
+          ...game,
+          winners,
+          status: 'closed',
+          endDate: new Date().toISOString()
+        };
         
         setGames(updatedGames);
         
@@ -667,6 +777,15 @@ export function GameProvider({ children }: GameProviderProps) {
             endDate: new Date().toISOString()
           });
         }
+        
+        // Notificar o usuário sobre o(s) vencedor(es)
+        toast({
+          title: winners.length > 1 ? `${winners.length} Vencedores encontrados!` : "Vencedor encontrado!",
+          description: winners.length > 1 
+            ? `Vários jogadores acertaram todos os 6 números!` 
+            : `O jogador ${winners[0].name} acertou todos os 6 números!`,
+          variant: "default",
+        });
       }
       
       return winners;

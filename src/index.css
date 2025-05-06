@@ -208,17 +208,23 @@
   font-family: 'Orbitron', sans-serif;
   background-color: #0F111A;
   color: #FFFFFF;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 20px;
 }
 
 .pdf-masonry {
   column-count: 2;
   column-gap: 15px;
+  width: 100%;
 }
 
 .pdf-header {
   text-align: center;
   font-weight: bold;
   margin-bottom: 20px;
+  width: 100%;
 }
 
 .pdf-winner-box {
@@ -229,6 +235,7 @@
   margin-bottom: 20px;
   overflow: hidden;
   width: 100%;
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
 }
 
 .pdf-winner-header {
@@ -238,6 +245,7 @@
   font-weight: bold;
   text-align: center;
   font-size: 18px;
+  width: 100%;
 }
 
 .pdf-player-box {
@@ -247,6 +255,7 @@
   border-radius: 8px;
   margin-bottom: 15px;
   overflow: hidden;
+  width: 100%;
 }
 
 .pdf-player-header {
@@ -256,6 +265,7 @@
   font-weight: bold;
   text-align: center;
   font-size: 14px;
+  width: 100%;
 }
 
 .pdf-combo-row {
@@ -267,10 +277,11 @@
   padding: 8px;
   background-color: #2A2F3C;
   border-radius: 4px;
+  width: 100%;
 }
 
 .pdf-number-ball {
-  display: inline-flex;
+  display: flex;
   justify-content: center;
   align-items: center;
   width: 32px;
@@ -278,16 +289,33 @@
   border-radius: 50%;
   font-size: 14px;
   font-weight: bold;
-  line-height: 32px;
   text-align: center;
 }
 
 .pdf-number-hit {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
   background-color: #25C17E;
   color: #FFFFFF;
 }
 
 .pdf-number-miss {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
   background-color: #1A1F2C;
   color: #FFFFFF;
   border: 1px solid #25C17E;

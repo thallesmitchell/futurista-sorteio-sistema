@@ -117,14 +117,6 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                             />
                           );
                         })}
-                        
-                        <span className={`ml-auto text-xs font-medium px-2 py-0.5 rounded-full ${
-                          isWinningCombo 
-                          ? 'bg-green-500 text-white' 
-                          : 'bg-primary/10 text-primary'
-                        }`}>
-                          {combination.hits} acertos
-                        </span>
                       </div>
                     );
                   })}
