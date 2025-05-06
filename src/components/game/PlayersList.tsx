@@ -51,7 +51,7 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
         {filteredPlayers.map((player) => {
           const playerIsWinner = isWinner(player.id);
           
@@ -65,7 +65,7 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
               }`}
             >
               <CardContent className={`p-4 ${isMobile ? 'px-3 py-3' : ''}`}>
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center mb-3 md:mb-4">
                   <div className="space-y-1">
                     <h3 className={`font-semibold ${isMobile ? 'text-base' : 'text-lg'} flex items-center gap-2`}>
                       {playerIsWinner && <Trophy className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-green-500`} />}
@@ -76,15 +76,16 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                         </span>
                       )}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {player.combinations.length} sequências | Acertos máximos: {Math.max(...player.combinations.map(c => c.hits), 0)}
+                    <p className="text-xs md:text-sm text-muted-foreground">
+                      {player.combinations.length} sequência{player.combinations.length !== 1 ? 's' : ''} | 
+                      Acertos máximos: {Math.max(...player.combinations.map(c => c.hits), 0)}
                     </p>
                   </div>
                   <Button 
                     variant="outline" 
                     size={isMobile ? "sm" : "default"}
                     onClick={() => onEditPlayer(player)}
-                    className={isMobile ? "px-3 py-1 text-xs" : ""}
+                    className={isMobile ? "px-2 py-1 text-xs" : ""}
                   >
                     Editar
                   </Button>
@@ -98,7 +99,7 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                     return (
                       <div 
                         key={`${player.id}-${idx}`} 
-                        className={`flex flex-wrap gap-1.5 p-2 rounded-md ${
+                        className={`flex flex-wrap gap-1 md:gap-1.5 p-1.5 md:p-2 rounded-md ${
                           isWinningCombo 
                           ? 'bg-green-500/20 border border-green-500/50 animate-pulse-slow' 
                           : 'bg-muted/40'
@@ -143,5 +144,4 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
   );
 };
 
-// Also export as default to maintain compatibility
 export default PlayersList;

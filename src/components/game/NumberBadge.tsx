@@ -27,7 +27,7 @@ export const NumberBadge = ({
   };
   
   // Base classes for all number badges
-  const baseClasses = 'inline-flex items-center justify-center rounded-full';
+  const baseClasses = 'inline-flex items-center justify-center rounded-full leading-none';
   
   // Determine if the number is a hit
   const isNumberHit = hits > 0 || isHit === true;

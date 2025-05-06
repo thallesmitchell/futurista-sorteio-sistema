@@ -52,7 +52,7 @@ export const generateGameReport = async (game: Game, options: GeneratePdfOptions
   
   // Generate PDF with specific options
   const pdfOptions = {
-    margin: [10, 10],
+    margin: 0, // Remove margins completely
     filename: `${reportTitle.toLowerCase().replace(/\s+/g, '-')}-${game.name.replace(/\s+/g, '-')}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
@@ -80,6 +80,7 @@ const createReportContainer = (): HTMLElement => {
   reportElement.style.backgroundColor = '#0F111A';
   reportElement.style.color = '#FFFFFF';
   reportElement.style.maxWidth = '100%';
+  reportElement.style.minHeight = '100vh'; // Ensure dark background covers full page
   
   return reportElement;
 };
@@ -123,11 +124,18 @@ const addWinnersToReport = (
       winnerBox.style.overflow = 'hidden';
       winnerBox.style.pageBreakInside = 'avoid';
       winnerBox.style.breakInside = 'avoid';
+      winnerBox.style.width = '100%'; // Make winner box full width
       
       // Winner header with trophy icons
       const winnerHeader = document.createElement('div');
       winnerHeader.className = 'pdf-winner-header';
       winnerHeader.innerHTML = `🏆 VENCEDOR - ${winner.name} 🏆`;
+      winnerHeader.style.backgroundColor = themeColor;
+      winnerHeader.style.color = '#FFFFFF';
+      winnerHeader.style.padding = '15px';
+      winnerHeader.style.fontWeight = 'bold';
+      winnerHeader.style.textAlign = 'center';
+      winnerHeader.style.fontSize = '20px';
       winnerBox.appendChild(winnerHeader);
       
       // Winner numbers
@@ -142,14 +150,16 @@ const addWinnersToReport = (
       winningCombo.numbers.forEach(number => {
         const ball = document.createElement('div');
         ball.className = 'pdf-number-ball';
-        ball.style.width = '32px';
-        ball.style.height = '32px';
+        ball.style.width = '40px';
+        ball.style.height = '40px';
         ball.style.borderRadius = '50%';
         ball.style.display = 'inline-flex';
         ball.style.justifyContent = 'center';
         ball.style.alignItems = 'center';
         ball.style.fontWeight = 'bold';
-        ball.style.fontSize = '14px';
+        ball.style.fontSize = '16px';
+        ball.style.lineHeight = '40px'; // Center text vertically
+        ball.style.textAlign = 'center'; // Center text horizontally
         
         // Format number with leading zero
         const formattedNumber = String(number).padStart(2, '0');
@@ -186,7 +196,7 @@ const addPlayersToReport = (
   players.forEach(player => {
     const playerBox = document.createElement('div');
     playerBox.className = 'pdf-player-box';
-    playerBox.style.backgroundColor = '#FFFFFF';
+    playerBox.style.backgroundColor = '#1A1F2C'; // Darker background
     playerBox.style.borderRadius = '8px';
     playerBox.style.marginBottom = '15px';
     playerBox.style.overflow = 'hidden';
@@ -207,14 +217,20 @@ const addPlayersToReport = (
     // Player combinations content
     const combinationsContainer = document.createElement('div');
     combinationsContainer.style.padding = '10px';
-    combinationsContainer.style.backgroundColor = '#FFFFFF';
+    combinationsContainer.style.backgroundColor = '#1A1F2C'; // Darker background
     
     if (player.combinations && player.combinations.length > 0) {
       player.combinations.forEach((combo, index) => {
         const comboRow = document.createElement('div');
         comboRow.className = 'pdf-combo-row';
-        comboRow.style.backgroundColor = '#F9F9F9';
+        comboRow.style.backgroundColor = '#2A2F3C'; // Darker background for combo row
         comboRow.style.margin = '0 0 10px 0';
+        comboRow.style.padding = '10px';
+        comboRow.style.display = 'flex';
+        comboRow.style.flexWrap = 'wrap';
+        comboRow.style.justifyContent = 'center';
+        comboRow.style.gap = '8px';
+        comboRow.style.borderRadius = '4px';
         
         // Create balls for each number
         combo.numbers.sort((a, b) => a - b).forEach(number => {
@@ -222,13 +238,15 @@ const addPlayersToReport = (
           
           const ball = document.createElement('div');
           ball.className = isHit ? 'pdf-number-hit' : 'pdf-number-miss';
-          ball.style.width = '28px';
-          ball.style.height = '28px';
+          ball.style.width = '32px';
+          ball.style.height = '32px';
           ball.style.borderRadius = '50%';
           ball.style.display = 'inline-flex';
           ball.style.justifyContent = 'center';
           ball.style.alignItems = 'center';
-          ball.style.fontSize = '12px';
+          ball.style.fontSize = '14px';
+          ball.style.lineHeight = '32px'; // Center text vertically
+          ball.style.textAlign = 'center'; // Center text horizontally
           
           // Format number with leading zero
           const formattedNumber = String(number).padStart(2, '0');
@@ -246,16 +264,7 @@ const addPlayersToReport = (
           comboRow.appendChild(ball);
         });
         
-        // Add hits label
-        const hitsLabel = document.createElement('div');
-        hitsLabel.className = 'pdf-hits-label';
-        hitsLabel.style.width = '100%';
-        hitsLabel.style.textAlign = 'right';
-        hitsLabel.style.fontSize = '11px';
-        hitsLabel.style.marginTop = '5px';
-        hitsLabel.style.color = '#666';
-        hitsLabel.textContent = `${combo.hits} acertos`;
-        comboRow.appendChild(hitsLabel);
+        // Removed hits label as requested
         
         combinationsContainer.appendChild(comboRow);
       });

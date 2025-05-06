@@ -165,6 +165,31 @@
   .responsive-spacing {
     @apply space-y-2;
   }
+  
+  /* Reduced size for mobile devices */
+  .mobile-reduced {
+    font-size: 0.9rem;
+    padding: 0.5rem !important;
+  }
+  
+  .mobile-card {
+    padding: 0.75rem !important;
+  }
+  
+  .mobile-text-sm {
+    font-size: 0.8rem !important;
+  }
+  
+  .mobile-gap-sm {
+    gap: 0.375rem !important;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 375px) {
+  .xs\:inline {
+    display: inline;
+  }
 }
 
 /* Prevent page breaks inside cards in PDF */
@@ -175,7 +200,7 @@
 
 /* Responsive padding based on screen size */
 .responsive-padding {
-  @apply px-4 py-4 md:px-6 md:py-6;
+  @apply px-3 py-3 md:px-6 md:py-6;
 }
 
 /* PDF Report Styles */
@@ -203,12 +228,13 @@
   border-radius: 8px;
   margin-bottom: 20px;
   overflow: hidden;
+  width: 100%;
 }
 
 .pdf-winner-header {
   background-color: #25C17E;
   color: #FFFFFF;
-  padding: 12px 15px;
+  padding: 15px;
   font-weight: bold;
   text-align: center;
   font-size: 18px;
@@ -217,15 +243,15 @@
 .pdf-player-box {
   break-inside: avoid;
   page-break-inside: avoid;
-  background-color: #FFFFFF;
+  background-color: #1A1F2C;
   border-radius: 8px;
   margin-bottom: 15px;
   overflow: hidden;
 }
 
 .pdf-player-header {
-  background-color: #f0f0f0;
-  color: #333333;
+  background-color: #1A3F34;
+  color: #FFFFFF;
   padding: 10px;
   font-weight: bold;
   text-align: center;
@@ -239,7 +265,7 @@
   gap: 6px;
   margin: 5px 0;
   padding: 8px;
-  background-color: #f9f9f9;
+  background-color: #2A2F3C;
   border-radius: 4px;
 }
 
@@ -247,11 +273,13 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
+  line-height: 32px;
+  text-align: center;
 }
 
 .pdf-number-hit {
@@ -263,12 +291,4 @@
   background-color: #1A1F2C;
   color: #FFFFFF;
   border: 1px solid #25C17E;
-}
-
-.pdf-hits-label {
-  width: 100%;
-  text-align: right;
-  font-size: 11px;
-  margin-top: 5px;
-  color: #666;
 }
