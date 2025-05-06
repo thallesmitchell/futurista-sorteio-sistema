@@ -15,14 +15,14 @@ import { PlayerEditModal } from '@/components/game/PlayerEditModal';
 import { WinnersModal } from '@/components/game/WinnersModal';
 import { ConfirmCloseModal } from '@/components/game/ConfirmCloseModal';
 import { ArrowLeft, Trophy, Users, CalendarDays, UserPlus } from 'lucide-react';
-import { Player } from '@/contexts/GameContext';
+import { Player } from '@/contexts/game/types';
 import { DeleteGameButton } from '@/components/game/DeleteGameButton';
 import { GameReport } from '@/components/game/GameReport';
 
 export default function GameAdmin() {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
-  const { games, setCurrentGame, updateGame } = useGame();
+  const { games, setCurrentGame, updateGame, updatePlayerSequences } = useGame();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isWinnersModalOpen, setIsWinnersModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
@@ -58,7 +58,13 @@ export default function GameAdmin() {
   }
 
   const handleEditPlayer = (player: Player) => {
+    // Converter as combinações do jogador para formato de texto para o textarea
+    const playerNumbersText = player.combinations
+      .map(combo => combo.numbers.map(n => String(n).padStart(2, '0')).join('-'))
+      .join('\n');
+    
     setPlayerToEdit(player);
+    setEditPlayerNumbers(playerNumbersText);
     setIsEditModalOpen(true);
   };
 
@@ -74,10 +80,32 @@ export default function GameAdmin() {
 
   const winners = game.winners || [];
   
-  // Handle save player edit
-  const handleSavePlayerEdit = () => {
-    // Implementation will be added when needed
-    console.log("Save player edit functionality to be implemented");
+  // Função para salvar edições do jogador
+  const handleSavePlayerEdit = async () => {
+    if (!playerToEdit) return;
+    
+    try {
+      // Processar o texto com as sequências para obter arrays de números
+      const sequences = editPlayerNumbers
+        .split('\n')
+        .filter(line => line.trim().length > 0)
+        .map(line => {
+          // Remove espaços e converte para array de números
+          return line
+            .replace(/\s/g, '')
+            .split(/[-;,]/)
+            .map(num => parseInt(num, 10))
+            .filter(num => !isNaN(num));
+        })
+        .filter(seq => seq.length > 0);
+      
+      // Atualizar as sequências do jogador
+      if (sequences.length > 0) {
+        await updatePlayerSequences(game.id, playerToEdit.id, sequences);
+      }
+    } catch (error) {
+      console.error("Erro ao salvar sequências:", error);
+    }
   };
 
   return (

@@ -23,17 +23,24 @@ export const NumberBadge = ({ number, hits = 0, isHit, className = '', variant =
   
   // Classes baseadas na variante
   const variantClasses = {
-    default: 'bg-primary text-primary-foreground',
-    outline: 'border border-primary text-primary',
+    default: 'border border-primary text-primary bg-transparent',
+    outline: 'border border-primary text-primary bg-transparent',
     secondary: 'bg-secondary text-secondary-foreground'
   };
   
-  // Adicionar classes para quando tem hits ou isHit
-  const hitClasses = (hits > 0 || isHit) ? 'ring-2 ring-green-500 ring-offset-1' : '';
+  // Adicionar classes para quando tem hits ou isHit - agora com estilos distintos
+  let hitClasses = '';
+  if (hits > 0 || isHit) {
+    // Acertos com fundo verde e efeito de sombra brilhante
+    hitClasses = 'bg-green-500 text-white border-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)] ring-2 ring-green-500/50 ring-offset-1';
+  } else {
+    // Números regulares com apenas contorno verde, fundo escuro e fonte branca
+    hitClasses = 'border-green-500 text-white bg-background';
+  }
   
   return (
     <span className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${hitClasses} ${className}`}>
-      {number}
+      {String(number).padStart(2, '0')}
     </span>
   );
 };

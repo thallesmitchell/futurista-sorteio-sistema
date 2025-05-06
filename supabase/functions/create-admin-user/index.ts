@@ -1,6 +1,7 @@
 
+// Versão correta para Deno/Edge Functions do Supabase
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.43.3"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.21.0"
 
 // Configure CORS headers for browser requests
 const corsHeaders = {
@@ -8,26 +9,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Create Supabase client with service role key (available within Edge Functions)
-const supabaseAdmin = createClient(
-  Deno.env.get('SUPABASE_URL') ?? '',
-  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-  {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
-  }
-)
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
-  // Verify the request is authenticated
   try {
+    // Create Supabase admin client with service role key
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Verify the request is authenticated
     // Get the JWT from the Authorization header
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
@@ -42,6 +37,7 @@ serve(async (req) => {
     const { data: { user: callerUser }, error: userError } = await supabaseAdmin.auth.getUser(token)
 
     if (userError || !callerUser) {
+      console.error('Error getting user:', userError)
       return new Response(JSON.stringify({ error: 'Unauthorized request' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -56,6 +52,7 @@ serve(async (req) => {
       .single()
 
     if (profileError || !callerProfile || callerProfile.role !== 'super_admin') {
+      console.error('Error getting profile or not super admin:', profileError)
       return new Response(JSON.stringify({ error: 'Only super admins can create admin users' }), {
         status: 403,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -95,6 +92,21 @@ serve(async (req) => {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
+    }
+
+    // Inserir na tabela de perfis (pode ser que o trigger já faça isso, mas é seguro garantir)
+    const { error: profileInsertError } = await supabaseAdmin
+      .from('profiles')
+      .insert({
+        id: userData.user.id,
+        username: username,
+        role: 'admin'
+      })
+      .select()
+      .single()
+
+    if (profileInsertError) {
+      console.error('Error creating profile:', profileInsertError)
     }
 
     // Create admin relationship
