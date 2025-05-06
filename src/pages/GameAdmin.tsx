@@ -93,6 +93,15 @@ export default function GameAdmin() {
     if (hasWinners) {
       setNewWinnerFound(true);
       setIsWinnersModalOpen(true);
+      
+      // Reset the winnersCheckedRef so that winners can be shown again
+      winnersCheckedRef.current = false;
+      
+      toast({
+        title: "Vencedor Encontrado!",
+        description: `${winners.length > 1 ? 'Vários jogadores acertaram' : 'Um jogador acertou'} todos os 6 números!`,
+        variant: "default",
+      });
     }
   };
 
@@ -121,7 +130,10 @@ export default function GameAdmin() {
         </div>
 
         {/* Game Forms */}
-        <GameAdminForms gameId={game.id} />
+        <GameAdminForms 
+          gameId={game.id} 
+          onNewWinnerFound={handleNewWinnerFound}
+        />
 
         {/* Player Edit Handler */}
         <PlayerEditHandler 
@@ -156,7 +168,10 @@ export default function GameAdmin() {
         setIsOpen={setIsWinnersModalOpen}
         winners={winners}
         allDrawnNumbers={allDrawnNumbers}
-        onClose={() => setIsWinnersModalOpen(false)}
+        onClose={() => {
+          setIsWinnersModalOpen(false);
+          // Don't reset the winnersCheckedRef here to avoid immediate reopening
+        }}
       />
 
       {/* Confirm Close Modal */}

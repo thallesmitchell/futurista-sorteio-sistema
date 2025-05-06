@@ -9,9 +9,10 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface GameAdminFormsProps {
   gameId: string;
+  onNewWinnerFound?: (hasWinners: boolean) => void;
 }
 
-export const GameAdminForms: React.FC<GameAdminFormsProps> = ({ gameId }) => {
+export const GameAdminForms: React.FC<GameAdminFormsProps> = ({ gameId, onNewWinnerFound }) => {
   const isMobile = useIsMobile();
   
   return (
@@ -33,7 +34,7 @@ export const GameAdminForms: React.FC<GameAdminFormsProps> = ({ gameId }) => {
         </TabsContent>
         
         <TabsContent value="draws">
-          <DrawForm gameId={gameId} />
+          <DrawForm gameId={gameId} onNewWinnerFound={onNewWinnerFound} />
         </TabsContent>
       </Tabs>
     </Card>

@@ -11,17 +11,19 @@ interface DrawFormProps {
   onAddDraw?: (date: string, numbersArray: number[]) => void;
   processNumberString?: (numberStr: string) => number[];
   gameId?: string;
+  onNewWinnerFound?: (hasWinners: boolean) => void;
 }
 
 export const DrawForm: React.FC<DrawFormProps> = ({ 
   onAddDraw: externalAddDraw, 
   processNumberString: externalProcessNumberString,
-  gameId
+  gameId,
+  onNewWinnerFound
 }) => {
   const [drawNumbers, setDrawNumbers] = useState('');
   const [drawDate, setDrawDate] = useState('');
   const { toast } = useToast();
-  const { addDailyDraw } = useGame();
+  const { addDailyDraw, checkWinners } = useGame();
 
   // Inicializar data do sorteio com hoje ao montar o componente
   useEffect(() => {
@@ -46,7 +48,7 @@ export const DrawForm: React.FC<DrawFormProps> = ({
     return numbersArray;
   };
 
-  const handleDrawSubmit = (e: React.FormEvent) => {
+  const handleDrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
@@ -87,10 +89,18 @@ export const DrawForm: React.FC<DrawFormProps> = ({
       if (externalAddDraw) {
         externalAddDraw(drawDate, uniqueNumbers);
       } else if (gameId) {
-        addDailyDraw(gameId, {
+        await addDailyDraw(gameId, {
           date: drawDate,
           numbers: uniqueNumbers
         });
+        
+        // Check for winners immediately after adding a new draw
+        if (gameId) {
+          const winners = await checkWinners(gameId);
+          if (winners.length > 0 && onNewWinnerFound) {
+            onNewWinnerFound(true);
+          }
+        }
       }
       
       // Limpar formulário

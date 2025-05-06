@@ -208,7 +208,10 @@ const addWinnersBanner = (
     numbersContainer.style.gap = '6px';
     numbersContainer.style.justifyContent = 'center';
     
-    entry.numbers.forEach(number => {
+    // Important: Sort the numbers to maintain consistency
+    const sortedNumbers = [...entry.numbers].sort((a, b) => a - b);
+    
+    sortedNumbers.forEach(number => {
       const ball = createNumberBall(number, themeColor, true);
       numbersContainer.appendChild(ball);
     });
@@ -259,8 +262,7 @@ const createNumberBall = (number: number, color: string, isHit: boolean): HTMLEl
   innerSpan.style.justifyContent = 'center';
   innerSpan.style.alignItems = 'center';
   innerSpan.style.height = '100%';
-  // Apply a significant vertical adjustment to center the text (-7px)
-  innerSpan.style.marginTop = '-7px'; 
+  innerSpan.style.marginTop = '-7px'; // Critical fix for vertical alignment
   
   ball.appendChild(innerSpan);
   return ball;
@@ -284,7 +286,10 @@ const addPlayersToReport = (
   playersContainer.style.columnCount = '2';
   playersContainer.style.columnGap = '15px';
   
-  players.forEach(player => {
+  // Important - sort players alphabetically to maintain consistency
+  const sortedPlayers = [...players].sort((a, b) => a.name.localeCompare(b.name));
+  
+  sortedPlayers.forEach(player => {
     const playerBox = document.createElement('div');
     playerBox.className = 'pdf-player-box';
     playerBox.style.backgroundColor = '#1A1F2C';
@@ -340,8 +345,11 @@ const addPlayersToReport = (
         comboRow.style.borderRadius = '6px';
         comboRow.style.justifyContent = 'flex-start';
         
+        // Sort numbers for consistency
+        const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
+        
         // Create balls for each number
-        combo.numbers.sort((a, b) => a - b).forEach(number => {
+        sortedNumbers.forEach(number => {
           const isNumberHit = drawnNumbersSet.has(number);
           const ball = createNumberBall(number, themeColor, isNumberHit);
           ball.style.width = '32px'; // Smaller for the player cards
