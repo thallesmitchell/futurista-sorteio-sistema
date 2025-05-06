@@ -17,7 +17,7 @@ export const NumberBadge: React.FC<NumberBadgeProps> = ({ number, isHit }) => {
         ${isMobile ? 'w-7 h-7 text-xs' : 'w-9 h-9 text-sm'} 
         ${isHit 
           ? 'bg-[#1db954] text-white font-bold' 
-          : 'bg-transparent text-black border border-[#333] backdrop-blur-sm'}
+          : 'bg-transparent text-[#C8C8C9] border border-[#333] backdrop-blur-sm'}
         font-medium transition-all duration-300
       `}
     >

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText } from 'lucide-react';
+import { FileText, Trophy } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Game } from '@/contexts/GameContext';
 import html2pdf from 'html2pdf.js';
@@ -30,7 +30,7 @@ export const GameReport: React.FC<GameReportProps> = ({
     // Create report container
     const reportElement = document.createElement('div');
     reportElement.style.fontFamily = 'monospace';
-    reportElement.style.padding = '0';
+    reportElement.style.padding = '20px';
     reportElement.style.margin = '0';
     reportElement.style.backgroundColor = '#ffffff';
     reportElement.style.maxWidth = '800px';
@@ -40,7 +40,7 @@ export const GameReport: React.FC<GameReportProps> = ({
     header.style.display = 'flex';
     header.style.justifyContent = 'space-between';
     header.style.alignItems = 'center';
-    header.style.margin = '20px 0';
+    header.style.marginBottom = '30px';
     
     // Left logo
     const leftLogo = document.createElement('img');
@@ -54,6 +54,7 @@ export const GameReport: React.FC<GameReportProps> = ({
     title.style.fontWeight = 'bold';
     title.style.fontSize = '24px';
     title.style.fontFamily = 'monospace';
+    title.style.color = '#000000'; // Ensuring title is visible with good contrast
     
     // Format date as in the example (06/maio/2025)
     const months = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
@@ -83,13 +84,25 @@ export const GameReport: React.FC<GameReportProps> = ({
     // If there are winners, show them at the top
     if (winners.length > 0) {
       const winnersSection = document.createElement('div');
-      winnersSection.style.marginBottom = '20px';
+      winnersSection.style.marginBottom = '30px';
+      
+      const winnersTitle = document.createElement('div');
+      winnersTitle.style.backgroundColor = '#004d25';
+      winnersTitle.style.color = '#ffffff';
+      winnersTitle.style.padding = '10px 15px';
+      winnersTitle.style.fontWeight = 'bold';
+      winnersTitle.style.textAlign = 'center';
+      winnersTitle.style.fontSize = '18px';
+      winnersTitle.style.fontFamily = 'monospace';
+      winnersTitle.style.marginBottom = '15px';
+      winnersTitle.innerHTML = 'GANHADORES <span style="margin-left: 8px;">🏆</span>';
+      
+      winnersSection.appendChild(winnersTitle);
       
       winners.forEach(winner => {
         const winnerBox = createPlayerBox(winner, allDrawnNumbers, true);
-        // Winner box takes full width
         winnerBox.style.width = '100%';
-        winnerBox.style.marginBottom = '10px';
+        winnerBox.style.marginBottom = '15px';
         winnersSection.appendChild(winnerBox);
       });
       
@@ -108,7 +121,7 @@ export const GameReport: React.FC<GameReportProps> = ({
     const playersContainer = document.createElement('div');
     playersContainer.style.display = 'flex';
     playersContainer.style.flexWrap = 'wrap';
-    playersContainer.style.gap = '10px';
+    playersContainer.style.gap = '15px';
     playersContainer.style.justifyContent = 'space-between';
     
     // Create left column
@@ -116,18 +129,19 @@ export const GameReport: React.FC<GameReportProps> = ({
     leftColumn.style.flex = '0 0 calc(50% - 8px)';
     leftColumn.style.display = 'flex';
     leftColumn.style.flexDirection = 'column';
-    leftColumn.style.gap = '10px';
+    leftColumn.style.gap = '15px';
     
     // Create right column
     const rightColumn = document.createElement('div');
     rightColumn.style.flex = '0 0 calc(50% - 8px)';
     rightColumn.style.display = 'flex';
     rightColumn.style.flexDirection = 'column';
-    rightColumn.style.gap = '10px';
+    rightColumn.style.gap = '15px';
     
     // Distribute players between columns
     regularPlayers.forEach((player, index) => {
       const playerBox = createPlayerBox(player, allDrawnNumbers, false);
+      playerBox.style.marginBottom = '0'; // Remove bottom margin as we're using gap
       
       // Alternate between left and right columns
       if (index % 2 === 0) {
@@ -147,7 +161,6 @@ export const GameReport: React.FC<GameReportProps> = ({
       playerBox.style.backgroundColor = '#e9f5e9';
       playerBox.style.borderRadius = '8px';
       playerBox.style.overflow = 'hidden';
-      playerBox.style.marginBottom = '10px';
       playerBox.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
       playerBox.style.breakInside = 'avoid'; // Prevent box from breaking across pages
       
@@ -159,30 +172,62 @@ export const GameReport: React.FC<GameReportProps> = ({
       nameHeader.style.fontWeight = 'bold';
       nameHeader.style.textAlign = 'center';
       nameHeader.style.fontFamily = 'monospace';
-      nameHeader.textContent = player.name;
+      nameHeader.style.fontSize = '16px';
+      nameHeader.style.display = 'flex';
+      nameHeader.style.justifyContent = 'center';
+      nameHeader.style.alignItems = 'center';
+      
+      // Add player name
+      const playerName = document.createElement('span');
+      playerName.textContent = player.name;
+      nameHeader.appendChild(playerName);
+      
+      // Add trophy icon if winner
+      if (isWinner) {
+        const trophyIcon = document.createElement('span');
+        trophyIcon.textContent = ' 🏆';
+        trophyIcon.style.fontSize = '18px';
+        trophyIcon.style.marginLeft = '8px';
+        nameHeader.appendChild(trophyIcon);
+        
+        // Add winner highlight styles
+        playerBox.style.border = '2px solid #1db954';
+        nameHeader.style.backgroundColor = '#1db954';
+      }
       
       playerBox.appendChild(nameHeader);
       
       // Player combinations
       const combinationsContainer = document.createElement('div');
-      combinationsContainer.style.padding = '10px';
+      combinationsContainer.style.padding = '15px';
       
       if (player.combinations && player.combinations.length > 0) {
-        player.combinations.forEach(combo => {
+        player.combinations.forEach((combo, comboIndex) => {
+          // Check if this combination has 6 hits
+          const hasWinningCombo = combo.hits === 6;
+          
           const comboRow = document.createElement('div');
           comboRow.style.display = 'flex';
+          comboRow.style.flexWrap = 'wrap';
           comboRow.style.justifyContent = 'center';
           comboRow.style.gap = '10px';
-          comboRow.style.marginBottom = '8px';
+          comboRow.style.marginBottom = '12px';
           comboRow.style.fontFamily = 'monospace';
           
+          // If winning combination, add highlight
+          if (hasWinningCombo) {
+            comboRow.style.backgroundColor = 'rgba(29, 185, 84, 0.15)';
+            comboRow.style.padding = '8px';
+            comboRow.style.borderRadius = '6px';
+          }
+          
           // Create numbered balls
-          combo.numbers.forEach(number => {
+          combo.numbers.sort((a, b) => a - b).forEach(number => {
             const isHit = allDrawnNumbers.includes(number);
             
             const ball = document.createElement('span');
-            ball.style.width = '30px';
-            ball.style.height = '30px';
+            ball.style.width = '28px';
+            ball.style.height = '28px';
             ball.style.borderRadius = '4px';
             ball.style.display = 'inline-flex';
             ball.style.justifyContent = 'center';
@@ -201,7 +246,7 @@ export const GameReport: React.FC<GameReportProps> = ({
             } else {
               // Regular ball
               ball.style.backgroundColor = 'transparent';
-              ball.style.color = '#000000';
+              ball.style.color = '#333333';
               ball.style.border = '1px solid #333333';
             }
             
@@ -210,6 +255,15 @@ export const GameReport: React.FC<GameReportProps> = ({
           });
           
           combinationsContainer.appendChild(comboRow);
+          
+          // Add separator between combinations (except for the last one)
+          if (comboIndex < player.combinations.length - 1) {
+            const separator = document.createElement('hr');
+            separator.style.margin = '10px 0';
+            separator.style.border = '0';
+            separator.style.borderBottom = '1px solid rgba(0,0,0,0.1)';
+            combinationsContainer.appendChild(separator);
+          }
         });
       } else {
         const noCombo = document.createElement('p');
@@ -225,7 +279,7 @@ export const GameReport: React.FC<GameReportProps> = ({
     
     // Generate PDF
     const options = {
-      margin: 10,
+      margin: [15, 15],
       filename: `${reportTitle.toLowerCase().replace(/\s+/g, '-')}-${game.name.replace(/\s+/g, '-')}-${formattedDate.replace(/\//g, '-')}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
