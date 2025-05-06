@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 import { Save, Users, Calendar, AlertTriangle, Trophy } from 'lucide-react';
 
@@ -44,6 +45,52 @@ const Confetti = () => {
   );
 };
 
+// Componente para exibir os ganhadores em uma tabela resumida
+const WinnersTable = ({ winners, allDrawnNumbers }: { winners: Player[], allDrawnNumbers: number[] }) => {
+  if (winners.length === 0) return null;
+  
+  return (
+    <div className="mb-6">
+      <Card className="border border-primary/30">
+        <CardHeader className="bg-primary/10 py-3">
+          <div className="flex items-center justify-center">
+            <Trophy className="h-5 w-5 mr-2 text-primary" />
+            <CardTitle className="text-lg">Ganhadores</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent className="p-4">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nome</TableHead>
+                <TableHead>Acertos</TableHead>
+                <TableHead>Números Acertados</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {winners.map(winner => (
+                <TableRow key={winner.id}>
+                  <TableCell className="font-medium">{winner.name}</TableCell>
+                  <TableCell>{winner.hits}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-2">
+                      {winner.numbers
+                        .filter(n => allDrawnNumbers.includes(n))
+                        .map(number => (
+                          <NumberBadge key={number} number={number} isHit={true} />
+                        ))}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
 export default function GameAdmin() {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
@@ -69,6 +116,9 @@ export default function GameAdmin() {
   // Estado para mostrar modal de vencedores
   const [showWinnersModal, setShowWinnersModal] = useState(false);
   const [winners, setWinners] = useState<Player[]>([]);
+  
+  // Estado para rastrear ganhadores durante o jogo
+  const [currentWinners, setCurrentWinners] = useState<Player[]>([]);
 
   // Carregar jogo atual quando o componente montar ou o ID mudar
   useEffect(() => {
@@ -77,6 +127,10 @@ export default function GameAdmin() {
     const game = games.find(g => g.id === gameId);
     if (game) {
       setCurrentGame(game);
+      
+      // Verificar jogadores com 6 ou mais acertos
+      const potentialWinners = game.players.filter(p => p.hits >= 6);
+      setCurrentWinners(potentialWinners);
       
       // Verificar se já existe vencedores
       if (game.winners && game.winners.length > 0) {
@@ -116,6 +170,18 @@ export default function GameAdmin() {
   // Verificar números já sorteados
   const allDrawnNumbers = currentGame.dailyDraws.flatMap(draw => draw.numbers);
 
+  // Função para processar string de números, aceitando vírgula ou ponto como separador
+  const processNumberString = (numberStr: string): number[] => {
+    // Substituir pontos por vírgulas
+    const normalizedStr = numberStr.replace(/\./g, ',');
+    
+    // Processar os números
+    return normalizedStr
+      .split(',')
+      .map(n => parseInt(n.trim()))
+      .filter(n => !isNaN(n) && n > 0 && n <= 80); // Números de 1 a 80 são válidos
+  };
+
   // Manipuladores para o formulário de jogador
   const handlePlayerSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,15 +198,12 @@ export default function GameAdmin() {
       }
       
       // Validar e converter números
-      const numbersArray = playerNumbers
-        .split(',')
-        .map(n => parseInt(n.trim()))
-        .filter(n => !isNaN(n) && n > 0 && n <= 60);
+      const numbersArray = processNumberString(playerNumbers);
       
       if (numbersArray.length === 0) {
         toast({
           title: "Números inválidos",
-          description: "Insira números válidos separados por vírgula",
+          description: "Insira números válidos separados por vírgula ou ponto",
           variant: "destructive"
         });
         return;
@@ -152,19 +215,6 @@ export default function GameAdmin() {
         toast({
           title: "Números duplicados",
           description: "Remova os números duplicados da lista",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Verificar se algum número já foi usado por outro jogador
-      const existingNumbers = currentGame.players.flatMap(p => p.numbers);
-      const duplicateNumbers = numbersArray.filter(n => existingNumbers.includes(n));
-      
-      if (duplicateNumbers.length > 0) {
-        toast({
-          title: "Números já utilizados",
-          description: `Os números ${duplicateNumbers.join(', ')} já estão sendo usados`,
           variant: "destructive"
         });
         return;
@@ -206,15 +256,12 @@ export default function GameAdmin() {
     
     try {
       // Validar e converter números
-      const numbersArray = editPlayerNumbers
-        .split(',')
-        .map(n => parseInt(n.trim()))
-        .filter(n => !isNaN(n) && n > 0 && n <= 60);
+      const numbersArray = processNumberString(editPlayerNumbers);
       
       if (numbersArray.length === 0) {
         toast({
           title: "Números inválidos",
-          description: "Insira números válidos separados por vírgula",
+          description: "Insira números válidos separados por vírgula ou ponto",
           variant: "destructive"
         });
         return;
@@ -226,21 +273,6 @@ export default function GameAdmin() {
         toast({
           title: "Números duplicados",
           description: "Remova os números duplicados da lista",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Verificar se algum número já foi usado por outro jogador (exceto os do jogador atual)
-      const existingNumbers = currentGame.players
-        .filter(p => p.id !== playerToEdit.id)
-        .flatMap(p => p.numbers);
-      const duplicateNumbers = numbersArray.filter(n => existingNumbers.includes(n));
-      
-      if (duplicateNumbers.length > 0) {
-        toast({
-          title: "Números já utilizados",
-          description: `Os números ${duplicateNumbers.join(', ')} já estão sendo usados`,
           variant: "destructive"
         });
         return;
@@ -285,15 +317,12 @@ export default function GameAdmin() {
       }
       
       // Validar e converter números
-      const numbersArray = drawNumbers
-        .split(',')
-        .map(n => parseInt(n.trim()))
-        .filter(n => !isNaN(n) && n > 0 && n <= 60);
+      const numbersArray = processNumberString(drawNumbers);
       
       if (numbersArray.length === 0) {
         toast({
           title: "Números inválidos",
-          description: "Insira números válidos separados por vírgula",
+          description: "Insira números válidos separados por vírgula ou ponto",
           variant: "destructive"
         });
         return;
@@ -323,6 +352,8 @@ export default function GameAdmin() {
       
       // Verificar vencedores
       const gameWinners = checkWinners(currentGame.id);
+      setCurrentWinners(currentGame.players.filter(p => p.hits >= 6));
+      
       if (gameWinners.length > 0) {
         setWinners(gameWinners);
         setShowWinnersModal(true);
@@ -418,7 +449,7 @@ export default function GameAdmin() {
                     
                     <div className="space-y-2">
                       <Label htmlFor="player-numbers">
-                        Números Escolhidos <span className="text-muted-foreground">(separados por vírgula)</span>
+                        Números Escolhidos <span className="text-muted-foreground">(separados por vírgula ou ponto, de 1 a 80)</span>
                       </Label>
                       <Input
                         id="player-numbers"
@@ -437,24 +468,41 @@ export default function GameAdmin() {
             </Card>
 
             <Card className="futuristic-card">
-              <CardHeader>
-                <CardTitle>Jogadores Cadastrados</CardTitle>
-                <CardDescription>
-                  {currentGame.players.length} jogadores neste jogo
-                </CardDescription>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Jogadores Cadastrados</CardTitle>
+                  <CardDescription>
+                    {currentGame.players.length} jogadores neste jogo
+                  </CardDescription>
+                </div>
+                {currentWinners.length > 0 && (
+                  <Alert className="w-auto bg-primary/10 border-primary text-primary px-4 py-2 m-0">
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    <AlertTitle>GANHADOR ENCONTRADO!</AlertTitle>
+                  </Alert>
+                )}
               </CardHeader>
+              
               <CardContent>
+                {currentWinners.length > 0 && (
+                  <WinnersTable winners={currentWinners} allDrawnNumbers={allDrawnNumbers} />
+                )}
+                
                 {currentGame.players.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {currentGame.players.map(player => {
                       // Verificar acertos
                       const playerHits = player.numbers.filter(n => allDrawnNumbers.includes(n));
+                      const isWinner = player.hits >= 6;
                       
                       return (
-                        <Card key={player.id} className="overflow-hidden border border-border/30">
-                          <CardHeader className="bg-muted/20 p-4">
+                        <Card key={player.id} className={`overflow-hidden ${isWinner ? 'border border-primary' : 'border border-border/30'}`}>
+                          <CardHeader className={`p-4 ${isWinner ? 'bg-primary/20' : 'bg-muted/20'}`}>
                             <div className="flex justify-between items-center">
-                              <CardTitle className="text-lg">{player.name}</CardTitle>
+                              <CardTitle className="text-lg flex items-center">
+                                {player.name}
+                                {isWinner && <Trophy className="h-4 w-4 ml-2 text-primary" />}
+                              </CardTitle>
                               <Button 
                                 variant="ghost" 
                                 size="sm"
@@ -464,7 +512,7 @@ export default function GameAdmin() {
                               </Button>
                             </div>
                             <CardDescription>
-                              <span className="font-semibold text-primary">{player.hits || 0}</span> acertos
+                              <span className={`font-semibold ${isWinner ? 'text-primary' : ''}`}>{player.hits || 0}</span> acertos
                             </CardDescription>
                           </CardHeader>
                           <CardContent className="p-4">
@@ -515,7 +563,7 @@ export default function GameAdmin() {
                     
                     <div className="space-y-2">
                       <Label htmlFor="draw-numbers">
-                        Números Sorteados <span className="text-muted-foreground">(separados por vírgula)</span>
+                        Números Sorteados <span className="text-muted-foreground">(separados por vírgula ou ponto, de 1 a 80)</span>
                       </Label>
                       <Input
                         id="draw-numbers"
@@ -590,7 +638,7 @@ export default function GameAdmin() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="edit-numbers">
-                Números Escolhidos <span className="text-muted-foreground">(separados por vírgula)</span>
+                Números Escolhidos <span className="text-muted-foreground">(separados por vírgula ou ponto, de 1 a 80)</span>
               </Label>
               <Input
                 id="edit-numbers"

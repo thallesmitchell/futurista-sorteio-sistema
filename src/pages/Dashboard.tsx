@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from "@/components/ui/use-toast";
-import { Plus, ChevronRight } from 'lucide-react';
+import { Plus, ChevronRight, FileText } from 'lucide-react';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -55,6 +55,11 @@ export default function Dashboard() {
     navigate(`/admin/${createdGame.id}`);
   };
 
+  // Handler for generating report for active games
+  const handleGenerateReport = (gameId: string) => {
+    navigate(`/history/${gameId}`);
+  };
+
   return (
     <MainLayout>
       <div className="space-y-8 animate-fade-in">
@@ -96,13 +101,23 @@ export default function Dashboard() {
                       <TableCell>{game.players.length}</TableCell>
                       <TableCell>{game.dailyDraws.length}</TableCell>
                       <TableCell className="text-right">
-                        <Button 
-                          variant="outline" 
-                          onClick={() => navigate(`/admin/${game.id}`)}
-                        >
-                          Administrar
-                          <ChevronRight className="ml-2 h-4 w-4" />
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => handleGenerateReport(game.id)}
+                            className="flex items-center"
+                          >
+                            <FileText className="mr-1 h-4 w-4" />
+                            Relatório
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => navigate(`/admin/${game.id}`)}
+                          >
+                            Administrar
+                            <ChevronRight className="ml-2 h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}

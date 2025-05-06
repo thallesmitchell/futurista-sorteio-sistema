@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
 import { useGame } from '@/contexts/GameContext';
@@ -22,6 +22,7 @@ export default function GameHistory() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { games, currentGame, setCurrentGame } = useGame();
+  const [isGenerating, setIsGenerating] = useState(false);
   
   // Carregar jogo atual quando o componente montar ou o ID mudar
   useEffect(() => {
@@ -50,27 +51,129 @@ export default function GameHistory() {
     );
   }
 
-  // Verificar se o jogo está ativo
-  if (currentGame.status === 'active') {
-    navigate(`/admin/${gameId}`);
-    return null;
-  }
-
   // Obter todos os números sorteados
   const allDrawnNumbers = currentGame.dailyDraws.flatMap(draw => draw.numbers);
 
-  // Simular geração de PDF (em uma implementação real, usaríamos react-pdf)
+  // Função para gerar PDF
   const handleGeneratePdf = () => {
+    if (isGenerating) return;
+    
+    setIsGenerating(true);
+    
     toast({
       title: "Gerando PDF",
       description: "O relatório está sendo gerado e será baixado automaticamente"
     });
     
+    // Simular geração do PDF para download
     setTimeout(() => {
+      // Criar conteúdo HTML para converter em PDF
+      const reportTitle = `Relatório do Jogo: ${currentGame.name}`;
+      const dateInfo = `Data: ${new Date().toLocaleDateString()}`;
+      const gameDate = `Jogo iniciado em: ${new Date(currentGame.startDate).toLocaleDateString()}`;
+      const status = currentGame.status === 'active' ? 'Em andamento' : 'Encerrado';
+      const playersCount = `Total de jogadores: ${currentGame.players.length}`;
+      const drawsCount = `Total de sorteios: ${currentGame.dailyDraws.length}`;
+      
+      const html = `
+        <html>
+          <head>
+            <title>${reportTitle}</title>
+            <style>
+              body { font-family: 'Arial', sans-serif; margin: 20px; }
+              h1 { color: #8B5CF6; text-align: center; }
+              h2 { color: #8B5CF6; margin-top: 20px; }
+              .info { margin-bottom: 20px; }
+              table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f0f0f0; }
+              .winner { background-color: #f3e8ff; }
+              .number { display: inline-block; width: 30px; height: 30px; border-radius: 50%; 
+                        background: #8B5CF6; color: white; text-align: center; line-height: 30px;
+                        margin: 2px; }
+            </style>
+          </head>
+          <body>
+            <h1>${reportTitle}</h1>
+            <div class="info">
+              <p>${dateInfo}</p>
+              <p>${gameDate}</p>
+              <p>Status: ${status}</p>
+              <p>${playersCount}</p>
+              <p>${drawsCount}</p>
+            </div>
+            
+            ${currentGame.winners && currentGame.winners.length > 0 ? `
+              <h2>Ganhadores</h2>
+              <table>
+                <tr>
+                  <th>Nome</th>
+                  <th>Acertos</th>
+                </tr>
+                ${currentGame.winners.map(winner => `
+                  <tr class="winner">
+                    <td>${winner.name}</td>
+                    <td>${winner.hits || 6}</td>
+                  </tr>
+                `).join('')}
+              </table>
+            ` : ''}
+            
+            <h2>Jogadores</h2>
+            <table>
+              <tr>
+                <th>Nome</th>
+                <th>Números Escolhidos</th>
+                <th>Acertos</th>
+              </tr>
+              ${currentGame.players.sort((a, b) => (b.hits || 0) - (a.hits || 0)).map(player => `
+                <tr ${player.hits >= 6 ? 'class="winner"' : ''}>
+                  <td>${player.name}</td>
+                  <td>${player.numbers.sort((a, b) => a - b).map(number => 
+                    `<span class="number">${number}</span>`
+                  ).join('')}</td>
+                  <td>${player.hits || 0}</td>
+                </tr>
+              `).join('')}
+            </table>
+            
+            <h2>Sorteios</h2>
+            <table>
+              <tr>
+                <th>Data</th>
+                <th>Números Sorteados</th>
+              </tr>
+              ${currentGame.dailyDraws.map(draw => `
+                <tr>
+                  <td>${new Date(draw.date).toLocaleDateString()}</td>
+                  <td>${draw.numbers.sort((a, b) => a - b).map(number => 
+                    `<span class="number">${number}</span>`
+                  ).join('')}</td>
+                </tr>
+              `).join('')}
+            </table>
+          </body>
+        </html>
+      `;
+      
+      // Criar um Blob para o download
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      
+      // Criar link de download e clicar automaticamente
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `relatorio-${currentGame.name.toLowerCase().replace(/\s+/g, '-')}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
       toast({
-        title: "PDF Gerado",
-        description: "O relatório foi gerado com sucesso"
+        title: "Relatório gerado",
+        description: "O relatório foi gerado e baixado com sucesso"
       });
+      
+      setIsGenerating(false);
     }, 1500);
   };
 
@@ -81,7 +184,9 @@ export default function GameHistory() {
           <div>
             <h1 className="text-3xl font-bold">{currentGame.name}</h1>
             <p className="text-muted-foreground">
-              Encerrado em {currentGame.endDate ? new Date(currentGame.endDate).toLocaleDateString() : 'N/A'}
+              {currentGame.status === 'active' 
+                ? `Iniciado em ${new Date(currentGame.startDate).toLocaleDateString()}` 
+                : `Encerrado em ${currentGame.endDate ? new Date(currentGame.endDate).toLocaleDateString() : 'N/A'}`}
             </p>
           </div>
           <div className="flex gap-3">
@@ -95,9 +200,10 @@ export default function GameHistory() {
             <Button 
               className="futuristic-button" 
               onClick={handleGeneratePdf}
+              disabled={isGenerating}
             >
               <Download className="mr-2 h-4 w-4" />
-              Gerar Relatório PDF
+              {isGenerating ? "Gerando..." : "Gerar Relatório"}
             </Button>
           </div>
         </div>
@@ -206,8 +312,11 @@ export default function GameHistory() {
                     .sort((a, b) => (b.hits || 0) - (a.hits || 0))
                     .map(player => {
                       return (
-                        <TableRow key={player.id}>
-                          <TableCell className="font-medium">{player.name}</TableCell>
+                        <TableRow key={player.id} className={player.hits >= 6 ? "bg-primary/10" : ""}>
+                          <TableCell className="font-medium">
+                            {player.name}
+                            {player.hits >= 6 && <Trophy className="inline-block h-4 w-4 ml-1 text-primary" />}
+                          </TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-2">
                               {player.numbers.sort((a, b) => a - b).map(number => (
@@ -219,7 +328,7 @@ export default function GameHistory() {
                               ))}
                             </div>
                           </TableCell>
-                          <TableCell className="text-right font-bold">
+                          <TableCell className={`text-right font-bold ${player.hits >= 6 ? "text-primary" : ""}`}>
                             {player.hits || 0}
                           </TableCell>
                         </TableRow>

@@ -30,7 +30,7 @@ interface GameContextType {
   games: Game[];
   currentGame: Game | null;
   setCurrentGame: (game: Game | null) => void;
-  addGame: (game: Omit<Game, 'id'>) => void;
+  addGame: (game: Omit<Game, 'id'>) => Game;
   updateGame: (id: string, game: Partial<Game>) => void;
   addPlayer: (gameId: string, player: Omit<Player, 'id' | 'hits'>) => void;
   updatePlayer: (gameId: string, playerId: string, player: Partial<Player>) => void;
@@ -96,16 +96,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
     
     const updatedGames = games.map(game => {
       if (game.id === gameId) {
-        // Verificar se o jogador já existe
-        const playerExists = game.players.some(p => 
-          p.name.toLowerCase() === player.name.toLowerCase() ||
-          p.numbers.some(n => player.numbers.includes(n))
-        );
-        
-        if (playerExists) {
-          throw new Error("Jogador já existe ou números já estão em uso");
-        }
-        
+        // Não verificamos duplicatas de números entre jogadores, essa regra foi removida
         return {
           ...game,
           players: [...game.players, newPlayer]
