@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search } from 'lucide-react';
 import { Player } from '@/contexts/game/types';
-import NumberBadge from './NumberBadge';
+import { NumberBadge } from './NumberBadge';
 
 export interface PlayersListProps {
   players: Player[];
@@ -14,7 +14,7 @@ export interface PlayersListProps {
   currentWinners: Player[];
 }
 
-const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWinners }: PlayersListProps) => {
+export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWinners }: PlayersListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filtra os jogadores pelo nome
@@ -102,4 +102,5 @@ const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWinners }:
   );
 };
 
+// Also export as default to maintain compatibility
 export default PlayersList;

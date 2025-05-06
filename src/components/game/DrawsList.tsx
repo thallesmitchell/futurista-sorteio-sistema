@@ -57,3 +57,5 @@ export const DrawsList: React.FC<DrawsListProps> = ({
     </Card>
   );
 };
+
+export default DrawsList;

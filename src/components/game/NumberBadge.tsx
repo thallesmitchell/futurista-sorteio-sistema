@@ -10,6 +10,7 @@ export interface NumberBadgeProps {
   isHit?: boolean;
 }
 
+// Export both as default and named export to prevent breaking existing imports
 export const NumberBadge = ({ number, hits = 0, isHit, className = '', variant = 'default', size = 'md' }: NumberBadgeProps) => {
   let baseClasses = 'inline-flex items-center justify-center rounded-full font-medium';
   
@@ -36,3 +37,6 @@ export const NumberBadge = ({ number, hits = 0, isHit, className = '', variant =
     </span>
   );
 };
+
+// Also export as default for backward compatibility
+export default NumberBadge;

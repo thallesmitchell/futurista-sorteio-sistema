@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import MainLayout from '@/layouts/MainLayout';
@@ -8,8 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TabsController } from '@/components/game/TabsController';
 import { PlayerForm } from '@/components/game/PlayerForm';
 import { DrawForm } from '@/components/game/DrawForm';
-import { DrawsList } from '@/components/game/DrawsList';
-import { PlayersList } from '@/components/game/PlayersList';
+import DrawsList from '@/components/game/DrawsList';
+import PlayersList from '@/components/game/PlayersList';
 import { PlayerEditModal } from '@/components/game/PlayerEditModal';
 import { WinnersModal } from '@/components/game/WinnersModal';
 import { ConfirmCloseModal } from '@/components/game/ConfirmCloseModal';
