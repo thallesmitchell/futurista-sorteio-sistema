@@ -9,13 +9,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronRight, Search } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { ChevronRight, Search, Trash2 } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function HistoryPage() {
   const navigate = useNavigate();
-  const { games } = useGame();
+  const { games, deleteGame } = useGame();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'closed'>('all');
+  const [gameToDelete, setGameToDelete] = useState<string | null>(null);
   
   // Filtrar jogos
   const filteredGames = games.filter(game => {
@@ -23,6 +27,17 @@ export default function HistoryPage() {
     const matchesStatus = statusFilter === 'all' || game.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const handleDeleteGame = () => {
+    if (gameToDelete) {
+      deleteGame(gameToDelete);
+      setGameToDelete(null);
+      toast({
+        title: "Jogo excluído",
+        description: "O jogo foi removido com sucesso",
+      });
+    }
+  };
 
   return (
     <MainLayout>
@@ -110,13 +125,26 @@ export default function HistoryPage() {
                       <TableCell>{game.players.length}</TableCell>
                       <TableCell>{game.winners?.length || 0}</TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="outline"
-                          onClick={() => navigate(game.status === 'active' ? `/admin/${game.id}` : `/history/${game.id}`)}
-                        >
-                          {game.status === 'active' ? 'Administrar' : 'Visualizar'}
-                          <ChevronRight className="ml-2 h-4 w-4" />
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => navigate(game.status === 'active' ? `/admin/${game.id}` : `/history/${game.id}`)}
+                          >
+                            {game.status === 'active' ? 'Administrar' : 'Visualizar'}
+                            <ChevronRight className="ml-2 h-4 w-4" />
+                          </Button>
+                          
+                          {game.status === 'closed' && (
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              onClick={() => setGameToDelete(game.id)}
+                              title="Excluir Jogo"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -130,6 +158,24 @@ export default function HistoryPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Dialog de confirmação para exclusão */}
+      <AlertDialog open={!!gameToDelete} onOpenChange={(open) => !open && setGameToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este jogo? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteGame} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </MainLayout>
   );
 }

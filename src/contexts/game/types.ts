@@ -37,6 +37,7 @@ export interface GameContextType {
   setCurrentGame: (game: Game | null) => void;
   addGame: (game: Omit<Game, 'id'>) => Game;
   updateGame: (id: string, game: Partial<Game>) => void;
+  deleteGame: (id: string) => boolean;
   addPlayer: (gameId: string, player: Omit<Player, 'id'>) => void;
   addPlayerCombination: (gameId: string, playerId: string, numbers: number[]) => void;
   updatePlayer: (gameId: string, playerId: string, player: Partial<Player>) => void;

@@ -1,4 +1,3 @@
-
 import { ReactNode, useState } from 'react';
 import { GameContext } from './GameContext';
 import { Game, Player, DailyDraw } from './types';
@@ -273,6 +272,19 @@ export function GameProvider({ children }: GameProviderProps) {
     return winners;
   };
 
+  const deleteGame = (gameId: string) => {
+    const updatedGames = games.filter(game => game.id !== gameId);
+    setGames(updatedGames);
+    saveGamesToStorage(updatedGames);
+    
+    // Reset current game if it was deleted
+    if (currentGame && currentGame.id === gameId) {
+      setCurrentGame(null);
+    }
+    
+    return true;
+  };
+
   return (
     <GameContext.Provider value={{
       games,
@@ -280,6 +292,7 @@ export function GameProvider({ children }: GameProviderProps) {
       setCurrentGame,
       addGame,
       updateGame,
+      deleteGame,
       addPlayer,
       addPlayerCombination,
       updatePlayer,
