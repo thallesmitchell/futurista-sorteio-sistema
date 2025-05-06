@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
@@ -33,10 +32,11 @@ interface AdminRelationship {
 
 export default function SuperAdminDashboard() {
   const navigate = useNavigate();
-  const { user, isSuperAdmin } = useAuth();
+  const { user, isSuperAdmin, session } = useAuth();
   const [admins, setAdmins] = useState<AdminRelationship[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isLoadingAdmins, setIsLoadingAdmins] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [stats, setStats] = useState({
     totalAdmins: 0,
     totalGames: 0,
@@ -52,21 +52,21 @@ export default function SuperAdminDashboard() {
     },
   });
 
-  // Redirecionar se não for super admin
+  // Redirect if not super admin
   useEffect(() => {
     if (!isSuperAdmin) {
       navigate('/dashboard');
     }
   }, [isSuperAdmin, navigate]);
 
-  // Carregar administradores
+  // Load administrators
   useEffect(() => {
     const fetchAdmins = async () => {
       if (!user) return;
       
       setIsLoadingAdmins(true);
       try {
-        // Buscar relações administrador-superadmin
+        // Fetch admin-superadmin relationships
         const { data: relationships, error: relError } = await supabase
           .from('admin_relationships')
           .select('*')
@@ -74,14 +74,11 @@ export default function SuperAdminDashboard() {
           
         if (relError) throw relError;
         
-        if (relationships) {
-          // Para cada relação, buscar detalhes do perfil do administrador
+        if (relationships && relationships.length > 0) {
+          // For each relationship, fetch the admin's profile details
           const adminDetails = await Promise.all(
             relationships.map(async (rel) => {
-              // Buscar o usuário através das tabelas auth.users e profiles
-              const { data: userData } = await supabase.auth.admin.getUserById(rel.admin_id);
-              
-              // Buscar perfil
+              // Fetch profile
               const { data: profileData } = await supabase
                 .from('profiles')
                 .select('*')
@@ -92,8 +89,8 @@ export default function SuperAdminDashboard() {
                 ...rel,
                 admin: {
                   id: rel.admin_id,
-                  email: userData?.user?.email || 'Email não disponível',
-                  created_at: userData?.user?.created_at || new Date().toISOString(),
+                  email: profileData?.username || 'Email não disponível',
+                  created_at: profileData?.created_at || new Date().toISOString(),
                   username: profileData?.username,
                   role: profileData?.role || 'admin'
                 }
@@ -102,6 +99,8 @@ export default function SuperAdminDashboard() {
           );
           
           setAdmins(adminDetails);
+        } else {
+          setAdmins([]);
         }
       } catch (error) {
         console.error('Erro ao carregar administradores:', error);
@@ -119,19 +118,19 @@ export default function SuperAdminDashboard() {
       if (!user) return;
       
       try {
-        // Contar administradores
+        // Count administrators
         const { count: adminCount } = await supabase
           .from('admin_relationships')
           .select('*', { count: 'exact', head: true })
           .eq('super_admin_id', user.id);
           
-        // Contar jogos (diretos e de administradores)
+        // Count games (direct and from administrators)
         const { count: gamesCount } = await supabase
           .from('games')
           .select('*', { count: 'exact', head: true })
           .or(`owner_id.eq.${user.id},owner_id.in.(${admins.map(a => a.admin_id).join(',')})`);
           
-        // Contar jogadores em todos os jogos
+        // Count players in all games
         const { count: playersCount } = await supabase
           .from('players')
           .select('*', { count: 'exact', head: true })
@@ -153,49 +152,61 @@ export default function SuperAdminDashboard() {
     }
   }, [user, isSuperAdmin, navigate, toast]);
 
-  // Adicionar um novo administrador
+  // Add a new administrator using Edge Function
   const onAddAdmin = form.handleSubmit(async (data) => {
-    try {
-      // 1. Criar usuário no Authentication
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: data.email,
-        password: data.password,
-        email_confirm: true,
-        user_metadata: { username: data.username }
+    if (!session) {
+      toast({
+        title: "Erro",
+        description: "Você precisa estar logado para realizar esta ação.",
+        variant: "destructive"
       });
-
-      if (authError) throw authError;
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch(`https://stwogjmlokgpkdliizxf.supabase.co/functions/v1/create-admin-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password,
+          username: data.username
+        })
+      });
       
-      if (!authData.user) {
-        throw new Error('Falha ao criar usuário');
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Falha ao adicionar administrador');
       }
       
-      // 2. Criar relação super_admin -> admin
-      const { error: relError } = await supabase
-        .from('admin_relationships')
-        .insert({
+      if (result.warning) {
+        console.warn('Warning:', result.warning);
+      }
+      
+      // Update local admins list
+      if (result.user) {
+        setAdmins(prev => [...prev, {
+          id: crypto.randomUUID(),
           super_admin_id: user!.id,
-          admin_id: authData.user.id
-        });
-        
-      if (relError) throw relError;
-      
-      // Atualizar lista de administradores
-      setAdmins(prev => [...prev, {
-        id: crypto.randomUUID(),
-        super_admin_id: user!.id,
-        admin_id: authData.user.id,
-        created_at: new Date().toISOString(),
-        admin: {
-          id: authData.user.id,
-          email: data.email,
+          admin_id: result.user.id,
           created_at: new Date().toISOString(),
-          username: data.username,
-          role: 'admin'
-        }
-      }]);
+          admin: {
+            id: result.user.id,
+            email: data.email,
+            created_at: new Date().toISOString(),
+            username: data.username,
+            role: 'admin'
+          }
+        }]);
+      }
       
-      // Resetar formulário e fechar diálogo
+      // Reset form and close dialog
       form.reset();
       setIsAddDialogOpen(false);
       
@@ -210,13 +221,15 @@ export default function SuperAdminDashboard() {
         description: error instanceof Error ? error.message : "Não foi possível adicionar o administrador.",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   });
 
-  // Remover um administrador
+  // Remove an administrator
   const handleDeleteAdmin = async (adminId: string) => {
     try {
-      // 1. Remover relação
+      // 1. Remove relationship
       const { error } = await supabase
         .from('admin_relationships')
         .delete()
@@ -225,7 +238,7 @@ export default function SuperAdminDashboard() {
         
       if (error) throw error;
       
-      // 2. Atualizar lista local
+      // 2. Update local list
       setAdmins(prev => prev.filter(admin => admin.admin_id !== adminId));
       
       toast({
@@ -275,6 +288,7 @@ export default function SuperAdminDashboard() {
                       className="col-span-3"
                       {...form.register('username', { required: true })}
                       autoComplete="off"
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -288,6 +302,7 @@ export default function SuperAdminDashboard() {
                       className="col-span-3"
                       {...form.register('email', { required: true })}
                       autoComplete="off"
+                      disabled={isSubmitting}
                     />
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
@@ -300,11 +315,14 @@ export default function SuperAdminDashboard() {
                       placeholder="••••••••"
                       className="col-span-3"
                       {...form.register('password', { required: true })}
+                      disabled={isSubmitting}
                     />
                   </div>
                 </div>
                 <DialogFooter>
-                  <Button type="submit">Adicionar</Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? "Adicionando..." : "Adicionar"}
+                  </Button>
                 </DialogFooter>
               </form>
             </DialogContent>
