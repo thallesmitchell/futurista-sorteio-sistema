@@ -11,7 +11,6 @@ export interface NumberBadgeProps {
   isHit?: boolean;
 }
 
-// Export both as default and named export to prevent breaking existing imports
 export const NumberBadge = ({ 
   number, 
   hits = 0, 
@@ -50,5 +49,4 @@ export const NumberBadge = ({
   );
 };
 
-// Also export as default for backward compatibility
 export default NumberBadge;
