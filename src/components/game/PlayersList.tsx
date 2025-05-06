@@ -104,14 +104,18 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                           : 'bg-muted/40'
                         }`}
                       >
-                        {combination.numbers.map((number, nIdx) => (
-                          <NumberBadge
-                            key={`${player.id}-${idx}-${nIdx}`}
-                            number={number}
-                            size={isMobile ? "sm" : "md"}
-                            isHit={allDrawnNumbers.includes(number)}
-                          />
-                        ))}
+                        {combination.numbers.map((number, nIdx) => {
+                          const isNumberHit = allDrawnNumbers.includes(number);
+                          
+                          return (
+                            <NumberBadge
+                              key={`${player.id}-${idx}-${nIdx}`}
+                              number={number}
+                              size={isMobile ? "sm" : "md"}
+                              isHit={isNumberHit}
+                            />
+                          );
+                        })}
                         
                         <span className={`ml-auto text-xs font-medium px-2 py-0.5 rounded-full ${
                           isWinningCombo 

@@ -2,6 +2,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Import Orbitron font for PDF report */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
  
 @layer base {
   :root {
@@ -173,4 +176,99 @@
 /* Responsive padding based on screen size */
 .responsive-padding {
   @apply px-4 py-4 md:px-6 md:py-6;
+}
+
+/* PDF Report Styles */
+.pdf-content {
+  font-family: 'Orbitron', sans-serif;
+  background-color: #0F111A;
+  color: #FFFFFF;
+}
+
+.pdf-masonry {
+  column-count: 2;
+  column-gap: 15px;
+}
+
+.pdf-header {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.pdf-winner-box {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  background-color: #25C17E;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.pdf-winner-header {
+  background-color: #25C17E;
+  color: #FFFFFF;
+  padding: 12px 15px;
+  font-weight: bold;
+  text-align: center;
+  font-size: 18px;
+}
+
+.pdf-player-box {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.pdf-player-header {
+  background-color: #f0f0f0;
+  color: #333333;
+  padding: 10px;
+  font-weight: bold;
+  text-align: center;
+  font-size: 14px;
+}
+
+.pdf-combo-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 5px 0;
+  padding: 8px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+.pdf-number-ball {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.pdf-number-hit {
+  background-color: #25C17E;
+  color: #FFFFFF;
+}
+
+.pdf-number-miss {
+  background-color: #1A1F2C;
+  color: #FFFFFF;
+  border: 1px solid #25C17E;
+}
+
+.pdf-hits-label {
+  width: 100%;
+  text-align: right;
+  font-size: 11px;
+  margin-top: 5px;
+  color: #666;
 }

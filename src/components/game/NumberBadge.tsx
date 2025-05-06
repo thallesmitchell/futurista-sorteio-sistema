@@ -21,16 +21,16 @@ export const NumberBadge = ({ number, hits = 0, isHit, className = '', variant =
     lg: 'h-10 w-10 text-base'
   };
   
-  // Classes baseadas na variante
+  // Classes baseadas na variante (mantidas para compatibilidade)
   const variantClasses = {
-    default: 'border border-primary text-primary bg-transparent',
-    outline: 'border border-primary text-primary bg-transparent',
-    secondary: 'bg-secondary text-secondary-foreground'
+    default: '',
+    outline: '',
+    secondary: ''
   };
   
   // Estilo corrigido: números acertados com fundo verde sólido, não acertados com borda verde
   let hitClasses = '';
-  if (hits > 0 || isHit) {
+  if (hits > 0 || isHit === true) {
     // Acertos com fundo verde sólido
     hitClasses = 'bg-green-500 text-white border-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]';
   } else {

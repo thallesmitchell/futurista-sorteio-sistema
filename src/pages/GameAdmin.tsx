@@ -18,21 +18,25 @@ import { ArrowLeft, Trophy, Users, CalendarDays, UserPlus } from 'lucide-react';
 import { Player } from '@/contexts/game/types';
 import { DeleteGameButton } from '@/components/game/DeleteGameButton';
 import { GameReport } from '@/components/game/GameReport';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function GameAdmin() {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
-  const { games, setCurrentGame, updateGame, updatePlayerSequences } = useGame();
+  const { games, setCurrentGame, updateGame, updatePlayerSequences, checkWinners } = useGame();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isWinnersModalOpen, setIsWinnersModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
   const [editPlayerNumbers, setEditPlayerNumbers] = useState('');
+  const [newWinnerFound, setNewWinnerFound] = useState(false);
+  const { toast } = useToast();
 
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
+  const winners = game?.winners || [];
 
-  // Set current game for context
+  // Set current game for context and check for newly found winners
   useEffect(() => {
     if (game) {
       if (game.status === 'closed') {
@@ -41,6 +45,17 @@ export default function GameAdmin() {
         return;
       }
       setCurrentGame(game);
+      
+      // Verificar se há novos vencedores que ainda não foram notificados
+      if (winners.length > 0 && !newWinnerFound) {
+        setNewWinnerFound(true);
+        setIsWinnersModalOpen(true);
+        toast({
+          title: "Vencedor Encontrado!",
+          description: `${winners.length > 1 ? 'Vários jogadores acertaram' : 'Um jogador acertou'} todos os 6 números!`,
+          variant: "default",
+        });
+      }
     } else {
       // If game not found, redirect to dashboard
       navigate('/dashboard');
@@ -50,7 +65,7 @@ export default function GameAdmin() {
     return () => {
       setCurrentGame(null);
     };
-  }, [game, gameId, navigate, setCurrentGame]);
+  }, [game, gameId, navigate, setCurrentGame, winners]);
 
   // Show 404 if game not found
   if (!game || game.status === 'closed') {
@@ -78,8 +93,6 @@ export default function GameAdmin() {
     navigate(`/history/${game.id}`);
   };
 
-  const winners = game.winners || [];
-  
   // Função para salvar edições do jogador
   const handleSavePlayerEdit = async () => {
     if (!playerToEdit) return;
@@ -90,22 +103,44 @@ export default function GameAdmin() {
         .split('\n')
         .filter(line => line.trim().length > 0)
         .map(line => {
-          // Remove espaços e converte para array de números
+          // Remove espaços e converte para array de números, aceitando múltiplos separadores
           return line
-            .replace(/\s/g, '')
-            .split(/[-;,]/)
+            .split(/[\s,.-]+/)
             .map(num => parseInt(num, 10))
-            .filter(num => !isNaN(num));
+            .filter(num => !isNaN(num) && num > 0 && num <= 80);
         })
-        .filter(seq => seq.length > 0);
+        .filter(seq => seq.length === 6); // Garantir que haja 6 números
       
       // Atualizar as sequências do jogador
       if (sequences.length > 0) {
         await updatePlayerSequences(game.id, playerToEdit.id, sequences);
+        
+        // Verificar imediatamente se há novos vencedores após atualizar as sequências
+        const currentWinners = await checkWinners(game.id);
+        if (currentWinners.length > 0) {
+          setNewWinnerFound(true);
+          setIsWinnersModalOpen(true);
+        }
+        
         setIsEditModalOpen(false);
+        toast({
+          title: "Sequências salvas",
+          description: `${sequences.length} sequências foram salvas para ${playerToEdit.name}`,
+        });
+      } else {
+        toast({
+          title: "Erro ao salvar",
+          description: "Nenhuma sequência válida encontrada. Cada linha deve ter exatamente 6 números entre 1 e 80.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error("Erro ao salvar sequências:", error);
+      toast({
+        title: "Erro ao salvar sequências",
+        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido",
+        variant: "destructive"
+      });
     }
   };
 
