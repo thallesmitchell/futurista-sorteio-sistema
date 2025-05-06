@@ -12,7 +12,7 @@ export interface NumberBadgeProps {
 
 // Export both as default and named export to prevent breaking existing imports
 export const NumberBadge = ({ number, hits = 0, isHit, className = '', variant = 'default', size = 'md' }: NumberBadgeProps) => {
-  let baseClasses = 'inline-flex items-center justify-center rounded-full font-medium';
+  let baseClasses = 'inline-flex items-center justify-center rounded-full';
   
   // Classes baseadas no tamanho
   const sizeClasses = {
@@ -28,13 +28,13 @@ export const NumberBadge = ({ number, hits = 0, isHit, className = '', variant =
     secondary: 'bg-secondary text-secondary-foreground'
   };
   
-  // Adicionar classes para quando tem hits ou isHit - com estilos corrigidos
+  // Estilo corrigido: números acertados com fundo verde sólido, não acertados com borda verde
   let hitClasses = '';
   if (hits > 0 || isHit) {
     // Acertos com fundo verde sólido
     hitClasses = 'bg-green-500 text-white border-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]';
   } else {
-    // Números não acertados com apenas contorno verde, fundo escuro e fonte branca
+    // Números não acertados apenas com contorno verde e fundo escuro
     hitClasses = 'border border-green-500 text-white bg-background';
   }
   

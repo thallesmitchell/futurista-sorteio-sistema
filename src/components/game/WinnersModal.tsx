@@ -9,8 +9,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 // Componente para exibir confetes (animação de vitória)
 const Confetti = () => {
-  const confettiCount = 150; // Aumentado para mais confetes
-  const colors = ['#ff0080', '#7b1fa2', '#00bcd4', '#ff9100', '#8bc34a', '#4caf50', '#e91e63'];
+  const confettiCount = 200; // Aumentado para mais confetes
+  const colors = ['#ff0080', '#7b1fa2', '#00bcd4', '#ff9100', '#8bc34a', '#4caf50', '#e91e63', '#2196f3'];
   
   return (
     <div className="fixed inset-0 pointer-events-none z-50">
@@ -85,6 +85,7 @@ export const WinnersModal: React.FC<WinnersModalProps> = ({
                             key={number} 
                             number={number} 
                             isHit={allDrawnNumbers.includes(number)} 
+                            size={isMobile ? "sm" : "md"}
                           />
                         ))}
                     </div>

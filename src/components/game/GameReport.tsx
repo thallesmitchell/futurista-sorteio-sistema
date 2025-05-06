@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, Trophy } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Game } from '@/contexts/GameContext';
 import html2pdf from 'html2pdf.js';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface GameReportProps {
   game: Game;
@@ -23,9 +24,10 @@ export const GameReport: React.FC<GameReportProps> = ({
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
+  
   const [profileData, setProfileData] = useState({
-    themeColor: '#39FF14',
-    logoUrl: '/lovable-uploads/b7f54603-ff4e-4280-8c96-a36a94acf7c6.png'
+    themeColor: '#39FF14'
   });
   
   // Buscar perfil do administrador atual
@@ -36,7 +38,7 @@ export const GameReport: React.FC<GameReportProps> = ({
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('theme_color, logo_url, username')
+          .select('theme_color, username')
           .eq('id', user.id)
           .single();
           
@@ -44,8 +46,7 @@ export const GameReport: React.FC<GameReportProps> = ({
         
         if (data) {
           setProfileData({
-            themeColor: data.theme_color || '#39FF14',
-            logoUrl: data.logo_url || '/lovable-uploads/b7f54603-ff4e-4280-8c96-a36a94acf7c6.png'
+            themeColor: data.theme_color || '#39FF14'
           });
         }
       } catch (err) {
@@ -59,7 +60,6 @@ export const GameReport: React.FC<GameReportProps> = ({
   const generateReport = () => {
     // Get current date for the report
     const currentDate = new Date();
-    const formattedDate = `${String(currentDate.getDate()).padStart(2, '0')}/${String(currentDate.getMonth() + 1).padStart(2, '0')}/${currentDate.getFullYear()}`;
     const reportTitle = game.winners && game.winners.length > 0 ? "Resultado final" : "Parcial do dia";
     
     // Criar as cores com base no tema do administrador
@@ -69,31 +69,24 @@ export const GameReport: React.FC<GameReportProps> = ({
     
     // Create report container
     const reportElement = document.createElement('div');
-    reportElement.style.fontFamily = 'monospace';
+    reportElement.style.fontFamily = 'Arial, sans-serif';
     reportElement.style.padding = '20px';
     reportElement.style.margin = '0';
     reportElement.style.backgroundColor = '#ffffff';
-    reportElement.style.maxWidth = '800px';
+    reportElement.style.maxWidth = '100%';
     
-    // Header with logo and title
+    // Header with title
     const header = document.createElement('div');
     header.style.display = 'flex';
-    header.style.justifyContent = 'space-between';
+    header.style.justifyContent = 'center';
     header.style.alignItems = 'center';
     header.style.marginBottom = '30px';
-    
-    // Left logo
-    const leftLogo = document.createElement('img');
-    leftLogo.src = profileData.logoUrl;
-    leftLogo.style.height = '80px';
-    header.appendChild(leftLogo);
     
     // Title
     const title = document.createElement('div');
     title.style.textAlign = 'center';
     title.style.fontWeight = 'bold';
     title.style.fontSize = '24px';
-    title.style.fontFamily = 'monospace';
     title.style.color = adminColorDark;
     
     // Format date as in the example (06/maio/2025)
@@ -105,12 +98,6 @@ export const GameReport: React.FC<GameReportProps> = ({
     
     title.innerHTML = `${reportTitle}<br/>${formattedDateForDisplay}`;
     header.appendChild(title);
-    
-    // Right logo
-    const rightLogo = document.createElement('img');
-    rightLogo.src = profileData.logoUrl;
-    rightLogo.style.height = '80px';
-    header.appendChild(rightLogo);
     
     reportElement.appendChild(header);
     
@@ -136,22 +123,22 @@ export const GameReport: React.FC<GameReportProps> = ({
         winnerBox.style.border = `3px solid ${adminColor}`;
         winnerBox.style.width = '100%';
         winnerBox.style.marginBottom = '20px';
+        winnerBox.style.breakInside = 'avoid';
         
-        // Winner name header with trophies
+        // Winner name header
         const nameHeader = document.createElement('div');
         nameHeader.style.backgroundColor = adminColor;
         nameHeader.style.color = '#ffffff';
         nameHeader.style.padding = '12px 15px';
         nameHeader.style.fontWeight = 'bold';
         nameHeader.style.textAlign = 'center';
-        nameHeader.style.fontFamily = 'monospace';
         nameHeader.style.fontSize = '18px';
         nameHeader.style.display = 'flex';
         nameHeader.style.justifyContent = 'center';
         nameHeader.style.alignItems = 'center';
         nameHeader.style.textShadow = '1px 1px 2px rgba(0,0,0,0.2)';
         
-        // Add left trophy icon
+        // Add trophy icon
         const leftTrophy = document.createElement('span');
         leftTrophy.innerHTML = '🏆';
         leftTrophy.style.fontSize = '22px';
@@ -188,7 +175,6 @@ export const GameReport: React.FC<GameReportProps> = ({
             comboRow.style.alignItems = 'center';
             comboRow.style.gap = '12px';
             comboRow.style.marginBottom = '15px';
-            comboRow.style.fontFamily = 'monospace';
             
             // If winning combination, add highlight
             if (hasWinningCombo) {
@@ -223,21 +209,21 @@ export const GameReport: React.FC<GameReportProps> = ({
               ball.style.alignItems = 'center';
               ball.style.fontWeight = 'bold';
               ball.style.fontSize = '14px';
-              ball.style.fontFamily = 'monospace';
               
               // Format the number with leading zero
               const formattedNumber = String(number).padStart(2, '0');
               
               if (isHit) {
-                // Highlighted ball for hits
+                // Highlighted ball for hits - FUNDO VERDE SÓLIDO
                 ball.style.backgroundColor = adminColor;
                 ball.style.color = '#ffffff';
                 ball.style.boxShadow = '0 0 8px rgba(0,0,0,0.2)';
               } else {
-                // Regular ball
-                ball.style.backgroundColor = 'transparent';
-                ball.style.color = '#333333';
-                ball.style.border = `1px solid ${adminColorDark}`;
+                // Regular ball - APENAS CONTORNO
+                ball.style.backgroundColor = '#1A1F2C'; // Fundo escuro
+                ball.style.color = '#ffffff';
+                ball.style.border = `1px solid ${adminColor}`;
+                ball.style.boxShadow = `0 0 4px ${adminColor}40`;
               }
               
               ball.textContent = formattedNumber;
@@ -277,50 +263,30 @@ export const GameReport: React.FC<GameReportProps> = ({
     // Add regular players (excluding winners)
     const regularPlayers = sortedPlayers.filter(p => !winnerIds.includes(p.id));
     
-    // Create two-column layout for regular players
+    // Create masonry layout for regular players - seguindo EXATAMENTE o modelo da imagem 3
     const playersContainer = document.createElement('div');
-    playersContainer.style.display = 'flex';
-    playersContainer.style.flexWrap = 'wrap';
-    playersContainer.style.gap = '15px';
-    playersContainer.style.justifyContent = 'space-between';
+    playersContainer.style.columnCount = '3';
+    playersContainer.style.columnGap = '15px';
     
-    // Create left column
-    const leftColumn = document.createElement('div');
-    leftColumn.style.flex = '0 0 calc(50% - 8px)';
-    leftColumn.style.display = 'flex';
-    leftColumn.style.flexDirection = 'column';
-    leftColumn.style.gap = '15px';
-    
-    // Create right column
-    const rightColumn = document.createElement('div');
-    rightColumn.style.flex = '0 0 calc(50% - 8px)';
-    rightColumn.style.display = 'flex';
-    rightColumn.style.flexDirection = 'column';
-    rightColumn.style.gap = '15px';
-    
-    // Distribute players between columns
-    regularPlayers.forEach((player, index) => {
-      // Create regular player box
+    regularPlayers.forEach(player => {
+      // Create player box
       const playerBox = document.createElement('div');
-      playerBox.style.backgroundColor = '#f5f5f5';
+      playerBox.style.backgroundColor = '#ffffff';
       playerBox.style.borderRadius = '8px';
+      playerBox.style.border = '1px solid #e0e0e0';
       playerBox.style.overflow = 'hidden';
-      playerBox.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+      playerBox.style.marginBottom = '15px';
       playerBox.style.breakInside = 'avoid';
-      playerBox.style.marginBottom = '0';
+      playerBox.style.pageBreakInside = 'avoid';
       
       // Player name header
       const nameHeader = document.createElement('div');
-      nameHeader.style.backgroundColor = adminColorDark;
-      nameHeader.style.color = '#ffffff';
-      nameHeader.style.padding = '8px 15px';
+      nameHeader.style.backgroundColor = '#f0f0f0';
+      nameHeader.style.color = '#333333';
+      nameHeader.style.padding = '10px 12px';
       nameHeader.style.fontWeight = 'bold';
       nameHeader.style.textAlign = 'center';
-      nameHeader.style.fontFamily = 'monospace';
-      nameHeader.style.fontSize = '16px';
-      nameHeader.style.display = 'flex';
-      nameHeader.style.justifyContent = 'center';
-      nameHeader.style.alignItems = 'center';
+      nameHeader.style.borderBottom = '1px solid #e0e0e0';
       
       // Add player name
       const playerName = document.createElement('span');
@@ -331,8 +297,7 @@ export const GameReport: React.FC<GameReportProps> = ({
       
       // Player combinations
       const combinationsContainer = document.createElement('div');
-      combinationsContainer.style.padding = '15px';
-      combinationsContainer.style.backgroundColor = 'white';
+      combinationsContainer.style.padding = '12px';
       
       if (player.combinations && player.combinations.length > 0) {
         player.combinations.forEach((combo, comboIndex) => {
@@ -340,38 +305,38 @@ export const GameReport: React.FC<GameReportProps> = ({
           comboRow.style.display = 'flex';
           comboRow.style.flexWrap = 'wrap';
           comboRow.style.justifyContent = 'center';
-          comboRow.style.alignItems = 'center';
-          comboRow.style.gap = '10px';
-          comboRow.style.marginBottom = '12px';
-          comboRow.style.fontFamily = 'monospace';
+          comboRow.style.gap = '6px';
+          comboRow.style.margin = '5px 0';
+          comboRow.style.padding = '8px';
+          comboRow.style.backgroundColor = '#f9f9f9';
+          comboRow.style.borderRadius = '4px';
           
           // Create numbered balls
           combo.numbers.sort((a, b) => a - b).forEach(number => {
             const isHit = allDrawnNumbers.includes(number);
             
             const ball = document.createElement('span');
-            ball.style.width = '28px';
-            ball.style.height = '28px';
+            ball.style.width = '26px';
+            ball.style.height = '26px';
             ball.style.borderRadius = '50%';
             ball.style.display = 'inline-flex';
             ball.style.justifyContent = 'center';
             ball.style.alignItems = 'center';
-            ball.style.fontWeight = 'bold';
-            ball.style.fontSize = '14px';
-            ball.style.fontFamily = 'monospace';
+            ball.style.fontSize = '12px';
             
             // Format the number with leading zero
             const formattedNumber = String(number).padStart(2, '0');
             
             if (isHit) {
-              // Highlighted ball for hits
+              // Highlighted ball for hits - FUNDO VERDE SÓLIDO
               ball.style.backgroundColor = adminColor;
               ball.style.color = '#ffffff';
             } else {
-              // Regular ball - apenas contorno
-              ball.style.backgroundColor = 'transparent';
-              ball.style.color = '#333333';
-              ball.style.border = `1px solid ${adminColorDark}`;
+              // Regular ball - APENAS CONTORNO
+              ball.style.backgroundColor = '#1A1F2C'; // Fundo escuro
+              ball.style.color = '#ffffff';
+              ball.style.border = `1px solid ${adminColor}`;
+              ball.style.boxShadow = `0 0 4px ${adminColor}40`;
             }
             
             ball.textContent = formattedNumber;
@@ -379,33 +344,23 @@ export const GameReport: React.FC<GameReportProps> = ({
           });
           
           // Adicionar contador de acertos
-          const hitsCounter = document.createElement('span');
-          hitsCounter.style.marginLeft = 'auto';
-          hitsCounter.style.padding = '2px 8px';
-          hitsCounter.style.borderRadius = '12px';
-          hitsCounter.style.fontSize = '12px';
-          hitsCounter.style.fontWeight = 'bold';
-          
-          if (combo.hits === 6) {
-            hitsCounter.style.backgroundColor = adminColor;
-            hitsCounter.style.color = '#ffffff';
-            hitsCounter.textContent = '6 ACERTOS!';
-          } else {
-            hitsCounter.style.backgroundColor = `rgba(${hexToRgb(adminColor)}, 0.2)`;
-            hitsCounter.style.color = adminColorDark;
-            hitsCounter.textContent = `${combo.hits} acertos`;
-          }
-          
-          comboRow.appendChild(hitsCounter);
+          const hitsLabel = document.createElement('div');
+          hitsLabel.style.width = '100%';
+          hitsLabel.style.textAlign = 'right';
+          hitsLabel.style.fontSize = '11px';
+          hitsLabel.style.marginTop = '5px';
+          hitsLabel.style.color = '#666';
+          hitsLabel.textContent = `${combo.hits} acertos`;
+          comboRow.appendChild(hitsLabel);
           
           combinationsContainer.appendChild(comboRow);
           
-          // Add separator between combinations (except for the last one)
+          // Add separator between combinations
           if (comboIndex < player.combinations.length - 1) {
             const separator = document.createElement('hr');
-            separator.style.margin = '10px 0';
+            separator.style.margin = '8px 0';
             separator.style.border = '0';
-            separator.style.borderBottom = '1px solid rgba(0,0,0,0.1)';
+            separator.style.borderBottom = '1px solid #eee';
             combinationsContainer.appendChild(separator);
           }
         });
@@ -413,30 +368,25 @@ export const GameReport: React.FC<GameReportProps> = ({
         const noCombo = document.createElement('p');
         noCombo.textContent = 'Sem combinações';
         noCombo.style.textAlign = 'center';
+        noCombo.style.fontSize = '12px';
+        noCombo.style.color = '#999';
         combinationsContainer.appendChild(noCombo);
       }
       
       playerBox.appendChild(combinationsContainer);
-      
-      // Alternate between left and right columns
-      if (index % 2 === 0) {
-        leftColumn.appendChild(playerBox);
-      } else {
-        rightColumn.appendChild(playerBox);
-      }
+      playersContainer.appendChild(playerBox);
     });
     
-    playersContainer.appendChild(leftColumn);
-    playersContainer.appendChild(rightColumn);
     reportElement.appendChild(playersContainer);
     
-    // Generate PDF
+    // Generate PDF - configuração para evitar quebras de página dentro dos boxes
     const options = {
-      margin: [15, 15],
-      filename: `${reportTitle.toLowerCase().replace(/\s+/g, '-')}-${game.name.replace(/\s+/g, '-')}-${formattedDate.replace(/\//g, '-')}.pdf`,
+      margin: [10, 10],
+      filename: `${reportTitle.toLowerCase().replace(/\s+/g, '-')}-${game.name.replace(/\s+/g, '-')}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { avoid: ['div'] }
     };
     
     html2pdf().from(reportElement).set(options).save()

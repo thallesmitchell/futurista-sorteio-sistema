@@ -1,11 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Search, Trophy } from 'lucide-react';
 import { Player } from '@/contexts/game/types';
 import { NumberBadge } from './NumberBadge';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export interface PlayersListProps {
   players: Player[];
@@ -16,9 +17,20 @@ export interface PlayersListProps {
 
 export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWinners }: PlayersListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const isMobile = useIsMobile();
+  
+  // Ordenar jogadores: vencedores primeiro, depois ordem alfabética
+  const sortedPlayers = [...players].sort((a, b) => {
+    const aIsWinner = currentWinners.some(winner => winner.id === a.id);
+    const bIsWinner = currentWinners.some(winner => winner.id === b.id);
+    
+    if (aIsWinner && !bIsWinner) return -1;
+    if (!aIsWinner && bIsWinner) return 1;
+    return a.name.localeCompare(b.name);
+  });
 
   // Filtra os jogadores pelo nome
-  const filteredPlayers = players.filter(player => 
+  const filteredPlayers = sortedPlayers.filter(player => 
     player.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -48,15 +60,15 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
               key={player.id} 
               className={`overflow-hidden transition-all ${
                 playerIsWinner 
-                ? 'border-2 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)] bg-green-500/5' 
+                ? 'border-2 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)] bg-green-500/5 animate-pulse-slow' 
                 : ''
               }`}
             >
-              <CardContent className="p-4">
+              <CardContent className={`p-4 ${isMobile ? 'px-3 py-3' : ''}`}>
                 <div className="flex justify-between items-center mb-4">
                   <div className="space-y-1">
-                    <h3 className="font-semibold text-lg flex items-center gap-2">
-                      {playerIsWinner && <Trophy className="h-5 w-5 text-green-500" />}
+                    <h3 className={`font-semibold ${isMobile ? 'text-base' : 'text-lg'} flex items-center gap-2`}>
+                      {playerIsWinner && <Trophy className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-green-500`} />}
                       {player.name}
                       {playerIsWinner && (
                         <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-green-500 text-white flex items-center gap-1">
@@ -65,13 +77,14 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                       )}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      {player.combinations.length} sequências | Acertos máximos: {Math.max(...player.combinations.map(c => c.hits || 0), 0)}
+                      {player.combinations.length} sequências | Acertos máximos: {Math.max(...player.combinations.map(c => c.hits), 0)}
                     </p>
                   </div>
                   <Button 
                     variant="outline" 
-                    size="sm"
+                    size={isMobile ? "sm" : "default"}
                     onClick={() => onEditPlayer(player)}
+                    className={isMobile ? "px-3 py-1 text-xs" : ""}
                   >
                     Editar
                   </Button>
@@ -87,7 +100,7 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                         key={`${player.id}-${idx}`} 
                         className={`flex flex-wrap gap-1.5 p-2 rounded-md ${
                           isWinningCombo 
-                          ? 'bg-green-500/20 border border-green-500/50' 
+                          ? 'bg-green-500/20 border border-green-500/50 animate-pulse-slow' 
                           : 'bg-muted/40'
                         }`}
                       >
@@ -95,7 +108,7 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                           <NumberBadge
                             key={`${player.id}-${idx}-${nIdx}`}
                             number={number}
-                            size="sm"
+                            size={isMobile ? "sm" : "md"}
                             isHit={allDrawnNumbers.includes(number)}
                           />
                         ))}

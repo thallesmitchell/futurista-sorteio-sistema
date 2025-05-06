@@ -1,5 +1,5 @@
 
-// Versão correta para Deno/Edge Functions do Supabase
+// Versão corrigida para Deno/Edge Functions do Supabase
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.21.0"
 
@@ -19,7 +19,13 @@ serve(async (req) => {
     // Create Supabase admin client with service role key
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
     )
 
     // Verify the request is authenticated
@@ -94,7 +100,7 @@ serve(async (req) => {
       })
     }
 
-    // Inserir na tabela de perfis (pode ser que o trigger já faça isso, mas é seguro garantir)
+    // Inserir na tabela de perfis
     const { error: profileInsertError } = await supabaseAdmin
       .from('profiles')
       .insert({
@@ -102,8 +108,6 @@ serve(async (req) => {
         username: username,
         role: 'admin'
       })
-      .select()
-      .single()
 
     if (profileInsertError) {
       console.error('Error creating profile:', profileInsertError)
@@ -138,7 +142,7 @@ serve(async (req) => {
     })
   } catch (error) {
     console.error('Error in create-admin-user function:', error)
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+    return new Response(JSON.stringify({ error: 'Internal Server Error', details: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
