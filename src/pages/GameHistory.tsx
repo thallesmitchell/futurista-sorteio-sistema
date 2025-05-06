@@ -125,17 +125,21 @@ export default function GameHistory() {
               <th>Números Escolhidos</th>
               <th>Acertos</th>
             </tr>
-            ${currentGame.players.sort((a, b) => (b.hits || 0) - (a.hits || 0)).map(player => `
+            ${currentGame.players.sort((a, b) => {
+              const aHits = a.hits || 0;
+              const bHits = b.hits || 0;
+              return bHits - aHits;
+            }).map(player => `
               <tr ${player.hits >= 6 ? 'class="winner"' : ''}>
                 <td>${player.name}</td>
-                <td>${player.combinations.map(combo => 
+                <td>${player.combinations && player.combinations.map ? player.combinations.map(combo => 
                   `<div style="margin-bottom: 8px; border-bottom: 1px dashed #ddd; padding-bottom: 5px;">
-                    ${combo.numbers.sort((a, b) => a - b).map(number => 
+                    ${combo.numbers && Array.isArray(combo.numbers) ? combo.numbers.sort((a, b) => a - b).map(number => 
                       `<span class="number">${number}</span>`
-                    ).join('')}
-                    (${combo.hits} acertos)
+                    ).join('') : ''}
+                    (${combo.hits || 0} acertos)
                   </div>`
-                ).join('')}</td>
+                ).join('') : ''}</td>
                 <td>${player.hits || 0}</td>
               </tr>
             `).join('')}
@@ -150,9 +154,9 @@ export default function GameHistory() {
             ${currentGame.dailyDraws.map(draw => `
               <tr>
                 <td>${new Date(draw.date).toLocaleDateString()}</td>
-                <td>${draw.numbers.sort((a, b) => a - b).map(number => 
+                <td>${draw.numbers && Array.isArray(draw.numbers) ? draw.numbers.sort((a, b) => a - b).map(number => 
                   `<span class="number">${number}</span>`
-                ).join('')}</td>
+                ).join('') : ''}</td>
               </tr>
             `).join('')}
           </table>
@@ -254,13 +258,15 @@ export default function GameHistory() {
                     </CardHeader>
                     <CardContent className="p-4">
                       <div className="flex flex-wrap gap-2">
-                        {winner.numbers.sort((a, b) => a - b).map(number => (
-                          <NumberBadge 
-                            key={number} 
-                            number={number} 
-                            isHit={allDrawnNumbers.includes(number)} 
-                          />
-                        ))}
+                        {winner.numbers && Array.isArray(winner.numbers) && winner.numbers
+                          .sort((a, b) => a - b)
+                          .map(number => (
+                            <NumberBadge 
+                              key={number} 
+                              number={number} 
+                              isHit={allDrawnNumbers.includes(number)} 
+                            />
+                          ))}
                       </div>
                     </CardContent>
                   </Card>
@@ -294,13 +300,15 @@ export default function GameHistory() {
                         <TableCell>{new Date(draw.date).toLocaleDateString()}</TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-2">
-                            {draw.numbers.sort((a, b) => a - b).map(number => (
-                              <NumberBadge 
-                                key={number} 
-                                number={number} 
-                                isHit={true} 
-                              />
-                            ))}
+                            {draw.numbers && Array.isArray(draw.numbers) && draw.numbers
+                              .sort((a, b) => a - b)
+                              .map(number => (
+                                <NumberBadge 
+                                  key={number} 
+                                  number={number} 
+                                  isHit={true} 
+                                />
+                              ))}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -340,13 +348,15 @@ export default function GameHistory() {
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-2">
-                              {player.numbers.sort((a, b) => a - b).map(number => (
-                                <NumberBadge 
-                                  key={number} 
-                                  number={number} 
-                                  isHit={allDrawnNumbers.includes(number)} 
-                                />
-                              ))}
+                              {player.numbers && Array.isArray(player.numbers) && player.numbers
+                                .sort((a, b) => a - b)
+                                .map(number => (
+                                  <NumberBadge 
+                                    key={number} 
+                                    number={number} 
+                                    isHit={allDrawnNumbers.includes(number)} 
+                                  />
+                                ))}
                             </div>
                           </TableCell>
                           <TableCell className={`text-right font-bold ${player.hits >= 6 ? "text-primary" : ""}`}>
