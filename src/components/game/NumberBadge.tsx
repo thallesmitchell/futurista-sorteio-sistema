@@ -6,11 +6,11 @@ export interface NumberBadgeProps {
   hits?: number;
   className?: string;
   variant?: 'default' | 'outline' | 'secondary';
-  // Adicionando propriedade size
   size?: 'sm' | 'md' | 'lg';
+  isHit?: boolean;
 }
 
-const NumberBadge = ({ number, hits = 0, className = '', variant = 'default', size = 'md' }: NumberBadgeProps) => {
+export const NumberBadge = ({ number, hits = 0, isHit, className = '', variant = 'default', size = 'md' }: NumberBadgeProps) => {
   let baseClasses = 'inline-flex items-center justify-center rounded-full font-medium';
   
   // Classes baseadas no tamanho
@@ -27,8 +27,8 @@ const NumberBadge = ({ number, hits = 0, className = '', variant = 'default', si
     secondary: 'bg-secondary text-secondary-foreground'
   };
   
-  // Adicionar classes para quando tem hits
-  const hitClasses = hits > 0 ? 'ring-2 ring-green-500 ring-offset-1' : '';
+  // Adicionar classes para quando tem hits ou isHit
+  const hitClasses = (hits > 0 || isHit) ? 'ring-2 ring-green-500 ring-offset-1' : '';
   
   return (
     <span className={`${baseClasses} ${sizeClasses[size]} ${variantClasses[variant]} ${hitClasses} ${className}`}>
@@ -36,5 +36,3 @@ const NumberBadge = ({ number, hits = 0, className = '', variant = 'default', si
     </span>
   );
 };
-
-export default NumberBadge;

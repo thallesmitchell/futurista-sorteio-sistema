@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import MainLayout from '@/layouts/MainLayout';
@@ -14,7 +13,7 @@ import { PlayersList } from '@/components/game/PlayersList';
 import { PlayerEditModal } from '@/components/game/PlayerEditModal';
 import { WinnersModal } from '@/components/game/WinnersModal';
 import { ConfirmCloseModal } from '@/components/game/ConfirmCloseModal';
-import { ArrowLeft, FileText, Plus, Trophy, Users, CalendarDays, UserPlus } from 'lucide-react';
+import { ArrowLeft, Trophy, Users, CalendarDays, UserPlus } from 'lucide-react';
 import { Player } from '@/contexts/GameContext';
 import { DeleteGameButton } from '@/components/game/DeleteGameButton';
 import { GameReport } from '@/components/game/GameReport';
@@ -73,6 +72,12 @@ export default function GameAdmin() {
   };
 
   const winners = game.winners || [];
+  
+  // Handle save player edit
+  const handleSavePlayerEdit = () => {
+    // Implementation will be added when needed
+    console.log("Save player edit functionality to be implemented");
+  };
 
   return (
     <MainLayout>
@@ -193,7 +198,7 @@ export default function GameAdmin() {
         editPlayerNumbers={editPlayerNumbers}
         setEditPlayerNumbers={setEditPlayerNumbers}
         gameId={game.id}
-        onSave={() => {}}
+        onSave={handleSavePlayerEdit}
       />
 
       {/* Winners Modal */}

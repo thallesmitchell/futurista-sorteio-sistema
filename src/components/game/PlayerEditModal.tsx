@@ -9,15 +9,14 @@ import { Player } from '@/contexts/game/types';
 export interface PlayerEditModalProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  player: Player;
+  player: Player | null;
   gameId: string;
   onSave: () => void;
-  // Adicionando propriedades para o textarea
   editPlayerNumbers: string;
   setEditPlayerNumbers: (value: string) => void;
 }
 
-const PlayerEditModal = ({
+export const PlayerEditModal = ({
   isOpen,
   setIsOpen,
   player,
@@ -30,6 +29,8 @@ const PlayerEditModal = ({
     onSave();
     setIsOpen(false);
   };
+
+  if (!player) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -68,5 +69,3 @@ const PlayerEditModal = ({
     </Dialog>
   );
 };
-
-export default PlayerEditModal;
