@@ -14,7 +14,7 @@ interface GameProviderProps {
 export function GameProvider({ children }: GameProviderProps) {
   const [games, setGames] = useState<Game[]>([]);
   const [currentGame, setCurrentGame] = useState<Game | null>(null);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isSuperAdmin } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -117,7 +117,8 @@ export function GameProvider({ children }: GameProviderProps) {
             status: gameStatus, // Convertendo explicitamente para o tipo correto
             players,
             dailyDraws,
-            winners
+            winners,
+            owner_id: game.owner_id
           } as Game;
         })
       );
@@ -147,7 +148,8 @@ export function GameProvider({ children }: GameProviderProps) {
           start_date: game.startDate,
           end_date: game.endDate,
           status: game.status,
-          user_id: user.id
+          owner_id: user.id,
+          user_id: user.id // Para compatibilidade
         })
         .select()
         .single();
@@ -164,7 +166,8 @@ export function GameProvider({ children }: GameProviderProps) {
         status: game.status,
         players: [],
         dailyDraws: [],
-        winners: []
+        winners: [],
+        owner_id: user.id
       };
       
       // Adicionar à lista local
@@ -369,6 +372,95 @@ export function GameProvider({ children }: GameProviderProps) {
         description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido",
         variant: "destructive"
       });
+    }
+  };
+
+  const updatePlayerSequences = async (gameId: string, playerId: string, sequences: number[][]): Promise<void> => {
+    try {
+      const game = games.find(g => g.id === gameId);
+      if (!game) throw new Error('Jogo não encontrado');
+      
+      const player = game.players.find(p => p.id === playerId);
+      if (!player) throw new Error('Jogador não encontrado');
+
+      // 1. Remover todas as combinações existentes do jogador
+      await supabase
+        .from('player_combinations')
+        .delete()
+        .eq('player_id', playerId);
+        
+      // 2. Calcular hits para as novas sequências
+      const drawnNumbers = game.dailyDraws.flatMap(draw => draw.numbers);
+      
+      // 3. Inserir novas combinações
+      const newCombinations = [];
+      
+      for (const sequence of sequences) {
+        const hits = sequence.filter(n => drawnNumbers.includes(n)).length;
+        
+        const { data, error } = await supabase
+          .from('player_combinations')
+          .insert({
+            player_id: playerId,
+            numbers: sequence,
+            hits
+          })
+          .select()
+          .single();
+          
+        if (error) throw error;
+        if (data) {
+          newCombinations.push({
+            numbers: data.numbers,
+            hits: data.hits
+          });
+        }
+      }
+      
+      // 4. Atualizar estado local
+      const updatedGames = games.map(g => {
+        if (g.id === gameId) {
+          return {
+            ...g,
+            players: g.players.map(p => {
+              if (p.id === playerId) {
+                return {
+                  ...p,
+                  combinations: newCombinations
+                };
+              }
+              return p;
+            })
+          };
+        }
+        return g;
+      });
+      
+      setGames(updatedGames);
+      
+      // Atualizar jogo atual se estiver sendo editado
+      if (currentGame && currentGame.id === gameId) {
+        setCurrentGame({
+          ...currentGame,
+          players: currentGame.players.map(p => {
+            if (p.id === playerId) {
+              return {
+                ...p,
+                combinations: newCombinations
+              };
+            }
+            return p;
+          })
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar sequências do jogador:', error);
+      toast({
+        title: "Erro ao atualizar sequências",
+        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
@@ -631,6 +723,7 @@ export function GameProvider({ children }: GameProviderProps) {
       addPlayer,
       addPlayerCombination,
       updatePlayer,
+      updatePlayerSequences,
       addDailyDraw,
       checkWinners
     }}>

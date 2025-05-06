@@ -5,13 +5,24 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 
+interface UserProfile {
+  id: string;
+  username: string | null;
+  role: 'super_admin' | 'admin';
+  theme_color: string | null;
+  logo_url: string | null;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, username: string) => Promise<boolean>;
+  signup: (email: string, password: string, username: string, role?: 'admin') => Promise<boolean>;
   logout: () => Promise<void>;
   user: User | null;
   session: Session | null;
+  userProfile: UserProfile | null;
+  isSuperAdmin: boolean;
+  refreshUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,8 +31,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Função para buscar o perfil do usuário
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        setUserProfile(data as UserProfile);
+        setIsSuperAdmin(data.role === 'super_admin');
+      }
+    } catch (error) {
+      console.error('Erro ao buscar perfil:', error);
+    }
+  };
+
+  // Função para atualizar o perfil do usuário
+  const refreshUserProfile = async () => {
+    if (user) {
+      await fetchUserProfile(user.id);
+    }
+  };
 
   // Verificar se o usuário já está autenticado ao carregar a página
   useEffect(() => {
@@ -30,6 +70,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setIsAuthenticated(!!currentSession?.user);
+      
+      if (currentSession?.user) {
+        setTimeout(() => {
+          fetchUserProfile(currentSession.user.id);
+        }, 0);
+      } else {
+        setUserProfile(null);
+        setIsSuperAdmin(false);
+      }
     });
 
     // Depois verificar a sessão atual
@@ -37,6 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setIsAuthenticated(!!currentSession?.user);
+      
+      if (currentSession?.user) {
+        fetchUserProfile(currentSession.user.id);
+      }
     });
 
     return () => {
@@ -76,11 +129,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const signup = async (email: string, password: string, username: string): Promise<boolean> => {
+  const signup = async (email: string, password: string, username: string, role: 'admin' = 'admin'): Promise<boolean> => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            username,
+            role
+          }
+        }
       });
 
       if (error) {
@@ -128,7 +187,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, session, login, signup, logout }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      user, 
+      session, 
+      login, 
+      signup, 
+      logout, 
+      userProfile, 
+      isSuperAdmin,
+      refreshUserProfile
+    }}>
       {children}
     </AuthContext.Provider>
   );

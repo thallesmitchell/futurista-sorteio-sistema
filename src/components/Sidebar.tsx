@@ -13,13 +13,17 @@ import {
   List,
   LogOut,
   Trophy,
+  Settings,
+  Users,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export default function Sidebar({ className }: SidebarProps) {
-  const { user, logout } = useAuth();
+  const { user, logout, isSuperAdmin, userProfile } = useAuth();
+  const { logoUrl } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -40,11 +44,21 @@ export default function Sidebar({ className }: SidebarProps) {
     >
       {/* Logo */}
       <div className="px-6 py-4 border-b border-border/40 flex items-center justify-center">
-        <NavLink to="/dashboard">
-          <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            SorteioFutura
-          </span>
-        </NavLink>
+        {logoUrl ? (
+          <NavLink to="/dashboard">
+            <img 
+              src={logoUrl} 
+              alt="Logo" 
+              className="h-10 w-auto max-w-[180px]" 
+            />
+          </NavLink>
+        ) : (
+          <NavLink to="/dashboard">
+            <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              SorteioFutura
+            </span>
+          </NavLink>
+        )}
       </div>
 
       {/* Sidebar content */}
@@ -63,6 +77,7 @@ export default function Sidebar({ className }: SidebarProps) {
               <LayoutDashboard className="h-4 w-4 mr-2" />
               Dashboard
             </Button>
+            
             <Button
               variant={isActive("/history") ? "secondary" : "ghost"}
               className="w-full justify-start"
@@ -70,6 +85,26 @@ export default function Sidebar({ className }: SidebarProps) {
             >
               <History className="h-4 w-4 mr-2" />
               Histórico
+            </Button>
+
+            {isSuperAdmin && (
+              <Button
+                variant={isActive("/super-admin") ? "secondary" : "ghost"}
+                className="w-full justify-start"
+                onClick={() => navigate("/super-admin")}
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Administradores
+              </Button>
+            )}
+            
+            <Button
+              variant={isActive("/settings") ? "secondary" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => navigate("/settings")}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Configurações
             </Button>
           </div>
 
@@ -83,9 +118,14 @@ export default function Sidebar({ className }: SidebarProps) {
             <div className="bg-muted/50 rounded-md p-2 mb-2">
               <div className="flex items-center gap-2">
                 <CircleUser className="h-4 w-4 text-primary" />
-                <span className="text-sm font-medium truncate">
-                  {user?.email}
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium truncate">
+                    {userProfile?.username || user?.email}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {userProfile?.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                  </span>
+                </div>
               </div>
             </div>
             <Button

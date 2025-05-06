@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      admin_relationships: {
+        Row: {
+          admin_id: string
+          created_at: string
+          id: string
+          super_admin_id: string
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          id?: string
+          super_admin_id: string
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          id?: string
+          super_admin_id?: string
+        }
+        Relationships: []
+      }
       daily_draws: {
         Row: {
           created_at: string
@@ -47,6 +68,7 @@ export type Database = {
           end_date: string | null
           id: string
           name: string
+          owner_id: string
           start_date: string
           status: string
           user_id: string
@@ -56,6 +78,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           name: string
+          owner_id?: string
           start_date: string
           status: string
           user_id: string
@@ -65,6 +88,7 @@ export type Database = {
           end_date?: string | null
           id?: string
           name?: string
+          owner_id?: string
           start_date?: string
           status?: string
           user_id?: string
@@ -136,18 +160,27 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          logo_url: string | null
+          role: string
+          theme_color: string | null
           updated_at: string
           username: string | null
         }
         Insert: {
           created_at?: string
           id: string
+          logo_url?: string | null
+          role?: string
+          theme_color?: string | null
           updated_at?: string
           username?: string | null
         }
         Update: {
           created_at?: string
           id?: string
+          logo_url?: string | null
+          role?: string
+          theme_color?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -204,7 +237,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      set_first_user_as_super_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

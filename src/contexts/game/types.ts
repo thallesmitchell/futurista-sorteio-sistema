@@ -29,6 +29,7 @@ export interface Game {
   players: Player[];
   dailyDraws: DailyDraw[];
   winners: Player[];
+  owner_id?: string;
 }
 
 export interface GameContextType {
@@ -41,6 +42,7 @@ export interface GameContextType {
   addPlayer: (gameId: string, player: Omit<Player, 'id'>) => Promise<Player | undefined>; // Atualizado para Promise
   addPlayerCombination: (gameId: string, playerId: string, numbers: number[]) => Promise<void>; // Atualizado para Promise
   updatePlayer: (gameId: string, playerId: string, player: Partial<Player>) => Promise<void>; // Atualizado para Promise
+  updatePlayerSequences: (gameId: string, playerId: string, sequences: number[][]) => Promise<void>; // Nova função
   addDailyDraw: (gameId: string, draw: Omit<DailyDraw, 'id'>) => Promise<DailyDraw | undefined>; // Atualizado para Promise
   checkWinners: (gameId: string) => Promise<Player[]>; // Atualizado para Promise
 }
