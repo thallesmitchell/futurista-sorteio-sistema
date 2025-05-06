@@ -32,32 +32,41 @@ export default function Dashboard() {
   const activeGames = games.filter(game => game.status === 'active');
   const closedGames = games.filter(game => game.status === 'closed');
 
-  const onSubmit = form.handleSubmit((data) => {
-    // Adicionar novo jogo
-    const newGame = addGame({
-      name: data.name,
-      startDate: new Date().toISOString(),
-      endDate: null,
-      status: 'active',
-      players: [],
-      dailyDraws: [],
-      winners: []
-    });
-    
-    // Resetar formulário
-    form.reset();
-    
-    // Fechar modal
-    setOpen(false);
-    
-    // Notificar usuário
-    toast({
-      title: "Jogo criado!",
-      description: `O jogo "${data.name}" foi criado com sucesso.`,
-    });
-    
-    // Redirecionar para página do jogo
-    navigate(`/admin/${newGame.id}`);
+  const onSubmit = form.handleSubmit(async (data) => {
+    try {
+      // Adicionar novo jogo e esperar pela resposta
+      const newGame = await addGame({
+        name: data.name,
+        startDate: new Date().toISOString(),
+        endDate: null,
+        status: 'active',
+        players: [],
+        dailyDraws: [],
+        winners: []
+      });
+      
+      // Resetar formulário
+      form.reset();
+      
+      // Fechar modal
+      setOpen(false);
+      
+      // Notificar usuário
+      toast({
+        title: "Jogo criado!",
+        description: `O jogo "${data.name}" foi criado com sucesso.`,
+      });
+      
+      // Redirecionar para página do jogo
+      navigate(`/admin/${newGame.id}`);
+    } catch (error) {
+      console.error("Erro ao criar jogo:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível criar o jogo. Tente novamente.",
+        variant: "destructive"
+      });
+    }
   });
   
   // Reset form when dialog closes
