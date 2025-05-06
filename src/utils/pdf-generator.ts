@@ -1,3 +1,4 @@
+
 import html2pdf from 'html2pdf.js';
 import { Game, Player } from '@/contexts/game/types';
 
@@ -37,9 +38,9 @@ export const generateGameReport = async (game: Game, options: GeneratePdfOptions
   // Add header
   addHeaderToReport(reportElement, reportTitle, formattedDateForDisplay);
   
-  // Add winners section if there are winners
+  // Add winners banner if there are winners
   if (winners.length > 0) {
-    addWinnersToReport(reportElement, winners, allDrawnNumbers, options.themeColor || '#25C17E');
+    addWinnersBanner(reportElement, winners, allDrawnNumbers, options.themeColor || '#25C17E');
   }
   
   // Add players in masonry layout
@@ -47,7 +48,7 @@ export const generateGameReport = async (game: Game, options: GeneratePdfOptions
     .filter(p => !winnerIds.includes(p.id))
     .sort((a, b) => a.name.localeCompare(b.name));
   
-  addPlayersToReport(reportElement, regularPlayers, allDrawnNumbers);
+  addPlayersToReport(reportElement, regularPlayers, allDrawnNumbers, options.themeColor || '#25C17E');
   
   // Generate PDF with specific options
   const pdfOptions = {
@@ -74,7 +75,7 @@ export const generateGameReport = async (game: Game, options: GeneratePdfOptions
 const createReportContainer = (): HTMLElement => {
   const reportElement = document.createElement('div');
   reportElement.className = 'pdf-content';
-  reportElement.style.fontFamily = 'Montserrat, sans-serif'; // Changed from Orbitron to Montserrat
+  reportElement.style.fontFamily = 'Montserrat, sans-serif'; // Using Montserrat font
   reportElement.style.padding = '20px';
   reportElement.style.margin = '0';
   reportElement.style.backgroundColor = '#0F111A';
@@ -112,58 +113,114 @@ const addHeaderToReport = (container: HTMLElement, title: string, date: string):
 };
 
 /**
- * Adds the winners section to the PDF report
+ * Adds the winners banner to the PDF report, styled like the WinnerBanner component
  */
-const addWinnersToReport = (
+const addWinnersBanner = (
   container: HTMLElement, 
   winners: Player[], 
   allDrawnNumbers: number[],
   themeColor: string
 ): void => {
-  winners.forEach(winner => {
-    const winningCombos = winner.combinations.filter(combo => combo.hits === 6);
+  // Get winning combinations (6 hits)
+  const winningEntries = winners.flatMap(winner => 
+    winner.combinations
+      .filter(combo => combo.hits === 6)
+      .map(combo => ({ 
+        playerName: winner.name, 
+        numbers: combo.numbers 
+      }))
+  );
+
+  if (!winningEntries.length) return;
+
+  // Create banner container
+  const bannerContainer = document.createElement('div');
+  bannerContainer.className = 'pdf-winner-banner';
+  bannerContainer.style.backgroundColor = 'rgba(34, 197, 94, 0.1)';
+  bannerContainer.style.borderRadius = '8px';
+  bannerContainer.style.border = '2px solid #25C17E';
+  bannerContainer.style.boxShadow = '0 0 15px rgba(34, 197, 94, 0.5)';
+  bannerContainer.style.overflow = 'hidden';
+  bannerContainer.style.marginBottom = '20px';
+  bannerContainer.style.pageBreakInside = 'avoid';
+  bannerContainer.style.breakInside = 'avoid';
+  
+  const bannerContent = document.createElement('div');
+  bannerContent.style.padding = '12px 16px';
+  bannerContent.style.display = 'flex';
+  bannerContent.style.flexDirection = 'column';
+  bannerContent.style.gap = '12px';
+  
+  // Banner header with trophy
+  const bannerHeader = document.createElement('div');
+  bannerHeader.style.display = 'flex';
+  bannerHeader.style.alignItems = 'center';
+  bannerHeader.style.justifyContent = 'center';
+  bannerHeader.style.gap = '8px';
+  bannerHeader.style.textAlign = 'center';
+  
+  // Trophy icon
+  const trophyLeft = document.createElement('div');
+  trophyLeft.innerHTML = '🏆';
+  trophyLeft.style.color = '#25C17E';
+  trophyLeft.style.fontSize = '18px';
+
+  const bannerTitle = document.createElement('h2');
+  bannerTitle.textContent = winners.length > 1 ? 'Vencedores Encontrados!' : 'Vencedor Encontrado!';
+  bannerTitle.style.fontSize = '20px';
+  bannerTitle.style.fontWeight = 'bold';
+  bannerTitle.style.color = '#25C17E';
+  bannerTitle.style.margin = '0';
+  
+  const trophyRight = document.createElement('div');
+  trophyRight.innerHTML = '🏆';
+  trophyRight.style.color = '#25C17E';
+  trophyRight.style.fontSize = '18px';
+  
+  bannerHeader.appendChild(trophyLeft);
+  bannerHeader.appendChild(bannerTitle);
+  bannerHeader.appendChild(trophyRight);
+  bannerContent.appendChild(bannerHeader);
+  
+  // Winners grid
+  const winnersGrid = document.createElement('div');
+  winnersGrid.style.display = 'grid';
+  winnersGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+  winnersGrid.style.gap = '12px';
+  
+  winningEntries.forEach((entry, index) => {
+    const entryBox = document.createElement('div');
+    entryBox.style.backgroundColor = 'rgba(34, 197, 94, 0.2)';
+    entryBox.style.padding = '12px';
+    entryBox.style.borderRadius = '8px';
+    entryBox.style.border = '1px solid rgba(34, 197, 94, 0.5)';
     
-    winningCombos.forEach((winningCombo, index) => {
-      const winnerBox = document.createElement('div');
-      winnerBox.className = 'pdf-winner-box';
-      winnerBox.style.backgroundColor = themeColor;
-      winnerBox.style.borderRadius = '8px';
-      winnerBox.style.marginBottom = '20px';
-      winnerBox.style.overflow = 'hidden';
-      winnerBox.style.pageBreakInside = 'avoid';
-      winnerBox.style.breakInside = 'avoid';
-      winnerBox.style.width = '100%'; // Make winner box full width
-      
-      // Winner header with trophy icons
-      const winnerHeader = document.createElement('div');
-      winnerHeader.className = 'pdf-winner-header';
-      winnerHeader.innerHTML = `🏆 VENCEDOR - ${winner.name} 🏆`;
-      winnerHeader.style.backgroundColor = themeColor;
-      winnerHeader.style.color = '#FFFFFF';
-      winnerHeader.style.padding = '15px';
-      winnerHeader.style.fontWeight = 'bold';
-      winnerHeader.style.textAlign = 'center';
-      winnerHeader.style.fontSize = '20px';
-      winnerBox.appendChild(winnerHeader);
-      
-      // Winner numbers
-      const numbersContainer = document.createElement('div');
-      numbersContainer.style.padding = '20px';
-      numbersContainer.style.backgroundColor = 'rgba(0,0,0,0.2)';
-      numbersContainer.style.display = 'flex';
-      numbersContainer.style.flexWrap = 'wrap';
-      numbersContainer.style.justifyContent = 'center';
-      numbersContainer.style.gap = '12px';
-      
-      winningCombo.numbers.forEach(number => {
-        const ball = createNumberBall(number, themeColor, true);
-        numbersContainer.appendChild(ball);
-      });
-      
-      winnerBox.appendChild(numbersContainer);
-      container.appendChild(winnerBox);
+    const playerName = document.createElement('p');
+    playerName.textContent = entry.playerName;
+    playerName.style.fontWeight = '600';
+    playerName.style.fontSize = '14px';
+    playerName.style.marginBottom = '8px';
+    playerName.style.color = '#22c55e'; // Verde mais claro
+    
+    const numbersContainer = document.createElement('div');
+    numbersContainer.style.display = 'flex';
+    numbersContainer.style.flexWrap = 'wrap';
+    numbersContainer.style.gap = '6px';
+    numbersContainer.style.justifyContent = 'center';
+    
+    entry.numbers.forEach(number => {
+      const ball = createNumberBall(number, themeColor, true);
+      numbersContainer.appendChild(ball);
     });
+    
+    entryBox.appendChild(playerName);
+    entryBox.appendChild(numbersContainer);
+    winnersGrid.appendChild(entryBox);
   });
+  
+  bannerContent.appendChild(winnersGrid);
+  bannerContainer.appendChild(bannerContent);
+  container.appendChild(bannerContainer);
 };
 
 /**
@@ -186,7 +243,7 @@ const createNumberBall = (number: number, color: string, isHit: boolean): HTMLEl
   
   // Number styling based on hit status
   if (isHit) {
-    ball.style.backgroundColor = color; // Changed to green background for hit numbers
+    ball.style.backgroundColor = color; // Green background for hit numbers
     ball.style.color = 'white'; // White text for contrast
     ball.style.border = `2px solid ${color}`;
   } else {
@@ -210,13 +267,17 @@ const createNumberBall = (number: number, color: string, isHit: boolean): HTMLEl
 };
 
 /**
- * Adds all regular players to the report in a masonry layout
+ * Adds all players to the report in a masonry layout
  */
 const addPlayersToReport = (
   container: HTMLElement, 
   players: Player[],
-  allDrawnNumbers: number[]
+  allDrawnNumbers: number[],
+  themeColor: string
 ): void => {
+  // Convert allDrawnNumbers to a Set for faster lookups
+  const drawnNumbersSet = new Set(allDrawnNumbers);
+  
   // Container for masonry layout
   const playersContainer = document.createElement('div');
   playersContainer.className = 'pdf-masonry';
@@ -226,61 +287,74 @@ const addPlayersToReport = (
   players.forEach(player => {
     const playerBox = document.createElement('div');
     playerBox.className = 'pdf-player-box';
-    playerBox.style.backgroundColor = '#1A1F2C'; // Darker background
+    playerBox.style.backgroundColor = '#1A1F2C';
     playerBox.style.borderRadius = '8px';
     playerBox.style.marginBottom = '15px';
     playerBox.style.overflow = 'hidden';
     playerBox.style.pageBreakInside = 'avoid';
     playerBox.style.breakInside = 'avoid';
+    playerBox.style.display = 'inline-block';
+    playerBox.style.width = '100%';
     
-    // Player name header
-    const playerHeader = document.createElement('div');
-    playerHeader.className = 'pdf-player-header';
-    playerHeader.style.backgroundColor = '#1A3F34';
-    playerHeader.style.color = '#FFFFFF';
-    playerHeader.style.padding = '10px';
-    playerHeader.style.fontWeight = 'bold';
-    playerHeader.style.textAlign = 'center';
-    playerHeader.textContent = player.name;
-    playerBox.appendChild(playerHeader);
+    // Player info section
+    const playerContent = document.createElement('div');
+    playerContent.style.padding = '16px';
     
-    // Player combinations content
+    // Player name and info header
+    const playerInfoSection = document.createElement('div');
+    playerInfoSection.style.display = 'flex';
+    playerInfoSection.style.flexDirection = 'column';
+    playerInfoSection.style.marginBottom = '12px';
+    
+    const playerName = document.createElement('h3');
+    playerName.textContent = player.name;
+    playerName.style.fontSize = '16px';
+    playerName.style.fontWeight = '600';
+    playerName.style.margin = '0 0 4px 0';
+    
+    const maxHits = Math.max(...player.combinations.map(c => c.hits), 0);
+    const playerInfo = document.createElement('p');
+    playerInfo.textContent = `${player.combinations.length} sequência${player.combinations.length !== 1 ? 's' : ''} | Acertos máximos: ${maxHits}`;
+    playerInfo.style.fontSize = '12px';
+    playerInfo.style.color = '#9ca3af'; // text-muted-foreground
+    playerInfo.style.margin = '0';
+    
+    playerInfoSection.appendChild(playerName);
+    playerInfoSection.appendChild(playerInfo);
+    playerContent.appendChild(playerInfoSection);
+    
+    // Combinations section
     const combinationsContainer = document.createElement('div');
-    combinationsContainer.style.padding = '10px';
-    combinationsContainer.style.backgroundColor = '#1A1F2C'; // Darker background
+    combinationsContainer.style.display = 'flex';
+    combinationsContainer.style.flexDirection = 'column';
+    combinationsContainer.style.gap = '8px';
     
     if (player.combinations && player.combinations.length > 0) {
-      player.combinations.forEach((combo, index) => {
+      player.combinations.forEach(combo => {
         const comboRow = document.createElement('div');
-        comboRow.className = 'pdf-combo-row';
-        comboRow.style.backgroundColor = '#2A2F3C'; // Darker background for combo row
-        comboRow.style.margin = '0 0 10px 0';
-        comboRow.style.padding = '10px';
         comboRow.style.display = 'flex';
         comboRow.style.flexWrap = 'wrap';
-        comboRow.style.justifyContent = 'center';
-        comboRow.style.gap = '8px';
-        comboRow.style.borderRadius = '4px';
+        comboRow.style.gap = '6px';
+        comboRow.style.padding = '8px';
+        comboRow.style.backgroundColor = 'rgba(217, 217, 217, 0.1)'; // bg-muted/40
+        comboRow.style.borderRadius = '6px';
+        comboRow.style.justifyContent = 'flex-start';
         
         // Create balls for each number
         combo.numbers.sort((a, b) => a - b).forEach(number => {
-          const isHit = allDrawnNumbers.includes(number);
-          const ball = createNumberBall(number, '#25C17E', isHit);
+          const isNumberHit = drawnNumbersSet.has(number);
+          const ball = createNumberBall(number, themeColor, isNumberHit);
+          ball.style.width = '32px'; // Smaller for the player cards
+          ball.style.height = '32px';
           comboRow.appendChild(ball);
         });
         
         combinationsContainer.appendChild(comboRow);
       });
-    } else {
-      const noCombo = document.createElement('p');
-      noCombo.textContent = 'Sem combinações';
-      noCombo.style.textAlign = 'center';
-      noCombo.style.padding = '10px';
-      noCombo.style.color = '#999';
-      combinationsContainer.appendChild(noCombo);
     }
     
-    playerBox.appendChild(combinationsContainer);
+    playerContent.appendChild(combinationsContainer);
+    playerBox.appendChild(playerContent);
     playersContainer.appendChild(playerBox);
   });
   
