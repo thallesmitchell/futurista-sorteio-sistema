@@ -13,6 +13,7 @@ import { Player } from '@/contexts/game/types';
 import { GameHeader } from '@/components/game/GameHeader';
 import { GameAdminForms } from '@/components/game/GameAdminForms';
 import { useToast } from '@/components/ui/use-toast';
+import PlayerEditHandler from '@/components/game/PlayerEditHandler';
 
 export default function GameAdmin() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -107,6 +108,13 @@ export default function GameAdmin() {
 
         {/* Game Forms */}
         <GameAdminForms gameId={game.id} />
+
+        {/* Player Edit Handler */}
+        <PlayerEditHandler 
+          ref={playerEditHandlerRef}
+          gameId={game.id}
+          onNewWinnerFound={handleNewWinnerFound}
+        />
 
         {/* Game Content */}
         <TabsController defaultValue="players">

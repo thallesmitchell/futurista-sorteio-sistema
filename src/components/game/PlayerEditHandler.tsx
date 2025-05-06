@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Player } from '@/contexts/game/types';
 import { useGame } from '@/contexts/GameContext';
@@ -10,14 +10,21 @@ interface PlayerEditHandlerProps {
   onNewWinnerFound: (hasWinners: boolean) => void;
 }
 
-export const PlayerEditHandler: React.FC<PlayerEditHandlerProps> = ({ gameId, onNewWinnerFound }) => {
+export const PlayerEditHandler = forwardRef<any, PlayerEditHandlerProps>(({ gameId, onNewWinnerFound }, ref) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
   const [editPlayerNumbers, setEditPlayerNumbers] = useState('');
   const { updatePlayerSequences, checkWinners } = useGame();
   const { toast } = useToast();
 
-  const handleEditPlayer = (player: Player) => {
+  // Expose handleEditPlayer method to parent components via ref
+  useImperativeHandle(ref, () => ({
+    handleEditPlayer: (player: Player) => {
+      handleEditPlayer(player);
+    }
+  }));
+
+  const handleEditPlayer = useCallback((player: Player) => {
     // Convert player combinations to text format for the textarea
     const playerNumbersText = player.combinations
       .map(combo => combo.numbers.map(n => String(n).padStart(2, '0')).join('-'))
@@ -26,7 +33,7 @@ export const PlayerEditHandler: React.FC<PlayerEditHandlerProps> = ({ gameId, on
     setPlayerToEdit(player);
     setEditPlayerNumbers(playerNumbersText);
     setIsEditModalOpen(true);
-  };
+  }, []);
 
   const handleSavePlayerEdit = async () => {
     if (!playerToEdit) return;
@@ -90,6 +97,8 @@ export const PlayerEditHandler: React.FC<PlayerEditHandlerProps> = ({ gameId, on
       />
     </>
   );
-};
+});
+
+PlayerEditHandler.displayName = "PlayerEditHandler";
 
 export default PlayerEditHandler;

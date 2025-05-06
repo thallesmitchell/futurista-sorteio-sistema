@@ -75,13 +75,21 @@ export const generateGameReport = async (game: Game, options: GeneratePdfOptions
 const createReportContainer = (): HTMLElement => {
   const reportElement = document.createElement('div');
   reportElement.className = 'pdf-content';
-  reportElement.style.fontFamily = 'Orbitron, sans-serif';
+  reportElement.style.fontFamily = 'Montserrat, sans-serif'; // Changed from Orbitron to Montserrat
   reportElement.style.padding = '20px';
   reportElement.style.margin = '0';
   reportElement.style.backgroundColor = '#0F111A';
   reportElement.style.color = '#FFFFFF';
   reportElement.style.maxWidth = '100%';
   reportElement.style.minHeight = '100vh'; // Ensure dark background covers full page
+  
+  // Add stylesheet for Montserrat font
+  const montserratStyle = document.createElement('style');
+  montserratStyle.textContent = `
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap');
+    * { font-family: 'Montserrat', sans-serif; }
+  `;
+  reportElement.appendChild(montserratStyle);
   
   return reportElement;
 };
@@ -159,8 +167,11 @@ const addWinnersToReport = (
         ball.style.alignItems = 'center';
         ball.style.fontWeight = 'bold';
         ball.style.fontSize = '16px';
-        ball.style.lineHeight = '40px'; // Center text vertically
-        ball.style.textAlign = 'center'; // Center text horizontally
+        // Fix alignment issues - proper centering
+        ball.style.textAlign = 'center';
+        ball.style.lineHeight = '1';
+        ball.style.paddingTop = '0';
+        ball.style.paddingBottom = '0';
         
         // Format number with leading zero
         const formattedNumber = String(number).padStart(2, '0');
@@ -242,12 +253,15 @@ const addPlayersToReport = (
           ball.style.width = '32px';
           ball.style.height = '32px';
           ball.style.borderRadius = '50%';
-          ball.style.display = 'inline-flex';
+          ball.style.display = 'flex';
           ball.style.justifyContent = 'center';
           ball.style.alignItems = 'center';
           ball.style.fontSize = '14px';
-          ball.style.lineHeight = '32px'; // Center text vertically
-          ball.style.textAlign = 'center'; // Center text horizontally
+          // Fix alignment issues - proper centering
+          ball.style.textAlign = 'center';
+          ball.style.lineHeight = '1';
+          ball.style.paddingTop = '0';
+          ball.style.paddingBottom = '0';
           
           // Format number with leading zero
           const formattedNumber = String(number).padStart(2, '0');
@@ -264,8 +278,6 @@ const addPlayersToReport = (
           ball.textContent = formattedNumber;
           comboRow.appendChild(ball);
         });
-        
-        // No hits label as requested by the user
         
         combinationsContainer.appendChild(comboRow);
       });

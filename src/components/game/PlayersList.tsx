@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,6 +7,7 @@ import { Search, Trophy } from 'lucide-react';
 import { Player } from '@/contexts/game/types';
 import { NumberBadge } from './NumberBadge';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { WinnerBanner } from './WinnerBanner';
 
 export interface PlayersListProps {
   players: Player[];
@@ -19,28 +20,43 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
   const [searchTerm, setSearchTerm] = useState('');
   const isMobile = useIsMobile();
   
-  // Ordenar jogadores: vencedores primeiro, depois ordem alfabética
-  const sortedPlayers = [...players].sort((a, b) => {
-    const aIsWinner = currentWinners.some(winner => winner.id === a.id);
-    const bIsWinner = currentWinners.some(winner => winner.id === b.id);
-    
-    if (aIsWinner && !bIsWinner) return -1;
-    if (!aIsWinner && bIsWinner) return 1;
-    return a.name.localeCompare(b.name);
-  });
+  // Memoize sorted players for better performance
+  const sortedPlayers = useMemo(() => {
+    return [...players].sort((a, b) => {
+      const aIsWinner = currentWinners.some(winner => winner.id === a.id);
+      const bIsWinner = currentWinners.some(winner => winner.id === b.id);
+      
+      if (aIsWinner && !bIsWinner) return -1;
+      if (!aIsWinner && bIsWinner) return 1;
+      return a.name.localeCompare(b.name);
+    });
+  }, [players, currentWinners]);
 
-  // Filtra os jogadores pelo nome
-  const filteredPlayers = sortedPlayers.filter(player => 
-    player.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Memoize filtered players for better performance
+  const filteredPlayers = useMemo(() => {
+    return sortedPlayers.filter(player => 
+      player.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [sortedPlayers, searchTerm]);
 
-  // Verifica se um jogador está na lista de vencedores
-  const isWinner = (playerId: string) => {
-    return currentWinners.some(winner => winner.id === playerId);
-  };
+  // Memoized function to check if a player is a winner
+  const isWinner = useMemo(() => {
+    const winnerIds = new Set(currentWinners.map(winner => winner.id));
+    return (playerId: string) => winnerIds.has(playerId);
+  }, [currentWinners]);
+
+  // Memoize all drawn numbers set for faster lookup
+  const drawnNumbersSet = useMemo(() => {
+    return new Set(allDrawnNumbers);
+  }, [allDrawnNumbers]);
 
   return (
     <div className="space-y-4">
+      {/* Show Winner Banner if there are winners */}
+      {currentWinners.length > 0 && (
+        <WinnerBanner winners={currentWinners} allDrawnNumbers={allDrawnNumbers} />
+      )}
+
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input
@@ -106,7 +122,7 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                         }`}
                       >
                         {combination.numbers.map((number, nIdx) => {
-                          const isNumberHit = allDrawnNumbers.includes(number);
+                          const isNumberHit = drawnNumbersSet.has(number);
                           
                           return (
                             <NumberBadge
