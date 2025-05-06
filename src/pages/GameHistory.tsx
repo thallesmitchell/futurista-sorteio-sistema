@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import html2pdf from 'html2pdf.js';
 import MainLayout from '@/layouts/MainLayout';
 import { useGame } from '@/contexts/GameContext';
 import { useToast } from "@/components/ui/use-toast";
@@ -54,7 +55,7 @@ export default function GameHistory() {
   // Obter todos os números sorteados
   const allDrawnNumbers = currentGame.dailyDraws.flatMap(draw => draw.numbers);
 
-  // Função para gerar PDF
+  // Função modificada para gerar PDF usando html2pdf
   const handleGeneratePdf = () => {
     if (isGenerating) return;
     
@@ -65,108 +66,118 @@ export default function GameHistory() {
       description: "O relatório está sendo gerado e será baixado automaticamente"
     });
     
-    // Simular geração do PDF para download
-    setTimeout(() => {
-      // Criar conteúdo HTML para converter em PDF
-      const reportTitle = `Relatório do Jogo: ${currentGame.name}`;
-      const dateInfo = `Data: ${new Date().toLocaleDateString()}`;
-      const gameDate = `Jogo iniciado em: ${new Date(currentGame.startDate).toLocaleDateString()}`;
-      const status = currentGame.status === 'active' ? 'Em andamento' : 'Encerrado';
-      const playersCount = `Total de jogadores: ${currentGame.players.length}`;
-      const drawsCount = `Total de sorteios: ${currentGame.dailyDraws.length}`;
-      
-      const html = `
-        <html>
-          <head>
-            <title>${reportTitle}</title>
-            <style>
-              body { font-family: 'Arial', sans-serif; margin: 20px; }
-              h1 { color: #8B5CF6; text-align: center; }
-              h2 { color: #8B5CF6; margin-top: 20px; }
-              .info { margin-bottom: 20px; }
-              table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-              th { background-color: #f0f0f0; }
-              .winner { background-color: #f3e8ff; }
-              .number { display: inline-block; width: 30px; height: 30px; border-radius: 50%; 
-                        background: #8B5CF6; color: white; text-align: center; line-height: 30px;
-                        margin: 2px; }
-            </style>
-          </head>
-          <body>
-            <h1>${reportTitle}</h1>
-            <div class="info">
-              <p>${dateInfo}</p>
-              <p>${gameDate}</p>
-              <p>Status: ${status}</p>
-              <p>${playersCount}</p>
-              <p>${drawsCount}</p>
-            </div>
-            
-            ${currentGame.winners && currentGame.winners.length > 0 ? `
-              <h2>Ganhadores</h2>
-              <table>
-                <tr>
-                  <th>Nome</th>
-                  <th>Acertos</th>
-                </tr>
-                ${currentGame.winners.map(winner => `
-                  <tr class="winner">
-                    <td>${winner.name}</td>
-                    <td>${winner.hits || 6}</td>
-                  </tr>
-                `).join('')}
-              </table>
-            ` : ''}
-            
-            <h2>Jogadores</h2>
+    // Criar conteúdo HTML para converter em PDF
+    const reportTitle = `Relatório do Jogo: ${currentGame.name}`;
+    const dateInfo = `Data: ${new Date().toLocaleDateString()}`;
+    const gameDate = `Jogo iniciado em: ${new Date(currentGame.startDate).toLocaleDateString()}`;
+    const status = currentGame.status === 'active' ? 'Em andamento' : 'Encerrado';
+    const playersCount = `Total de jogadores: ${currentGame.players.length}`;
+    const drawsCount = `Total de sorteios: ${currentGame.dailyDraws.length}`;
+    
+    const html = `
+      <html>
+        <head>
+          <title>${reportTitle}</title>
+          <style>
+            body { font-family: 'Arial', sans-serif; margin: 20px; }
+            h1 { color: #8B5CF6; text-align: center; }
+            h2 { color: #8B5CF6; margin-top: 20px; }
+            .info { margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f0f0f0; }
+            .winner { background-color: #f3e8ff; }
+            .number { display: inline-block; width: 30px; height: 30px; border-radius: 50%; 
+                      background: #8B5CF6; color: white; text-align: center; line-height: 30px;
+                      margin: 2px; }
+          </style>
+        </head>
+        <body>
+          <h1>${reportTitle}</h1>
+          <div class="info">
+            <p>${dateInfo}</p>
+            <p>${gameDate}</p>
+            <p>Status: ${status}</p>
+            <p>${playersCount}</p>
+            <p>${drawsCount}</p>
+          </div>
+          
+          ${currentGame.winners && currentGame.winners.length > 0 ? `
+            <h2>Ganhadores</h2>
             <table>
               <tr>
                 <th>Nome</th>
-                <th>Números Escolhidos</th>
                 <th>Acertos</th>
               </tr>
-              ${currentGame.players.sort((a, b) => (b.hits || 0) - (a.hits || 0)).map(player => `
-                <tr ${player.hits >= 6 ? 'class="winner"' : ''}>
-                  <td>${player.name}</td>
-                  <td>${player.numbers.sort((a, b) => a - b).map(number => 
-                    `<span class="number">${number}</span>`
-                  ).join('')}</td>
-                  <td>${player.hits || 0}</td>
+              ${currentGame.winners.map(winner => `
+                <tr class="winner">
+                  <td>${winner.name}</td>
+                  <td>${winner.hits || 6}</td>
                 </tr>
               `).join('')}
             </table>
-            
-            <h2>Sorteios</h2>
-            <table>
-              <tr>
-                <th>Data</th>
-                <th>Números Sorteados</th>
+          ` : ''}
+          
+          <h2>Jogadores</h2>
+          <table>
+            <tr>
+              <th>Nome</th>
+              <th>Números Escolhidos</th>
+              <th>Acertos</th>
+            </tr>
+            ${currentGame.players.sort((a, b) => (b.hits || 0) - (a.hits || 0)).map(player => `
+              <tr ${player.hits >= 6 ? 'class="winner"' : ''}>
+                <td>${player.name}</td>
+                <td>${player.combinations.map(combo => 
+                  `<div style="margin-bottom: 8px; border-bottom: 1px dashed #ddd; padding-bottom: 5px;">
+                    ${combo.numbers.sort((a, b) => a - b).map(number => 
+                      `<span class="number">${number}</span>`
+                    ).join('')}
+                    (${combo.hits} acertos)
+                  </div>`
+                ).join('')}</td>
+                <td>${player.hits || 0}</td>
               </tr>
-              ${currentGame.dailyDraws.map(draw => `
-                <tr>
-                  <td>${new Date(draw.date).toLocaleDateString()}</td>
-                  <td>${draw.numbers.sort((a, b) => a - b).map(number => 
-                    `<span class="number">${number}</span>`
-                  ).join('')}</td>
-                </tr>
-              `).join('')}
-            </table>
-          </body>
-        </html>
-      `;
-      
-      // Criar um Blob para o download
-      const blob = new Blob([html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      
-      // Criar link de download e clicar automaticamente
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `relatorio-${currentGame.name.toLowerCase().replace(/\s+/g, '-')}.html`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+            `).join('')}
+          </table>
+          
+          <h2>Sorteios</h2>
+          <table>
+            <tr>
+              <th>Data</th>
+              <th>Números Sorteados</th>
+            </tr>
+            ${currentGame.dailyDraws.map(draw => `
+              <tr>
+                <td>${new Date(draw.date).toLocaleDateString()}</td>
+                <td>${draw.numbers.sort((a, b) => a - b).map(number => 
+                  `<span class="number">${number}</span>`
+                ).join('')}</td>
+              </tr>
+            `).join('')}
+          </table>
+        </body>
+      </html>
+    `;
+    
+    // Criar um elemento temporário para o conteúdo HTML
+    const element = document.createElement('div');
+    element.innerHTML = html;
+    document.body.appendChild(element);
+    
+    // Configurações do html2pdf
+    const opt = {
+      margin: 10,
+      filename: `relatorio-${currentGame.name.toLowerCase().replace(/\s+/g, '-')}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    // Gerar o PDF e fazer download
+    html2pdf().from(element).set(opt).save().then(() => {
+      // Remover o elemento temporário
+      document.body.removeChild(element);
       
       toast({
         title: "Relatório gerado",
@@ -174,7 +185,17 @@ export default function GameHistory() {
       });
       
       setIsGenerating(false);
-    }, 1500);
+    }).catch(error => {
+      console.error("Erro ao gerar PDF:", error);
+      
+      toast({
+        title: "Erro ao gerar relatório",
+        description: "Ocorreu um problema ao gerar o PDF. Por favor, tente novamente.",
+        variant: "destructive"
+      });
+      
+      setIsGenerating(false);
+    });
   };
 
   return (
