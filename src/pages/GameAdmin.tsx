@@ -1,36 +1,29 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import { useGame } from '@/contexts/GameContext';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TabsController } from '@/components/game/TabsController';
-import { PlayerForm } from '@/components/game/PlayerForm';
-import { DrawForm } from '@/components/game/DrawForm';
+import { TabsContent } from '@/components/ui/tabs';
 import DrawsList from '@/components/game/DrawsList';
 import PlayersList from '@/components/game/PlayersList';
-import { PlayerEditModal } from '@/components/game/PlayerEditModal';
 import { WinnersModal } from '@/components/game/WinnersModal';
 import { ConfirmCloseModal } from '@/components/game/ConfirmCloseModal';
-import { ArrowLeft, Trophy, Users, CalendarDays, UserPlus } from 'lucide-react';
 import { Player } from '@/contexts/game/types';
-import { DeleteGameButton } from '@/components/game/DeleteGameButton';
-import { GameReport } from '@/components/game/GameReport';
+import { GameHeader } from '@/components/game/GameHeader';
+import { GameAdminForms } from '@/components/game/GameAdminForms';
 import { useToast } from '@/components/ui/use-toast';
 
 export default function GameAdmin() {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
-  const { games, setCurrentGame, updateGame, updatePlayerSequences, checkWinners } = useGame();
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { games, setCurrentGame, updateGame, checkWinners } = useGame();
   const [isWinnersModalOpen, setIsWinnersModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
-  const [editPlayerNumbers, setEditPlayerNumbers] = useState('');
   const [newWinnerFound, setNewWinnerFound] = useState(false);
   const { toast } = useToast();
+  const playerEditHandlerRef = useRef<any>(null);
 
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
@@ -46,7 +39,7 @@ export default function GameAdmin() {
       }
       setCurrentGame(game);
       
-      // Verificar se há novos vencedores que ainda não foram notificados
+      // Check for new winners that haven't been notified yet
       if (winners.length > 0 && !newWinnerFound) {
         setNewWinnerFound(true);
         setIsWinnersModalOpen(true);
@@ -65,7 +58,7 @@ export default function GameAdmin() {
     return () => {
       setCurrentGame(null);
     };
-  }, [game, gameId, navigate, setCurrentGame, winners]);
+  }, [game, gameId, navigate, setCurrentGame, winners, newWinnerFound, toast]);
 
   // Show 404 if game not found
   if (!game || game.status === 'closed') {
@@ -73,14 +66,11 @@ export default function GameAdmin() {
   }
 
   const handleEditPlayer = (player: Player) => {
-    // Converter as combinações do jogador para formato de texto para o textarea
-    const playerNumbersText = player.combinations
-      .map(combo => combo.numbers.map(n => String(n).padStart(2, '0')).join('-'))
-      .join('\n');
-    
     setPlayerToEdit(player);
-    setEditPlayerNumbers(playerNumbersText);
-    setIsEditModalOpen(true);
+    // Using useRef to access the component's method
+    if (playerEditHandlerRef.current?.handleEditPlayer) {
+      playerEditHandlerRef.current.handleEditPlayer(player);
+    }
   };
 
   const handleCloseGame = () => {
@@ -93,54 +83,10 @@ export default function GameAdmin() {
     navigate(`/history/${game.id}`);
   };
 
-  // Função para salvar edições do jogador
-  const handleSavePlayerEdit = async () => {
-    if (!playerToEdit) return;
-    
-    try {
-      // Processar o texto com as sequências para obter arrays de números
-      const sequences = editPlayerNumbers
-        .split('\n')
-        .filter(line => line.trim().length > 0)
-        .map(line => {
-          // Remove espaços e converte para array de números, aceitando múltiplos separadores
-          return line
-            .split(/[\s,.-]+/)
-            .map(num => parseInt(num, 10))
-            .filter(num => !isNaN(num) && num > 0 && num <= 80);
-        })
-        .filter(seq => seq.length === 6); // Garantir que haja 6 números
-      
-      // Atualizar as sequências do jogador
-      if (sequences.length > 0) {
-        await updatePlayerSequences(game.id, playerToEdit.id, sequences);
-        
-        // Verificar imediatamente se há novos vencedores após atualizar as sequências
-        const currentWinners = await checkWinners(game.id);
-        if (currentWinners.length > 0) {
-          setNewWinnerFound(true);
-          setIsWinnersModalOpen(true);
-        }
-        
-        setIsEditModalOpen(false);
-        toast({
-          title: "Sequências salvas",
-          description: `${sequences.length} sequências foram salvas para ${playerToEdit.name}`,
-        });
-      } else {
-        toast({
-          title: "Erro ao salvar",
-          description: "Nenhuma sequência válida encontrada. Cada linha deve ter exatamente 6 números entre 1 e 80.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error("Erro ao salvar sequências:", error);
-      toast({
-        title: "Erro ao salvar sequências",
-        description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido",
-        variant: "destructive"
-      });
+  const handleNewWinnerFound = (hasWinners: boolean) => {
+    if (hasWinners) {
+      setNewWinnerFound(true);
+      setIsWinnersModalOpen(true);
     }
   };
 
@@ -148,92 +94,19 @@ export default function GameAdmin() {
     <MainLayout>
       <div className="space-y-6 animate-fade-in">
         {/* Game Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <h1 className="text-2xl font-bold">{game.name}</h1>
-              
-              {winners.length > 0 && (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="ml-2 bg-primary/10 text-primary hover:bg-primary/20"
-                  onClick={() => setIsWinnersModalOpen(true)}
-                >
-                  <Trophy className="mr-1 h-4 w-4" />
-                  {winners.length} Ganhador{winners.length !== 1 ? 'es' : ''}
-                </Button>
-              )}
-            </div>
-            
-            <div className="flex flex-wrap gap-4 text-sm">
-              <div className="flex items-center">
-                <span className="text-muted-foreground mr-2">Criado em:</span>
-                <span>{new Date(game.startDate).toLocaleDateString()}</span>
-              </div>
-              
-              <div className="flex items-center">
-                <span className="text-muted-foreground mr-2">Jogadores:</span>
-                <span>{game.players.length}</span>
-              </div>
-              
-              <div className="flex items-center">
-                <span className="text-muted-foreground mr-2">Sorteios:</span>
-                <span>{game.dailyDraws.length}</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
-            <GameReport
-              game={game}
-              variant="outline"
-              size="default"
-            />
+        <GameHeader
+          gameId={game.id}
+          gameName={game.name}
+          startDate={game.startDate}
+          playersCount={game.players.length}
+          drawsCount={game.dailyDraws.length}
+          winners={winners}
+          onWinnersClick={() => setIsWinnersModalOpen(true)}
+          onCloseGameClick={() => setIsCloseModalOpen(true)}
+        />
 
-            <DeleteGameButton 
-              gameId={game.id}
-              variant="outline"
-              size="default"
-              onSuccess={() => navigate('/dashboard')}
-            />
-            
-            <Button 
-              variant="destructive" 
-              onClick={() => setIsCloseModalOpen(true)}
-              disabled={winners.length > 0}
-            >
-              {winners.length > 0 ? 'Jogo Encerrado' : 'Encerrar Jogo'}
-            </Button>
-          </div>
-        </div>
-
-        {/* Game Forms - Now as tabs */}
-        <Card className="p-5 backdrop-blur-sm bg-card/40 border-primary/20">
-          <Tabs defaultValue="players" className="w-full">
-            <TabsList className="grid grid-cols-2 mb-4">
-              <TabsTrigger value="players" className="data-[state=active]:bg-primary/20">
-                <UserPlus className="mr-2 h-4 w-4" />
-                Cadastrar Novo Jogador
-              </TabsTrigger>
-              <TabsTrigger value="draws" className="data-[state=active]:bg-primary/20">
-                <CalendarDays className="mr-2 h-4 w-4" />
-                Registrar Sorteio Diário
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="players">
-              <PlayerForm gameId={game.id} />
-            </TabsContent>
-            
-            <TabsContent value="draws">
-              <DrawForm gameId={game.id} />
-            </TabsContent>
-          </Tabs>
-        </Card>
+        {/* Game Forms */}
+        <GameAdminForms gameId={game.id} />
 
         {/* Game Content */}
         <TabsController defaultValue="players">
@@ -254,17 +127,6 @@ export default function GameAdmin() {
           </TabsContent>
         </TabsController>
       </div>
-
-      {/* Edit Player Modal */}
-      <PlayerEditModal 
-        isOpen={isEditModalOpen}
-        setIsOpen={setIsEditModalOpen}
-        player={playerToEdit}
-        editPlayerNumbers={editPlayerNumbers}
-        setEditPlayerNumbers={setEditPlayerNumbers}
-        gameId={game.id}
-        onSave={handleSavePlayerEdit}
-      />
 
       {/* Winners Modal */}
       <WinnersModal 
