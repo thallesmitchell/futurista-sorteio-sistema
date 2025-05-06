@@ -1,121 +1,104 @@
 
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Home, Trophy, LogOut, Menu, X, ChevronRight } from 'lucide-react';
+import React from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import {
+  BarChart3,
+  CalendarDays,
+  CircleUser,
+  History,
+  LayoutDashboard,
+  List,
+  LogOut,
+  Trophy,
+} from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
-export function Sidebar() {
+interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export default function Sidebar({ className }: SidebarProps) {
+  const { user, logout } = useAuth();
   const location = useLocation();
-  const { logout } = useAuth();
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const navigate = useNavigate();
 
-  const toggleSidebar = () => {
-    setIsCollapsed(!isCollapsed);
+  const handleLogout = async () => {
+    await logout();
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileOpen(!isMobileOpen);
-  };
-
-  const NavItem = ({ icon: Icon, label, to }: { icon: any; label: string; to: string }) => {
-    const isActive = location.pathname === to;
-
-    return (
-      <Link to={to} onClick={() => setIsMobileOpen(false)}>
-        <div
-          className={cn(
-            "flex items-center gap-3 px-4 py-3 rounded-lg mb-1 transition-all duration-200",
-            isActive 
-              ? "bg-primary/20 text-primary" 
-              : "hover:bg-primary/10 text-foreground/80 hover:text-foreground"
-          )}
-        >
-          <Icon size={20} strokeWidth={2} />
-          {!isCollapsed && <span className="font-medium">{label}</span>}
-        </div>
-      </Link>
-    );
+  const isActive = (path: string) => {
+    return location.pathname.startsWith(path);
   };
 
   return (
-    <>
-      {/* Mobile menu button - visible on small screens */}
-      <div className="fixed top-4 left-4 z-50 block md:hidden">
-        <Button 
-          variant="outline" 
-          size="icon"
-          onClick={toggleMobileMenu}
-          className="bg-background/80 backdrop-blur-sm border-white/10"
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
-      </div>
-
-      {/* Mobile overlay */}
-      {isMobileOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
-          onClick={() => setIsMobileOpen(false)}
-        />
+    <div
+      className={cn(
+        "border-r border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 h-screen flex flex-col",
+        className
       )}
-
-      {/* Sidebar */}
-      <div
-        className={cn(
-          "fixed top-0 left-0 h-screen bg-card/90 backdrop-blur-md border-r border-border z-50 transition-all duration-300 flex flex-col",
-          isCollapsed ? "w-[70px]" : "w-[240px]",
-          isMobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-        )}
-      >
-        {/* Close button for mobile */}
-        <div className="flex justify-end p-2 md:hidden">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={toggleMobileMenu}
-          >
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-
-        {/* Logo area */}
-        <div className="p-4 border-b border-border flex items-center justify-between">
-          {!isCollapsed && (
-            <div className="font-bold text-xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              SorteioFutura
-            </div>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleSidebar}
-            className="hidden md:flex"
-          >
-            <ChevronRight className={cn("h-5 w-5 transition-all", isCollapsed && "rotate-180")} />
-          </Button>
-        </div>
-
-        {/* Navigation items */}
-        <div className="flex-1 overflow-y-auto py-4 px-3">
-          <NavItem icon={Home} label="Dashboard" to="/dashboard" />
-          <NavItem icon={Trophy} label="Histórico" to="/history" />
-        </div>
-
-        {/* Footer with logout */}
-        <div className="p-4 border-t border-border">
-          <Button
-            variant="ghost"
-            className={cn("w-full justify-start text-muted-foreground", isCollapsed && "justify-center")}
-            onClick={logout}
-          >
-            <LogOut size={20} />
-            {!isCollapsed && <span className="ml-2">Sair</span>}
-          </Button>
-        </div>
+    >
+      {/* Logo */}
+      <div className="px-6 py-4 border-b border-border/40 flex items-center justify-center">
+        <NavLink to="/dashboard">
+          <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            SorteioFutura
+          </span>
+        </NavLink>
       </div>
-    </>
+
+      {/* Sidebar content */}
+      <ScrollArea className="flex-1">
+        <div className="px-3 py-4">
+          <div className="mb-2 px-3">
+            <h3 className="text-xs font-medium text-muted-foreground">Menu</h3>
+          </div>
+
+          <div className="space-y-1">
+            <Button
+              variant={isActive("/dashboard") ? "secondary" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => navigate("/dashboard")}
+            >
+              <LayoutDashboard className="h-4 w-4 mr-2" />
+              Dashboard
+            </Button>
+            <Button
+              variant={isActive("/history") ? "secondary" : "ghost"}
+              className="w-full justify-start"
+              onClick={() => navigate("/history")}
+            >
+              <History className="h-4 w-4 mr-2" />
+              Histórico
+            </Button>
+          </div>
+
+          {/* User section */}
+          <div className="mt-10 pt-4 border-t border-border/20">
+            <div className="px-3 mb-2">
+              <h3 className="text-xs font-medium text-muted-foreground">
+                Usuário
+              </h3>
+            </div>
+            <div className="bg-muted/50 rounded-md p-2 mb-2">
+              <div className="flex items-center gap-2">
+                <CircleUser className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium truncate">
+                  {user?.email}
+                </span>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair
+            </Button>
+          </div>
+        </div>
+      </ScrollArea>
+    </div>
   );
 }

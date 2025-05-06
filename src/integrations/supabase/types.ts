@@ -9,7 +9,196 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      daily_draws: {
+        Row: {
+          created_at: string
+          date: string
+          game_id: string
+          id: string
+          numbers: number[]
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          game_id: string
+          id?: string
+          numbers: number[]
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          game_id?: string
+          id?: string
+          numbers?: number[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_draws_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      games: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          name: string
+          start_date: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name: string
+          start_date: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name?: string
+          start_date?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      player_combinations: {
+        Row: {
+          created_at: string
+          hits: number
+          id: string
+          numbers: number[]
+          player_id: string
+        }
+        Insert: {
+          created_at?: string
+          hits?: number
+          id?: string
+          numbers: number[]
+          player_id: string
+        }
+        Update: {
+          created_at?: string
+          hits?: number
+          id?: string
+          numbers?: number[]
+          player_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_combinations_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      players: {
+        Row: {
+          created_at: string
+          game_id: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "players_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      winners: {
+        Row: {
+          combination_id: string
+          created_at: string
+          game_id: string
+          id: string
+          player_id: string
+        }
+        Insert: {
+          combination_id: string
+          created_at?: string
+          game_id: string
+          id?: string
+          player_id: string
+        }
+        Update: {
+          combination_id?: string
+          created_at?: string
+          game_id?: string
+          id?: string
+          player_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "winners_combination_id_fkey"
+            columns: ["combination_id"]
+            isOneToOne: false
+            referencedRelation: "player_combinations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "winners_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "winners_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
