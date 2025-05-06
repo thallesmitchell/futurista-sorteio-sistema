@@ -30,15 +30,17 @@ export const GameReport: React.FC<GameReportProps> = ({
     // Create report container
     const reportElement = document.createElement('div');
     reportElement.style.fontFamily = 'monospace';
-    reportElement.style.padding = '20px';
+    reportElement.style.padding = '0';
+    reportElement.style.margin = '0';
     reportElement.style.backgroundColor = '#ffffff';
+    reportElement.style.maxWidth = '800px';
     
     // Header with logo and title
     const header = document.createElement('div');
     header.style.display = 'flex';
     header.style.justifyContent = 'space-between';
     header.style.alignItems = 'center';
-    header.style.marginBottom = '30px';
+    header.style.margin = '20px 0';
     
     // Left logo
     const leftLogo = document.createElement('img');
@@ -51,8 +53,16 @@ export const GameReport: React.FC<GameReportProps> = ({
     title.style.textAlign = 'center';
     title.style.fontWeight = 'bold';
     title.style.fontSize = '24px';
-    title.innerHTML = `${reportTitle}<br/>${formattedDate.replace(/\//g, '/')}`;
     title.style.fontFamily = 'monospace';
+    
+    // Format date as in the example (06/maio/2025)
+    const months = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    const month = months[currentDate.getMonth()];
+    const year = currentDate.getFullYear();
+    const formattedDateForDisplay = `${day}/${month}/${year}`;
+    
+    title.innerHTML = `${reportTitle}<br/>${formattedDateForDisplay}`;
     header.appendChild(title);
     
     // Right logo
@@ -99,17 +109,21 @@ export const GameReport: React.FC<GameReportProps> = ({
     playersContainer.style.display = 'flex';
     playersContainer.style.flexWrap = 'wrap';
     playersContainer.style.gap = '10px';
+    playersContainer.style.justifyContent = 'space-between';
     
     // Create left column
     const leftColumn = document.createElement('div');
-    leftColumn.style.flex = '1';
-    leftColumn.style.minWidth = '45%';
-    leftColumn.style.marginRight = '10px';
+    leftColumn.style.flex = '0 0 calc(50% - 8px)';
+    leftColumn.style.display = 'flex';
+    leftColumn.style.flexDirection = 'column';
+    leftColumn.style.gap = '10px';
     
     // Create right column
     const rightColumn = document.createElement('div');
-    rightColumn.style.flex = '1';
-    rightColumn.style.minWidth = '45%';
+    rightColumn.style.flex = '0 0 calc(50% - 8px)';
+    rightColumn.style.display = 'flex';
+    rightColumn.style.flexDirection = 'column';
+    rightColumn.style.gap = '10px';
     
     // Distribute players between columns
     regularPlayers.forEach((player, index) => {
@@ -130,26 +144,22 @@ export const GameReport: React.FC<GameReportProps> = ({
     // Function to create player box
     function createPlayerBox(player, allDrawnNumbers, isWinner) {
       const playerBox = document.createElement('div');
-      playerBox.style.backgroundColor = isWinner ? '#1db954' : '#e9f5e9';
-      playerBox.style.borderRadius = '10px';
+      playerBox.style.backgroundColor = '#e9f5e9';
+      playerBox.style.borderRadius = '8px';
       playerBox.style.overflow = 'hidden';
       playerBox.style.marginBottom = '10px';
+      playerBox.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
       playerBox.style.breakInside = 'avoid'; // Prevent box from breaking across pages
       
       // Player name header
       const nameHeader = document.createElement('div');
-      nameHeader.style.backgroundColor = '#0e4429';
+      nameHeader.style.backgroundColor = '#004d25';
       nameHeader.style.color = '#ffffff';
       nameHeader.style.padding = '8px 15px';
       nameHeader.style.fontWeight = 'bold';
       nameHeader.style.textAlign = 'center';
       nameHeader.style.fontFamily = 'monospace';
-      
-      if (isWinner) {
-        nameHeader.textContent = `VENCEDOR — ${player.name}`;
-      } else {
-        nameHeader.textContent = player.name;
-      }
+      nameHeader.textContent = player.name;
       
       playerBox.appendChild(nameHeader);
       
@@ -161,23 +171,24 @@ export const GameReport: React.FC<GameReportProps> = ({
         player.combinations.forEach(combo => {
           const comboRow = document.createElement('div');
           comboRow.style.display = 'flex';
-          comboRow.style.marginBottom = '5px';
+          comboRow.style.justifyContent = 'center';
+          comboRow.style.gap = '10px';
+          comboRow.style.marginBottom = '8px';
           comboRow.style.fontFamily = 'monospace';
           
           // Create numbered balls
           combo.numbers.forEach(number => {
             const isHit = allDrawnNumbers.includes(number);
             
-            const ball = document.createElement('div');
+            const ball = document.createElement('span');
             ball.style.width = '30px';
             ball.style.height = '30px';
-            ball.style.borderRadius = '50%';
+            ball.style.borderRadius = '4px';
             ball.style.display = 'inline-flex';
             ball.style.justifyContent = 'center';
             ball.style.alignItems = 'center';
-            ball.style.margin = '0 3px';
             ball.style.fontWeight = 'bold';
-            ball.style.fontSize = '12px';
+            ball.style.fontSize = '14px';
             ball.style.fontFamily = 'monospace';
             
             // Format the number with leading zero
@@ -191,7 +202,7 @@ export const GameReport: React.FC<GameReportProps> = ({
               // Regular ball
               ball.style.backgroundColor = 'transparent';
               ball.style.color = '#000000';
-              ball.style.border = '1px solid #0e4429';
+              ball.style.border = '1px solid #333333';
             }
             
             ball.textContent = formattedNumber;
@@ -212,13 +223,13 @@ export const GameReport: React.FC<GameReportProps> = ({
       return playerBox;
     }
     
-    // Generate PDF for mobile-friendly format
+    // Generate PDF
     const options = {
       margin: 10,
       filename: `${reportTitle.toLowerCase().replace(/\s+/g, '-')}-${game.name.replace(/\s+/g, '-')}-${formattedDate.replace(/\//g, '-')}.pdf`,
       image: { type: 'jpeg', quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: 'mm', format: [90, 160], orientation: 'portrait' } // Mobile-friendly format
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
     
     html2pdf().from(reportElement).set(options).save()

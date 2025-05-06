@@ -13,11 +13,11 @@ export const NumberBadge: React.FC<NumberBadgeProps> = ({ number, isHit }) => {
   return (
     <span 
       className={`
-        inline-flex items-center justify-center rounded-full 
+        inline-flex items-center justify-center rounded-md
         ${isMobile ? 'w-7 h-7 text-xs' : 'w-9 h-9 text-sm'} 
         ${isHit 
-          ? 'bg-primary text-primary-foreground font-semibold' 
-          : 'bg-muted/30 text-foreground border border-primary/30 backdrop-blur-sm'}
+          ? 'bg-[#1db954] text-white font-bold' 
+          : 'bg-transparent text-black border border-[#333] backdrop-blur-sm'}
         font-medium transition-all duration-300
       `}
     >
