@@ -26,8 +26,8 @@ export const NumberBadge = ({
     lg: 'h-10 w-10 text-base'
   };
   
-  // Base classes for all number badges - fixed alignment
-  const baseClasses = 'inline-flex items-center justify-center rounded-full leading-none flex-shrink-0';
+  // Base classes for all number badges - improved alignment
+  const baseClasses = 'inline-flex items-center justify-center rounded-full flex-shrink-0 leading-none';
   
   // Determine if the number is a hit
   const isNumberHit = hits > 0 || isHit === true;
@@ -44,7 +44,9 @@ export const NumberBadge = ({
       hitClasses,
       className
     )}>
-      {String(number).padStart(2, '0')}
+      <span className="flex items-center justify-center h-full w-full translate-y-[0.5px]">
+        {String(number).padStart(2, '0')}
+      </span>
     </span>
   );
 };

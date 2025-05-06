@@ -48,7 +48,7 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
               <p className="font-semibold text-sm md:text-base mb-1 text-green-400">
                 {entry.playerName}
               </p>
-              <div className="flex flex-wrap gap-1 md:gap-2">
+              <div className="flex flex-wrap gap-1 md:gap-2 justify-center">
                 {entry.numbers.map((number, idx) => (
                   <NumberBadge
                     key={`${index}-${idx}`}

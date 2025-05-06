@@ -47,6 +47,7 @@ export const PlayerEditHandler = forwardRef<any, PlayerEditHandlerProps>(({ game
           // Remove spaces and convert to array of numbers, accepting multiple separators
           return line
             .split(/[\s,.-]+/)
+            .filter(num => num.trim().length > 0)
             .map(num => parseInt(num, 10))
             .filter(num => !isNaN(num) && num > 0 && num <= 80);
         })

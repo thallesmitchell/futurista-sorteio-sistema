@@ -67,14 +67,15 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+      {/* Changed to masonry layout using CSS columns */}
+      <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-0">
         {filteredPlayers.map((player) => {
           const playerIsWinner = isWinner(player.id);
           
           return (
             <Card 
               key={player.id} 
-              className={`overflow-hidden transition-all ${
+              className={`mb-4 inline-block w-full overflow-hidden break-inside-avoid transition-all ${
                 playerIsWinner 
                 ? 'border-2 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)] bg-green-500/5 animate-pulse-slow' 
                 : ''
@@ -143,7 +144,7 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
         })}
 
         {filteredPlayers.length === 0 && (
-          <div className="col-span-2 py-8 text-center text-muted-foreground">
+          <div className="col-span-full py-8 text-center text-muted-foreground">
             Nenhum jogador encontrado.
           </div>
         )}

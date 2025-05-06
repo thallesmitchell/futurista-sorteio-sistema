@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { FileText } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { Game } from '@/contexts/GameContext';
+import { Game } from '@/contexts/game/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -57,7 +57,20 @@ export const GameReport: React.FC<GameReportProps> = ({
   }, [user]);
   
   const handleGenerateReport = () => {
-    generateGameReport(game, { themeColor: profileData.themeColor })
+    // Ensure we have a complete game object with players and draws
+    if (!game || !game.players || !game.dailyDraws) {
+      toast({
+        title: "Erro ao gerar relatório",
+        description: "Dados do jogo não estão completos",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Make a deep copy of the game to avoid reference issues
+    const fullGame = JSON.parse(JSON.stringify(game));
+    
+    generateGameReport(fullGame, { themeColor: profileData.themeColor })
       .then(() => {
         toast({
           title: "Relatório gerado com sucesso",

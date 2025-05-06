@@ -1,6 +1,6 @@
 
 import html2pdf from 'html2pdf.js';
-import { Game, Player } from '@/contexts/GameContext';
+import { Game, Player } from '@/contexts/game/types';
 
 interface GeneratePdfOptions {
   themeColor?: string;
@@ -157,31 +157,7 @@ const addWinnersToReport = (
       numbersContainer.style.gap = '12px';
       
       winningCombo.numbers.forEach(number => {
-        const ball = document.createElement('div');
-        ball.className = 'pdf-number-ball';
-        ball.style.width = '40px';
-        ball.style.height = '40px';
-        ball.style.borderRadius = '50%';
-        ball.style.display = 'inline-flex';
-        ball.style.justifyContent = 'center';
-        ball.style.alignItems = 'center';
-        ball.style.fontWeight = 'bold';
-        ball.style.fontSize = '16px';
-        // Fix alignment issues - proper centering
-        ball.style.textAlign = 'center';
-        ball.style.lineHeight = '1';
-        ball.style.paddingTop = '0';
-        ball.style.paddingBottom = '0';
-        
-        // Format number with leading zero
-        const formattedNumber = String(number).padStart(2, '0');
-        
-        // All numbers are hits in winning combination
-        ball.style.backgroundColor = 'white';
-        ball.style.color = themeColor;
-        ball.style.border = `2px solid ${themeColor}`;
-        
-        ball.textContent = formattedNumber;
+        const ball = createNumberBall(number, themeColor, true);
         numbersContainer.appendChild(ball);
       });
       
@@ -189,6 +165,49 @@ const addWinnersToReport = (
       container.appendChild(winnerBox);
     });
   });
+};
+
+/**
+ * Creates a number ball with proper vertical alignment
+ */
+const createNumberBall = (number: number, color: string, isHit: boolean): HTMLElement => {
+  const ball = document.createElement('div');
+  ball.className = 'pdf-number-ball';
+  ball.style.width = '40px';
+  ball.style.height = '40px';
+  ball.style.borderRadius = '50%';
+  ball.style.display = 'flex';
+  ball.style.justifyContent = 'center';
+  ball.style.alignItems = 'center';
+  ball.style.fontWeight = 'bold';
+  ball.style.fontSize = '16px';
+  
+  // Format number with leading zero
+  const formattedNumber = String(number).padStart(2, '0');
+  
+  // Number styling based on hit status
+  if (isHit) {
+    ball.style.backgroundColor = 'white';
+    ball.style.color = color;
+    ball.style.border = `2px solid ${color}`;
+  } else {
+    ball.style.backgroundColor = '#1A1F2C';
+    ball.style.color = '#FFFFFF';
+    ball.style.border = `1px solid ${color}`;
+  }
+  
+  // Create inner span for proper vertical centering
+  const innerSpan = document.createElement('span');
+  innerSpan.textContent = formattedNumber;
+  innerSpan.style.display = 'flex';
+  innerSpan.style.justifyContent = 'center';
+  innerSpan.style.alignItems = 'center';
+  innerSpan.style.height = '100%';
+  // Apply a slight vertical adjustment to visually center the text
+  innerSpan.style.paddingTop = '2px'; 
+  
+  ball.appendChild(innerSpan);
+  return ball;
 };
 
 /**
@@ -247,35 +266,7 @@ const addPlayersToReport = (
         // Create balls for each number
         combo.numbers.sort((a, b) => a - b).forEach(number => {
           const isHit = allDrawnNumbers.includes(number);
-          
-          const ball = document.createElement('div');
-          ball.className = isHit ? 'pdf-number-hit' : 'pdf-number-miss';
-          ball.style.width = '32px';
-          ball.style.height = '32px';
-          ball.style.borderRadius = '50%';
-          ball.style.display = 'flex';
-          ball.style.justifyContent = 'center';
-          ball.style.alignItems = 'center';
-          ball.style.fontSize = '14px';
-          // Fix alignment issues - proper centering
-          ball.style.textAlign = 'center';
-          ball.style.lineHeight = '1';
-          ball.style.paddingTop = '0';
-          ball.style.paddingBottom = '0';
-          
-          // Format number with leading zero
-          const formattedNumber = String(number).padStart(2, '0');
-          
-          if (isHit) {
-            ball.style.backgroundColor = '#25C17E';
-            ball.style.color = '#FFFFFF';
-          } else {
-            ball.style.backgroundColor = '#1A1F2C';
-            ball.style.color = '#FFFFFF';
-            ball.style.border = '1px solid #25C17E';
-          }
-          
-          ball.textContent = formattedNumber;
+          const ball = createNumberBall(number, '#25C17E', isHit);
           comboRow.appendChild(ball);
         });
         

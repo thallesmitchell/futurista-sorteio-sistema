@@ -14,6 +14,7 @@ import { GameHeader } from '@/components/game/GameHeader';
 import { GameAdminForms } from '@/components/game/GameAdminForms';
 import { useToast } from '@/components/ui/use-toast';
 import PlayerEditHandler from '@/components/game/PlayerEditHandler';
+import { GameReport } from '@/components/game/GameReport';
 
 export default function GameAdmin() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -95,16 +96,25 @@ export default function GameAdmin() {
     <MainLayout>
       <div className="space-y-6 animate-fade-in">
         {/* Game Header */}
-        <GameHeader
-          gameId={game.id}
-          gameName={game.name}
-          startDate={game.startDate}
-          playersCount={game.players.length}
-          drawsCount={game.dailyDraws.length}
-          winners={winners}
-          onWinnersClick={() => setIsWinnersModalOpen(true)}
-          onCloseGameClick={() => setIsCloseModalOpen(true)}
-        />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <GameHeader
+            gameId={game.id}
+            gameName={game.name}
+            startDate={game.startDate}
+            playersCount={game.players.length}
+            drawsCount={game.dailyDraws.length}
+            winners={winners}
+            onWinnersClick={() => setIsWinnersModalOpen(true)}
+            onCloseGameClick={() => setIsCloseModalOpen(true)}
+          />
+          
+          {/* Add Game Report button here for direct access */}
+          <GameReport 
+            game={game}
+            variant="outline"
+            size="sm"
+          />
+        </div>
 
         {/* Game Forms */}
         <GameAdminForms gameId={game.id} />
