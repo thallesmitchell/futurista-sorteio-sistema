@@ -1,13 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, Loader2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { FileText, FilePdf, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import { Game } from '@/contexts/game/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { generateGameReport } from '@/utils/pdf';
+import { generateGameReport } from '@/utils/pdf/pdfBuilder';
 
 interface GameReportProps {
   game: Game;
@@ -26,12 +26,12 @@ export const GameReport: React.FC<GameReportProps> = ({
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const [isGenerating, setIsGenerating] = useState(false);
-  const [profileData, setProfileData] = React.useState({
-    themeColor: '#25C17E' // Default color
+  const [profileData, setProfileData] = useState({
+    themeColor: '#39FF14' // Default color
   });
   
   // Fetch current admin profile
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
       
@@ -46,7 +46,7 @@ export const GameReport: React.FC<GameReportProps> = ({
         
         if (data) {
           setProfileData({
-            themeColor: data.theme_color || '#25C17E'
+            themeColor: data.theme_color || '#39FF14'
           });
         }
       } catch (err) {
@@ -74,10 +74,11 @@ export const GameReport: React.FC<GameReportProps> = ({
       console.log('Draws count:', game.dailyDraws.length);
       console.log('Winners count:', game.winners?.length || 0);
       
-      // Make a deep copy of the game to avoid reference issues
-      const fullGame = structuredClone(game);
-      
-      await generateGameReport(fullGame, { themeColor: profileData.themeColor });
+      // Generate PDF using our new system
+      await generateGameReport(game, {
+        themeColor: profileData.themeColor,
+        includeNearWinners: true
+      });
       
       toast({
         title: "Relatório gerado com sucesso",
@@ -110,10 +111,12 @@ export const GameReport: React.FC<GameReportProps> = ({
         </>
       ) : (
         <>
-          <FileText className="mr-1 h-4 w-4" />
+          <FilePdf className="mr-1 h-4 w-4" />
           Baixar Relatório
         </>
       )}
     </Button>
   );
 };
+
+export default GameReport;
