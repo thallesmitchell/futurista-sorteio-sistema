@@ -1,6 +1,7 @@
 
 import { Player } from '@/contexts/game/types';
 import { createNumberBall } from './number-ball';
+import { createPlayerCombination } from './player-combination';
 
 /**
  * Adds all players to the report in a masonry layout
@@ -92,7 +93,7 @@ export const addPlayersToReport = (
         comboContainer.style.borderRadius = '6px';
         comboContainer.style.border = '1px solid #172842';
         
-        // Add sequence number label
+        // Add sequence number label with hits count
         const sequenceLabel = document.createElement('div');
         sequenceLabel.textContent = `Sequência ${comboIndex + 1} - ${combo.hits} acerto${combo.hits !== 1 ? 's' : ''}`;
         sequenceLabel.style.fontSize = '13px';
@@ -102,24 +103,10 @@ export const addPlayersToReport = (
         sequenceLabel.style.textAlign = 'center';
         comboContainer.appendChild(sequenceLabel);
         
-        // Numbers row
-        const comboRow = document.createElement('div');
-        comboRow.style.display = 'flex';
-        comboRow.style.flexWrap = 'wrap';
-        comboRow.style.gap = '6px';
-        comboRow.style.justifyContent = 'center';
-        
-        // Sort numbers for consistency
-        const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
-        
-        // Create balls for each number
-        sortedNumbers.forEach(number => {
-          const isNumberHit = drawnNumbersSet.has(number);
-          const ball = createNumberBall(number, themeColor, isNumberHit);
-          comboRow.appendChild(ball);
-        });
-        
+        // Create combo row with only hit numbers in green
+        const comboRow = createPlayerCombination(combo.numbers, drawnNumbersSet, themeColor);
         comboContainer.appendChild(comboRow);
+        
         combinationsContainer.appendChild(comboContainer);
       });
     }

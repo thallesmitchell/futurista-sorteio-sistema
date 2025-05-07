@@ -7,7 +7,7 @@ import { Game } from '@/contexts/game/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { generateGameReport } from '@/utils/pdf/pdfBuilder';
+import { generateHtmlGameReport } from '@/utils/pdf';
 
 interface GameReportProps {
   game: Game;
@@ -74,8 +74,8 @@ export const GameReport: React.FC<GameReportProps> = ({
       console.log('Draws count:', game.dailyDraws.length);
       console.log('Winners count:', game.winners?.length || 0);
       
-      // Generate PDF using our system with all required parameters
-      await generateGameReport(game, {
+      // Using our new HTML generator that properly implements all requirements
+      await generateHtmlGameReport(game, {
         themeColor: profileData.themeColor,
         filename: `resultado-${game.name.replace(/\s+/g, '-')}.pdf`,
         includeNearWinners: true
