@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
 import { useGame } from '@/contexts/GameContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 export default function Dashboard() {
   const navigate = useNavigate();
   const { games, addGame } = useGame();
+  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
   
@@ -34,7 +35,17 @@ export default function Dashboard() {
 
   const onSubmit = form.handleSubmit(async (data) => {
     try {
-      // Adicionar novo jogo e esperar pela resposta
+      // Check if user is authenticated
+      if (!user) {
+        toast({
+          title: "Erro",
+          description: "Você precisa estar logado para criar um jogo.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Add owner_id to the new game
       const newGame = await addGame({
         name: data.name,
         startDate: new Date().toISOString(),
@@ -42,22 +53,23 @@ export default function Dashboard() {
         status: 'active',
         players: [],
         dailyDraws: [],
-        winners: []
+        winners: [],
+        owner_id: user.id
       });
       
-      // Resetar formulário
+      // Reset form
       form.reset();
       
-      // Fechar modal
+      // Close modal
       setOpen(false);
       
-      // Notificar usuário
+      // Notify user
       toast({
         title: "Jogo criado!",
         description: `O jogo "${data.name}" foi criado com sucesso.`,
       });
       
-      // Redirecionar para página do jogo
+      // Redirect to game page
       navigate(`/admin/${newGame.id}`);
     } catch (error) {
       console.error("Erro ao criar jogo:", error);

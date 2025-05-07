@@ -412,7 +412,9 @@ export default function SuperAdminDashboard() {
                     <TableBody>
                       {admins.map((relation) => (
                         <TableRow key={relation.id}>
-                          <TableCell className="font-medium">{relation.admin?.username || 'N/A'}</TableCell>
+                          <TableCell className="font-medium">
+                            {relation.admin?.username || 'Administrador sem nome'}
+                          </TableCell>
                           <TableCell>{relation.admin?.email}</TableCell>
                           <TableCell>{new Date(relation.created_at).toLocaleDateString()}</TableCell>
                           <TableCell className="text-right space-x-2">

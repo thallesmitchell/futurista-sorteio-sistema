@@ -16,6 +16,7 @@ import HistoryPage from "./pages/HistoryPage";
 import NotFound from "./pages/NotFound";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import ProfileSettings from "./pages/ProfileSettings";
+import AdminView from "./pages/AdminView"; // Import the new AdminView component
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/admin/:gameId" element={<GameAdmin />} />
+                <Route path="/admin/view/:adminId" element={<AdminView />} /> {/* Add the new route */}
                 <Route path="/history/:gameId" element={<GameHistory />} />
                 <Route path="/history" element={<HistoryPage />} />
                 <Route path="/super-admin" element={<SuperAdminDashboard />} />
