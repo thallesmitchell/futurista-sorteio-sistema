@@ -84,7 +84,7 @@ export default function GameAdmin() {
     if (hasWinners) {
       setIsWinnersModalOpen(true);
       toast({
-        title: "Vencedor Encontrado!",
+        title: "Saiu Ganhador!",
         description: `${winners.length > 1 ? 'Vários jogadores acertaram' : 'Um jogador acertou'} todos os 6 números!`,
         variant: "default",
       });
@@ -93,7 +93,7 @@ export default function GameAdmin() {
 
   return (
     <MainLayout>
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-fade-in table-container">
         {/* Game Header */}
         <GameHeader
           gameId={game.id}
@@ -110,10 +110,12 @@ export default function GameAdmin() {
 
         {/* Always show the winner banner when there are winners */}
         {hasWinners && (
-          <WinnerBanner 
-            winners={winners} 
-            allDrawnNumbers={allDrawnNumbers}
-          />
+          <div className="permanent-winner-banner">
+            <WinnerBanner 
+              winners={winners} 
+              allDrawnNumbers={allDrawnNumbers}
+            />
+          </div>
         )}
 
         {/* Game Forms */}

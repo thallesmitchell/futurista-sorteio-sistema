@@ -103,10 +103,10 @@ export const useWinnerActions = (
         
         // Notify the user about the winner(s)
         toast({
-          title: winners.length > 1 ? `${winners.length} winners found!` : "Winner found!",
+          title: "Saiu Ganhador!",
           description: winners.length > 1 
-            ? `Multiple players hit all 6 numbers!` 
-            : `Player ${winners[0].name} hit all 6 numbers!`,
+            ? `Vários jogadores acertaram todos os 6 números!` 
+            : `O jogador ${winners[0].name} acertou todos os 6 números!`,
           variant: "default",
         });
       }

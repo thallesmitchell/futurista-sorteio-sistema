@@ -52,17 +52,17 @@
     -webkit-tap-highlight-color: transparent;
     text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
-    overflow-x: hidden;
-    width: 100vw;
-    max-width: 100%;
-    overscroll-behavior: none;
   }
 
+  /* Allow horizontal scrolling but prevent vertical overflow for titles */
+  h1, h2, h3, h4, h5, h6 {
+    overflow-y: hidden !important;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  
   /* Mobile viewport improvements */
   html {
-    overflow-x: hidden;
-    width: 100vw;
-    max-width: 100%;
     overscroll-behavior: none;
   }
   
@@ -81,13 +81,11 @@
   /* Better grid and flex layouts on mobile */
   .grid, .flex {
     max-width: 100% !important;
-    overflow-x: hidden !important;
   }
 
-  /* Ensure content never causes horizontal scrollbars */
-  .container, main, section, div, table {
-    max-width: 100%;
-    box-sizing: border-box;
+  /* Ensure content doesn't cause vertical scrollbars in titles */
+  h1, h2, h3, h4, h5, h6 {
+    overflow-y: hidden !important;
   }
 
   /* Fix for tables and responsive containers */
@@ -143,15 +141,6 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
 
 .animate-pulse-slow {
   animation: pulse-slow 3s infinite;
-}
-
-/* Prevent horizontal scrollbars */
-.overflow-x-hidden {
-  overflow-x: hidden;
-}
-
-.max-w-full {
-  max-width: 100% !important;
 }
 
 /* Mobile navigation improvements */
@@ -213,12 +202,6 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   background-color: #020817 !important;
 }
 
-/* Fix for scrollbars in the table container */
-.overflow-auto {
-  max-width: 100%;
-  overflow-x: clip;
-}
-
 /* Fix for iOS input fields */
 @supports (-webkit-touch-callout: none) {
   input, textarea, select {
@@ -272,4 +255,17 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
     background-color: #020817 !important;
     color: #FFFFFF !important;
   }
+}
+
+/* Ensure horizontal scroll is available on tables but prevent vertical overflow */
+.table-container {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* Make winners banner permanent */
+.permanent-winner-banner {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }

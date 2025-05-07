@@ -54,7 +54,7 @@ export default function GameHistory() {
 
   return (
     <MainLayout>
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-fade-in table-container">
         {/* Game Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
@@ -118,7 +118,9 @@ export default function GameHistory() {
 
         {/* Always show the winner banner if there are winners */}
         {hasWinners && (
-          <WinnerBanner winners={winners} allDrawnNumbers={allDrawnNumbers} />
+          <div className="permanent-winner-banner">
+            <WinnerBanner winners={winners} allDrawnNumbers={allDrawnNumbers} />
+          </div>
         )}
 
         {/* Game Content */}

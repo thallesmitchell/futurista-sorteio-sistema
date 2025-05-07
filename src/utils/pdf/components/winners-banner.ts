@@ -56,7 +56,7 @@ export const addWinnersBanner = (
   trophyLeft.style.fontSize = '24px'; // Larger trophy icons
 
   const bannerTitle = document.createElement('h2');
-  bannerTitle.textContent = winners.length > 1 ? 'Vencedores Encontrados!' : 'Vencedor Encontrado!';
+  bannerTitle.textContent = 'Saiu Ganhador!';
   bannerTitle.style.fontSize = '24px'; // Larger text
   bannerTitle.style.fontWeight = 'bold';
   bannerTitle.style.color = '#25C17E';

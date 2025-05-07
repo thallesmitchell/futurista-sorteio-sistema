@@ -46,12 +46,12 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
   }
 
   return (
-    <Card className="w-full border-2 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)] bg-green-500/10 overflow-hidden mb-4 animate-glow-green">
+    <Card className="w-full border-2 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)] bg-green-500/10 overflow-hidden mb-4 animate-glow-green permanent-winner-banner">
       <div className="p-3 md:p-4 space-y-2 md:space-y-3">
         <div className="flex items-center justify-center gap-2 text-center">
           <Trophy className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
           <h2 className="text-lg md:text-xl font-bold text-green-500">
-            {winners.length > 1 ? 'Vencedores Encontrados!' : 'Vencedor Encontrado!'}
+            {winners.length > 1 ? 'Saiu Ganhador!' : 'Saiu Ganhador!'}
           </h2>
           <Trophy className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
         </div>

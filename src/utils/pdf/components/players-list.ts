@@ -94,6 +94,16 @@ export const addPlayersToReport = (
         comboContainer.style.borderRadius = '6px';
         comboContainer.style.border = '1px solid #172842'; // Added border
         
+        // Add player name to each sequence box
+        const playerNameLabel = document.createElement('div');
+        playerNameLabel.textContent = player.name;
+        playerNameLabel.style.fontSize = '14px';
+        playerNameLabel.style.fontWeight = '700';
+        playerNameLabel.style.color = '#FFFFFF';
+        playerNameLabel.style.textAlign = 'center';
+        playerNameLabel.style.marginBottom = '4px';
+        comboContainer.appendChild(playerNameLabel);
+        
         // Add sequence number label
         const sequenceLabel = document.createElement('div');
         sequenceLabel.textContent = `Sequência ${comboIndex + 1}`;
