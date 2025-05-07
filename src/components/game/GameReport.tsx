@@ -50,7 +50,7 @@ export const GameReport: React.FC<GameReportProps> = ({
           });
         }
       } catch (err) {
-        console.error('Erro ao buscar perfil:', err);
+        console.error('Error fetching profile:', err);
       }
     };
     
@@ -66,7 +66,7 @@ export const GameReport: React.FC<GameReportProps> = ({
     try {
       // Ensure we have a complete game object with players and draws
       if (!game || !game.players || !game.dailyDraws) {
-        throw new Error('Dados do jogo não estão completos');
+        throw new Error('Game data is incomplete');
       }
       
       console.log('Generating report for game:', game.id);
@@ -74,7 +74,7 @@ export const GameReport: React.FC<GameReportProps> = ({
       console.log('Draws count:', game.dailyDraws.length);
       console.log('Winners count:', game.winners?.length || 0);
       
-      // Generate PDF using our new system with all required parameters
+      // Generate PDF using our system with all required parameters
       await generateGameReport(game, {
         themeColor: profileData.themeColor,
         filename: `resultado-${game.name.replace(/\s+/g, '-')}.pdf`,
@@ -82,14 +82,14 @@ export const GameReport: React.FC<GameReportProps> = ({
       });
       
       toast({
-        title: "Relatório gerado com sucesso",
-        description: "O PDF foi baixado para o seu dispositivo",
+        title: "Report generated successfully",
+        description: "The PDF has been downloaded to your device",
       });
     } catch (error) {
-      console.error("Erro ao gerar PDF:", error);
+      console.error("Error generating PDF:", error);
       toast({
-        title: "Erro ao gerar relatório",
-        description: error instanceof Error ? error.message : "Ocorreu um problema ao gerar o PDF",
+        title: "Error generating report",
+        description: error instanceof Error ? error.message : "A problem occurred while generating the PDF",
         variant: "destructive"
       });
     } finally {
@@ -108,12 +108,12 @@ export const GameReport: React.FC<GameReportProps> = ({
       {isGenerating ? (
         <>
           <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-          Gerando...
+          Generating...
         </>
       ) : (
         <>
           <FileText className="mr-1 h-4 w-4" />
-          Baixar Relatório
+          Download Report
         </>
       )}
     </Button>

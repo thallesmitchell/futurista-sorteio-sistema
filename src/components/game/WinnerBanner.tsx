@@ -17,7 +17,7 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
 
   // Process winners whenever the winners prop changes
   useEffect(() => {
-    // Se não há ganhadores, não renderizar nada
+    // If there are no winners, don't render anything
     if (!winners || winners.length === 0) {
       return;
     }
@@ -32,7 +32,7 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
         }))
     );
 
-    // Se de alguma forma há ganhadores mas nenhuma combinação vencedora, não renderizar
+    // If somehow there are winners but no winning combinations, don't render
     if (entries.length === 0) {
       return;
     }
@@ -40,7 +40,7 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
     setWinningEntries(entries);
   }, [winners]);
 
-  // Sempre renderizar o componente se houver ganhadores, mesmo que o estado de winningEntries ainda não tenha sido atualizado
+  // Always render the component if there are winners, even if the winningEntries state hasn't been updated yet
   if (!winners?.length || winningEntries.length === 0) {
     return null;
   }

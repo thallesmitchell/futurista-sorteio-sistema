@@ -44,7 +44,7 @@ export default function PlayersView() {
           });
         }
       } catch (err) {
-        console.error('Erro ao buscar perfil:', err);
+        console.error('Error fetching profile:', err);
       }
     };
     
@@ -53,35 +53,35 @@ export default function PlayersView() {
 
   // If game not found, show loading
   if (!game) {
-    return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
   
-  // Função para gerar PDF usando o novo sistema
+  // Function to generate PDF using the new system
   const handleGeneratePDF = async () => {
     if (isGenerating) return;
     setIsGenerating(true);
     
     try {
       if (!game) {
-        throw new Error('Jogo não encontrado');
+        throw new Error('Game not found');
       }
       
-      // Usar o novo gerador de PDF
+      // Use the new PDF generator
       await generateGameReport(game, {
         themeColor: profileData.themeColor,
-        filename: `jogadores-${game.name.replace(/\s+/g, '-')}.pdf`,
+        filename: `players-${game.name.replace(/\s+/g, '-')}.pdf`,
         includeNearWinners: true
       });
       
       toast({
-        title: "PDF gerado com sucesso",
-        description: "O PDF foi baixado para o seu dispositivo",
+        title: "PDF generated successfully",
+        description: "The PDF was downloaded to your device",
       });
     } catch (error) {
-      console.error("Erro ao gerar PDF:", error);
+      console.error("Error generating PDF:", error);
       toast({
-        title: "Erro ao gerar relatório",
-        description: error instanceof Error ? error.message : "Ocorreu um problema ao gerar o PDF",
+        title: "Error generating report",
+        description: error instanceof Error ? error.message : "A problem occurred while generating the PDF",
         variant: "destructive"
       });
     } finally {
@@ -102,7 +102,7 @@ export default function PlayersView() {
           <div>
             <h1 className="text-2xl font-bold">{game.name}</h1>
             <p className="text-muted-foreground">
-              {game.players.length} jogadores | {game.dailyDraws.length} sorteios
+              {game.players.length} players | {game.dailyDraws.length} draws
             </p>
           </div>
           <div className="flex gap-2">
@@ -113,7 +113,7 @@ export default function PlayersView() {
             >
               <Link to={`/admin/${game.id}`}>
                 <ArrowLeft className="mr-1 h-4 w-4" />
-                Voltar
+                Back
               </Link>
             </Button>
             <Button 
@@ -123,7 +123,7 @@ export default function PlayersView() {
               disabled={isGenerating}
             >
               <FileText className="mr-1 h-4 w-4" />
-              {isGenerating ? 'Gerando...' : 'Salvar em PDF'}
+              {isGenerating ? 'Generating...' : 'Save as PDF'}
             </Button>
           </div>
         </div>
@@ -139,8 +139,8 @@ export default function PlayersView() {
                 <div className="p-3 border-b border-border/30 bg-muted/20">
                   <h3 className="font-semibold text-base text-center">{player.name}</h3>
                   <p className="text-xs text-muted-foreground text-center">
-                    {player.combinations.length} sequência{player.combinations.length !== 1 ? 's' : ''} | 
-                    Acertos máximos: {Math.max(...player.combinations.map(c => c.hits), 0)}
+                    {player.combinations.length} sequence{player.combinations.length !== 1 ? 's' : ''} | 
+                    Max hits: {Math.max(...player.combinations.map(c => c.hits), 0)}
                   </p>
                 </div>
                 <div className="p-3 space-y-2">

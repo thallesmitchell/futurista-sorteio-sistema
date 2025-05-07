@@ -11,16 +11,16 @@ export const addPlayersToReport = (
   allDrawnNumbers: number[],
   themeColor: string
 ): void => {
-  // Converte allDrawnNumbers para um Set para busca mais rápida
+  // Convert allDrawnNumbers to a Set for faster lookups
   const drawnNumbersSet = new Set(allDrawnNumbers);
   
-  // Container para layout em colunas
+  // Container for column layout
   const playersContainer = document.createElement('div');
   playersContainer.className = 'pdf-players-container';
   playersContainer.style.backgroundColor = '#020817';
   playersContainer.style.width = '100%';
   
-  // Importante - ordena jogadores alfabeticamente para manter consistência
+  // Important - sort players alphabetically for consistency
   const sortedPlayers = [...players].sort((a, b) => a.name.localeCompare(b.name));
   
   sortedPlayers.forEach((player, playerIndex) => {
@@ -30,18 +30,18 @@ export const addPlayersToReport = (
     playerBox.style.borderRadius = '8px';
     playerBox.style.marginBottom = '15px';
     playerBox.style.overflow = 'hidden';
-    playerBox.style.pageBreakInside = 'avoid'; // Tenta evitar quebras dentro do jogador
+    playerBox.style.pageBreakInside = 'avoid'; // Try to avoid breaks within a player
     playerBox.style.breakInside = 'avoid'; 
     playerBox.style.width = '100%';
     playerBox.style.border = '1px solid #172842';
     
-    // Cabeçalho do box do jogador com nome - destacado para ser mais visível
+    // Player box header with name - highlighted to be more visible
     const playerHeader = document.createElement('div');
     playerHeader.style.backgroundColor = '#172842';
     playerHeader.style.padding = '8px 10px';
     playerHeader.style.borderBottom = '1px solid #172842';
     
-    // Nome do jogador em destaque
+    // Create a player name header that stands out more
     const playerName = document.createElement('h3');
     playerName.textContent = player.name;
     playerName.style.fontSize = '16px';
@@ -53,11 +53,11 @@ export const addPlayersToReport = (
     playerHeader.appendChild(playerName);
     playerBox.appendChild(playerHeader);
     
-    // Seção de conteúdo do jogador
+    // Player content section
     const playerContent = document.createElement('div');
     playerContent.style.padding = '12px';
     
-    // Informações do jogador com contagem de combinações
+    // Player info section with combinations count
     const playerInfoSection = document.createElement('div');
     playerInfoSection.style.display = 'flex';
     playerInfoSection.style.flexDirection = 'column';
@@ -75,7 +75,7 @@ export const addPlayersToReport = (
     playerInfoSection.appendChild(playerInfo);
     playerContent.appendChild(playerInfoSection);
     
-    // Seção de combinações - mostrar TODAS as combinações
+    // Combinations section - show ALL combinations
     const combinationsContainer = document.createElement('div');
     combinationsContainer.style.display = 'flex';
     combinationsContainer.style.flexDirection = 'column';
@@ -92,7 +92,7 @@ export const addPlayersToReport = (
         comboContainer.style.borderRadius = '6px';
         comboContainer.style.border = '1px solid #172842';
         
-        // Adiciona rótulo de número da sequência
+        // Add sequence number label
         const sequenceLabel = document.createElement('div');
         sequenceLabel.textContent = `Sequência ${comboIndex + 1} - ${combo.hits} acerto${combo.hits !== 1 ? 's' : ''}`;
         sequenceLabel.style.fontSize = '13px';
@@ -102,17 +102,17 @@ export const addPlayersToReport = (
         sequenceLabel.style.textAlign = 'center';
         comboContainer.appendChild(sequenceLabel);
         
-        // Linha de números
+        // Numbers row
         const comboRow = document.createElement('div');
         comboRow.style.display = 'flex';
         comboRow.style.flexWrap = 'wrap';
         comboRow.style.gap = '6px';
         comboRow.style.justifyContent = 'center';
         
-        // Ordena números para consistência
+        // Sort numbers for consistency
         const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
         
-        // Cria bolas para cada número
+        // Create balls for each number
         sortedNumbers.forEach(number => {
           const isNumberHit = drawnNumbersSet.has(number);
           const ball = createNumberBall(number, themeColor, isNumberHit);
@@ -127,7 +127,7 @@ export const addPlayersToReport = (
     playerContent.appendChild(combinationsContainer);
     playerBox.appendChild(playerContent);
     
-    // Adiciona linha separadora tracejada após cada jogador (exceto o último)
+    // Add dashed separator line after each player (except the last)
     if (playerIndex < sortedPlayers.length - 1) {
       const separator = document.createElement('hr');
       separator.style.border = 'none';

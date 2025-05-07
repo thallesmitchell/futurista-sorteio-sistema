@@ -3,17 +3,18 @@ import { jsPDF } from 'jspdf';
 
 // Function to load font files
 export const loadFonts = async (pdf: jsPDF): Promise<void> => {
-  // Usamos as fontes padrão disponíveis no jsPDF em vez de tentar carregar fontes personalizadas
-  console.log('Usando fontes padrão em vez de fontes Inter personalizadas');
+  // We'll use the standard fonts available in jsPDF instead of trying to load custom fonts
+  // This prevents issues with missing font files
+  console.log('Using standard fonts instead of custom Inter fonts');
   return Promise.resolve();
 };
 
 // Add standard fonts to the PDF document
 export const addFonts = (pdf: jsPDF): void => {
   try {
-    // Usa a fonte Helvetica padrão que vem embutida no PDF
+    // Use the default Helvetica font that comes built into PDF
     pdf.setFont('helvetica');
   } catch (error) {
-    console.error('Erro ao definir fontes no PDF:', error);
+    console.error('Error setting fonts in PDF:', error);
   }
 };

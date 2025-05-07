@@ -381,7 +381,7 @@ export const generateGameReport = async (game: Game, options: GeneratePdfOptions
     // Generate PDF with specific options
     const pdfOptions = {
       margin: 0, // Remove margins completely
-      filename: `resultado-${game.name.replace(/\s+/g, '-')}.pdf`,
+      filename: options.filename || `resultado-${game.name.replace(/\s+/g, '-')}.pdf`,
       image: { type: 'jpeg', quality: 0.85 }, // Reduced quality for better compression
       html2canvas: { 
         scale: 2, 

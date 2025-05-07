@@ -5,33 +5,33 @@
 export const createNumberBall = (number: number, color: string, isHit: boolean): HTMLElement => {
   const ball = document.createElement('div');
   ball.className = 'pdf-number-ball';
-  ball.style.width = '36px'; // Tamanho reduzido
-  ball.style.height = '36px'; // Tamanho reduzido
+  ball.style.width = '36px'; // Reduced size
+  ball.style.height = '36px'; // Reduced size
   ball.style.borderRadius = '50%';
   ball.style.display = 'flex';
   ball.style.justifyContent = 'center';
   ball.style.alignItems = 'center';
-  ball.style.fontSize = '14px'; // Tamanho da fonte reduzido
+  ball.style.fontSize = '14px'; // Reduced font size
   ball.style.position = 'relative';
   ball.style.lineHeight = '1';
-  ball.style.margin = '0 10px'; // Espaçamento entre os números (20px entre círculos)
+  ball.style.margin = '0 10px'; // Spacing between numbers (20px between circles)
   
-  // Formata o número com zero à esquerda
+  // Format number with leading zero
   const formattedNumber = String(number).padStart(2, '0');
   
-  // Estilo baseado no estado de acerto
+  // Style based on hit status
   if (isHit) {
-    ball.style.backgroundColor = color; // Fundo verde para números acertados
-    ball.style.color = 'white'; // Texto branco para contraste
-    ball.style.fontWeight = '900'; // Peso black para números acertados
+    ball.style.backgroundColor = color; // Green background for hit numbers
+    ball.style.color = 'white'; // White text for contrast
+    ball.style.fontWeight = '900'; // Black weight for hit numbers
   } else {
-    ball.style.backgroundColor = '#1A1F2C'; // Fundo escuro para não acertados
-    ball.style.color = '#FFFFFF'; // Texto branco
-    ball.style.border = `1px solid ${color}`; // Borda verde
-    ball.style.fontWeight = '400'; // Peso normal para não acertados
+    ball.style.backgroundColor = '#1A1F2C'; // Dark background for non-hits
+    ball.style.color = '#FFFFFF'; // White text
+    ball.style.border = `1px solid ${color}`; // Green border
+    ball.style.fontWeight = '400'; // Normal weight for non-hits
   }
   
-  // Span interno para centralização vertical adequada
+  // Inner span for proper vertical centering
   const innerSpan = document.createElement('span');
   innerSpan.textContent = formattedNumber;
   innerSpan.style.display = 'inline-block';
@@ -39,8 +39,8 @@ export const createNumberBall = (number: number, color: string, isHit: boolean):
   innerSpan.style.position = 'absolute';
   innerSpan.style.top = '50%';
   innerSpan.style.left = '50%';
-  innerSpan.style.transform = 'translate(-50%, -50%)'; // Centralização perfeita
-  innerSpan.style.fontSize = isHit ? '15px' : '14px'; // Fonte maior para acertados
+  innerSpan.style.transform = 'translate(-50%, -50%)'; // Perfect centering
+  innerSpan.style.fontSize = isHit ? '15px' : '14px'; // Larger font for hits
   
   ball.appendChild(innerSpan);
   return ball;
