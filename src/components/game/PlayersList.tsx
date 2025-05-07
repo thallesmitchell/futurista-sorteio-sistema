@@ -3,11 +3,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, Trophy, Eye } from 'lucide-react';
+import { Search, Trophy, Eye, Pencil } from 'lucide-react';
 import { Player } from '@/contexts/game/types';
 import { NumberBadge } from './NumberBadge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Link } from 'react-router-dom';
+import { DeletePlayerButton } from './DeletePlayerButton';
 
 export interface PlayersListProps {
   players: Player[];
@@ -108,14 +109,24 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                       Acertos máximos: {Math.max(...player.combinations.map(c => c.hits), 0)}
                     </p>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size={isMobile ? "sm" : "default"}
-                    onClick={() => onEditPlayer(player)}
-                    className={isMobile ? "px-3 py-1 text-xs flex-shrink-0" : "flex-shrink-0"}
-                  >
-                    Editar
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="outline" 
+                      size={isMobile ? "sm" : "default"}
+                      onClick={() => onEditPlayer(player)}
+                      className={isMobile ? "px-3 py-1 text-xs flex-shrink-0" : "flex-shrink-0"}
+                    >
+                      <Pencil className="h-3.5 w-3.5 mr-1" />
+                      Editar
+                    </Button>
+                    
+                    <DeletePlayerButton
+                      playerId={player.id}
+                      gameId={gameId || ''}
+                      playerName={player.name}
+                      size={isMobile ? "sm" : "default"}
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">

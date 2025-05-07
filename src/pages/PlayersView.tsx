@@ -3,13 +3,11 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
-import { FileText, ArrowRight } from 'lucide-react';
+import { FileText, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { Game } from '@/contexts/game/types';
 import { NumberBadge } from '@/components/game/NumberBadge';
-import { generateGameReport } from '@/utils/pdf';
-import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import html2pdf from 'html2pdf.js';
 
 export default function PlayersView() {
@@ -58,23 +56,66 @@ export default function PlayersView() {
     return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
   }
   
-  // Generate PDF report using existing function
+  // Function to generate PDF directly
   const handleGeneratePDF = async () => {
-    // Prevent multiple clicks
     if (isGenerating) return;
-    
     setIsGenerating(true);
     
     try {
-      if (!game || !game.players || !game.dailyDraws) {
-        throw new Error('Dados do jogo incompletos');
+      // Get the content element
+      const contentElement = document.getElementById('players-view-content');
+      
+      if (!contentElement) {
+        throw new Error('Content element not found');
       }
-
-      const fullGame = structuredClone(game);
-      await generateGameReport(fullGame, { themeColor: profileData.themeColor });
+      
+      // Clone the content for PDF generation
+      const clonedContent = contentElement.cloneNode(true) as HTMLElement;
+      clonedContent.style.backgroundColor = '#020817';
+      clonedContent.style.color = '#FFFFFF';
+      clonedContent.style.padding = '20px';
+      clonedContent.style.width = '210mm'; // A4 width
+      clonedContent.style.margin = '0 auto';
+      
+      // Add a title to the PDF
+      const titleElement = document.createElement('h1');
+      titleElement.textContent = `Jogadores - ${game.name}`;
+      titleElement.style.textAlign = 'center';
+      titleElement.style.marginBottom = '20px';
+      titleElement.style.color = '#FFFFFF';
+      titleElement.style.fontSize = '24px';
+      
+      clonedContent.insertBefore(titleElement, clonedContent.firstChild);
+      
+      document.body.appendChild(clonedContent);
+      
+      // Generate PDF with specific options
+      const pdfOptions = {
+        margin: 10,
+        filename: `jogadores-${game.name.replace(/\s+/g, '-')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#020817'
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait',
+          compress: true,
+          background: '#020817'
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+      
+      await html2pdf().from(clonedContent).set(pdfOptions).save();
+      
+      // Remove the cloned element
+      document.body.removeChild(clonedContent);
       
       toast({
-        title: "Relatório gerado com sucesso",
+        title: "PDF gerado com sucesso",
         description: "O PDF foi baixado para o seu dispositivo",
       });
     } catch (error) {
@@ -96,9 +137,9 @@ export default function PlayersView() {
 
   return (
     <div className="bg-background min-h-screen">
-      <div className="mx-auto" style={{ width: '950px' }}>
+      <div className="mx-auto" style={{ maxWidth: '950px', width: '100%' }}>
         {/* Header */}
-        <div className="py-4 flex items-center justify-between border-b border-border/30 mb-4">
+        <div className="py-4 px-4 md:px-0 flex items-center justify-between border-b border-border/30 mb-4">
           <div>
             <h1 className="text-2xl font-bold">{game.name}</h1>
             <p className="text-muted-foreground">
@@ -112,7 +153,7 @@ export default function PlayersView() {
               asChild
             >
               <Link to={`/admin/${game.id}`}>
-                <ArrowRight className="mr-1 h-4 w-4" />
+                <ArrowLeft className="mr-1 h-4 w-4" />
                 Voltar
               </Link>
             </Button>
@@ -129,7 +170,7 @@ export default function PlayersView() {
         </div>
 
         {/* Players List - styled similarly to PlayerList component but without edit buttons */}
-        <div className="space-y-4 pb-8">
+        <div id="players-view-content" className="space-y-4 pb-8 px-4 md:px-0">
           <div className="columns-1 xs:columns-3 gap-3 space-y-0 w-full">
             {sortedPlayers.map((player) => (
               <div 
@@ -137,8 +178,8 @@ export default function PlayersView() {
                 className="mb-3 inline-block w-full overflow-hidden break-inside-avoid border border-border/30 rounded-md"
               >
                 <div className="p-3 border-b border-border/30 bg-muted/20">
-                  <h3 className="font-semibold text-base">{player.name}</h3>
-                  <p className="text-xs text-muted-foreground">
+                  <h3 className="font-semibold text-base text-center">{player.name}</h3>
+                  <p className="text-xs text-muted-foreground text-center">
                     {player.combinations.length} sequência{player.combinations.length !== 1 ? 's' : ''} | 
                     Acertos máximos: {Math.max(...player.combinations.map(c => c.hits), 0)}
                   </p>

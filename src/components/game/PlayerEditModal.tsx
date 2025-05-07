@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Player } from '@/contexts/game/types';
 import { useToast } from '@/components/ui/use-toast';
+import { usePlayerActions } from '@/hooks/usePlayerActions';
 
 export interface PlayerEditModalProps {
   isOpen: boolean;
@@ -27,8 +29,16 @@ export const PlayerEditModal = ({
   setEditPlayerNumbers
 }: PlayerEditModalProps) => {
   const { toast } = useToast();
+  const [playerName, setPlayerName] = useState('');
+  const { updatePlayerName, isLoading } = usePlayerActions();
   
-  const handleSave = () => {
+  useEffect(() => {
+    if (player) {
+      setPlayerName(player.name);
+    }
+  }, [player]);
+  
+  const handleSave = async () => {
     // Verificar que todas as entradas são válidas antes de salvar
     const lines = editPlayerNumbers.split('\n').filter(line => line.trim());
     
@@ -58,7 +68,14 @@ export const PlayerEditModal = ({
       return;
     }
     
+    // Salvar sequências
     onSave();
+    
+    // Atualizar o nome se foi alterado
+    if (player && playerName !== player.name) {
+      await updatePlayerName(gameId, player.id, playerName);
+    }
+    
     setIsOpen(false);
   };
 
@@ -68,9 +85,19 @@ export const PlayerEditModal = ({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Editar Jogador - {player.name}</DialogTitle>
+          <DialogTitle>Editar Jogador</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 py-4">
+          <div className="space-y-2">
+            <Label htmlFor="playerName">Nome do Jogador</Label>
+            <Input
+              id="playerName"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              placeholder="Nome do jogador"
+            />
+          </div>
+          
           <div className="space-y-2">
             <Label htmlFor="sequences">Sequências de números</Label>
             <Textarea
@@ -93,11 +120,11 @@ export const PlayerEditModal = ({
           </div>
         </div>
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => setIsOpen(false)}>
+          <Button type="button" variant="outline" onClick={() => setIsOpen(false)} disabled={isLoading}>
             Cancelar
           </Button>
-          <Button type="button" onClick={handleSave}>
-            Salvar Alterações
+          <Button type="button" onClick={handleSave} disabled={isLoading}>
+            {isLoading ? "Salvando..." : "Salvar Alterações"}
           </Button>
         </DialogFooter>
       </DialogContent>
