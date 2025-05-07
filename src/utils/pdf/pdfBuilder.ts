@@ -6,7 +6,8 @@ import {
   addHeader,
   addNearWinnersSection,
   addWinnersSection,
-  addPlayersSection
+  addPlayersSection,
+  PDF_CONFIG
 } from './builders';
 
 // Generate and download complete PDF report
