@@ -1,12 +1,13 @@
 
 /**
  * Creates a number ball with proper vertical alignment
+ * Ensures only hit numbers are green and bold as specified
  */
 export const createNumberBall = (number: number, color: string, isHit: boolean): HTMLElement => {
   const ball = document.createElement('div');
   ball.className = 'pdf-number-ball';
-  ball.style.width = '36px'; // Maintaining size
-  ball.style.height = '36px'; // Maintaining size
+  ball.style.width = '36px';
+  ball.style.height = '36px';
   ball.style.borderRadius = '50%';
   ball.style.display = 'flex';
   ball.style.justifyContent = 'center';
@@ -18,7 +19,7 @@ export const createNumberBall = (number: number, color: string, isHit: boolean):
   // Format number with leading zero
   const formattedNumber = String(number).padStart(2, '0');
   
-  // Style based on hit status
+  // Style based on hit status - ensuring only hit numbers are green and bold
   if (isHit) {
     ball.style.backgroundColor = color; // Green background for hit numbers
     ball.style.color = 'white'; // White text for contrast
