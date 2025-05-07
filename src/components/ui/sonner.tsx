@@ -7,7 +7,17 @@ import { Toaster as Sonner } from "sonner"
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
 export function Toaster({ ...props }: ToasterProps) {
-  const { primaryColor } = useTheme()
+  // Try to use the theme context, but provide a fallback if it's not available
+  let primaryColor = '#39FF14'; // Default color
+  
+  try {
+    const themeContext = useTheme();
+    if (themeContext && themeContext.primaryColor) {
+      primaryColor = themeContext.primaryColor;
+    }
+  } catch (error) {
+    console.log('Theme context not available, using default color');
+  }
 
   return (
     <Sonner

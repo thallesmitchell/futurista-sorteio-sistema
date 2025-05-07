@@ -17,25 +17,25 @@ import NotFound from "./pages/NotFound";
 import SuperAdminDashboard from "./pages/SuperAdminDashboard";
 import ProfileSettings from "./pages/ProfileSettings";
 import AdminView from "./pages/AdminView";
-import PlayersView from "./pages/PlayersView"; // Import the new PlayersView component
+import PlayersView from "./pages/PlayersView";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
       <BrowserRouter>
         <AuthProvider>
           <ThemeProvider>
+            <Toaster />
+            <Sonner />
             <GameProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/admin/:gameId" element={<GameAdmin />} />
                 <Route path="/admin/view/:adminId" element={<AdminView />} />
-                <Route path="/game/players/:gameId" element={<PlayersView />} /> {/* Add the new route */}
+                <Route path="/game/players/:gameId" element={<PlayersView />} />
                 <Route path="/history/:gameId" element={<GameHistory />} />
                 <Route path="/history" element={<HistoryPage />} />
                 <Route path="/super-admin" element={<SuperAdminDashboard />} />
