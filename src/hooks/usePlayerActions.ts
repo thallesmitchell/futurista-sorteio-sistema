@@ -7,7 +7,7 @@ import { Player } from '@/contexts/game/types';
 
 export const usePlayerActions = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { games, setGames } = useGame();
+  const { games, addGame, updateGame, deleteGame } = useGame();
   const { toast } = useToast();
 
   const updatePlayerName = async (gameId: string, playerId: string, name: string) => {
@@ -23,19 +23,18 @@ export const usePlayerActions = () => {
         
       if (error) throw error;
       
-      // Update player in local state
-      setGames(prevGames => 
-        prevGames.map(game => {
-          if (game.id !== gameId) return game;
-          
-          const updatedPlayers = game.players.map(player => {
-            if (player.id !== playerId) return player;
-            return { ...player, name };
-          });
-          
-          return { ...game, players: updatedPlayers };
-        })
-      );
+      // Update player in the context
+      // We'll use updateGame to update the whole game object
+      const gameToUpdate = games.find(g => g.id === gameId);
+      
+      if (gameToUpdate) {
+        const updatedPlayers = gameToUpdate.players.map(player => {
+          if (player.id !== playerId) return player;
+          return { ...player, name };
+        });
+        
+        await updateGame(gameId, { players: updatedPlayers });
+      }
       
       toast({
         title: "Nome atualizado",
@@ -83,26 +82,24 @@ export const usePlayerActions = () => {
         
       if (error) throw error;
       
-      // Update local state
-      setGames(prevGames => 
-        prevGames.map(game => {
-          if (game.id !== gameId) return game;
-          
-          // Remove player from the list
-          const updatedPlayers = game.players.filter(player => player.id !== playerId);
-          
-          // Update winners list if needed
-          const updatedWinners = game.winners ? 
-            game.winners.filter(winner => winner.id !== playerId) : 
-            [];
-          
-          return { 
-            ...game, 
-            players: updatedPlayers,
-            winners: updatedWinners.length > 0 ? updatedWinners : undefined
-          };
-        })
-      );
+      // Update local state via context
+      const gameToUpdate = games.find(g => g.id === gameId);
+      
+      if (gameToUpdate) {
+        // Remove player from the list
+        const updatedPlayers = gameToUpdate.players.filter(player => player.id !== playerId);
+        
+        // Update winners list if needed
+        const updatedWinners = gameToUpdate.winners ? 
+          gameToUpdate.winners.filter(winner => winner.id !== playerId) : 
+          [];
+        
+        // Update the game
+        await updateGame(gameId, { 
+          players: updatedPlayers,
+          winners: updatedWinners.length > 0 ? updatedWinners : undefined
+        });
+      }
       
       toast({
         title: "Jogador excluído",
