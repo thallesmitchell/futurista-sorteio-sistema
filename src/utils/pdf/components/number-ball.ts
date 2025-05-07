@@ -13,6 +13,7 @@ export const createNumberBall = (number: number, color: string, isHit: boolean):
   ball.style.alignItems = 'center';
   ball.style.fontWeight = 'bold';
   ball.style.fontSize = '16px';
+  ball.style.position = 'relative'; // Add position relative for better control
   
   // Format number with leading zero
   const formattedNumber = String(number).padStart(2, '0');
@@ -31,11 +32,13 @@ export const createNumberBall = (number: number, color: string, isHit: boolean):
   // Create inner span for proper vertical centering
   const innerSpan = document.createElement('span');
   innerSpan.textContent = formattedNumber;
-  innerSpan.style.display = 'flex';
-  innerSpan.style.justifyContent = 'center';
-  innerSpan.style.alignItems = 'center';
-  innerSpan.style.height = '100%';
-  innerSpan.style.marginTop = '-7px'; // Critical fix for vertical alignment
+  innerSpan.style.display = 'inline-block';
+  innerSpan.style.lineHeight = '1';
+  innerSpan.style.textAlign = 'center';
+  innerSpan.style.position = 'absolute';
+  innerSpan.style.top = '50%';
+  innerSpan.style.left = '50%';
+  innerSpan.style.transform = 'translate(-50%, -50%)'; // Use transform for perfect centering
   
   ball.appendChild(innerSpan);
   return ball;

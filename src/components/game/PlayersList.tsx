@@ -7,7 +7,6 @@ import { Search, Trophy } from 'lucide-react';
 import { Player } from '@/contexts/game/types';
 import { NumberBadge } from './NumberBadge';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { WinnerBanner } from './WinnerBanner';
 
 export interface PlayersListProps {
   players: Player[];
@@ -52,11 +51,6 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
 
   return (
     <div className="space-y-4">
-      {/* Show Winner Banner if there are winners */}
-      {currentWinners.length > 0 && (
-        <WinnerBanner winners={currentWinners} allDrawnNumbers={allDrawnNumbers} />
-      )}
-
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
         <Input

@@ -8,6 +8,7 @@ import { TabsContent } from '@/components/ui/tabs';
 import DrawsList from '@/components/game/DrawsList';
 import PlayersList from '@/components/game/PlayersList';
 import { WinnersModal } from '@/components/game/WinnersModal';
+import { WinnerBanner } from '@/components/game/WinnerBanner';
 import { ConfirmCloseModal } from '@/components/game/ConfirmCloseModal';
 import { Player } from '@/contexts/game/types';
 import { GameHeader } from '@/components/game/GameHeader';
@@ -23,14 +24,16 @@ export default function GameAdmin() {
   const [isWinnersModalOpen, setIsWinnersModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
-  const [newWinnerFound, setNewWinnerFound] = useState(false);
   const { toast } = useToast();
   const playerEditHandlerRef = useRef<any>(null);
-  const winnersCheckedRef = useRef(false);
+  
+  // Modified to always show winners
+  const [hasShownWinnerNotification, setHasShownWinnerNotification] = useState(false);
 
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
   const winners = game?.winners || [];
+  const hasWinners = winners.length > 0;
 
   // Set current game for context and check for winners when game data changes
   useEffect(() => {
@@ -44,9 +47,8 @@ export default function GameAdmin() {
       setCurrentGame(game);
       
       // Check for winners if they exist and haven't been notified yet
-      if (winners.length > 0 && !winnersCheckedRef.current) {
-        winnersCheckedRef.current = true;
-        setNewWinnerFound(true);
+      if (hasWinners && !hasShownWinnerNotification) {
+        setHasShownWinnerNotification(true);
         setIsWinnersModalOpen(true);
         toast({
           title: "Vencedor Encontrado!",
@@ -62,9 +64,9 @@ export default function GameAdmin() {
     // Cleanup on unmount
     return () => {
       setCurrentGame(null);
-      winnersCheckedRef.current = false;
+      setHasShownWinnerNotification(false);
     };
-  }, [game, gameId, navigate, setCurrentGame, winners, toast]);
+  }, [game, gameId, navigate, setCurrentGame, winners, toast, hasWinners, hasShownWinnerNotification]);
 
   // Show 404 if game not found
   if (!game || game.status === 'closed') {
@@ -91,12 +93,7 @@ export default function GameAdmin() {
 
   const handleNewWinnerFound = (hasWinners: boolean) => {
     if (hasWinners) {
-      setNewWinnerFound(true);
       setIsWinnersModalOpen(true);
-      
-      // Reset the winnersCheckedRef so that winners can be shown again
-      winnersCheckedRef.current = false;
-      
       toast({
         title: "Vencedor Encontrado!",
         description: `${winners.length > 1 ? 'Vários jogadores acertaram' : 'Um jogador acertou'} todos os 6 números!`,
@@ -128,6 +125,11 @@ export default function GameAdmin() {
             size="sm"
           />
         </div>
+
+        {/* Sempre mostrar o banner de vencedores se houver vencedores */}
+        {hasWinners && (
+          <WinnerBanner winners={winners} allDrawnNumbers={allDrawnNumbers} />
+        )}
 
         {/* Game Forms */}
         <GameAdminForms 
@@ -170,7 +172,6 @@ export default function GameAdmin() {
         allDrawnNumbers={allDrawnNumbers}
         onClose={() => {
           setIsWinnersModalOpen(false);
-          // Don't reset the winnersCheckedRef here to avoid immediate reopening
         }}
       />
 

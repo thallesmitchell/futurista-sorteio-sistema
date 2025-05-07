@@ -1,6 +1,7 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Game } from '@/contexts/game/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +25,7 @@ export const GameReport: React.FC<GameReportProps> = ({
   const { toast } = useToast();
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const [isGenerating, setIsGenerating] = useState(false);
   const [profileData, setProfileData] = React.useState({
     themeColor: '#25C17E' // Default color
   });
@@ -55,35 +57,42 @@ export const GameReport: React.FC<GameReportProps> = ({
     fetchProfile();
   }, [user]);
   
-  const handleGenerateReport = () => {
-    // Ensure we have a complete game object with players and draws
-    if (!game || !game.players || !game.dailyDraws) {
+  const handleGenerateReport = async () => {
+    // Prevent multiple clicks
+    if (isGenerating) return;
+    
+    setIsGenerating(true);
+    
+    try {
+      // Ensure we have a complete game object with players and draws
+      if (!game || !game.players || !game.dailyDraws) {
+        throw new Error('Dados do jogo não estão completos');
+      }
+      
+      console.log('Generating report for game:', game.id);
+      console.log('Players count:', game.players.length);
+      console.log('Draws count:', game.dailyDraws.length);
+      console.log('Winners count:', game.winners?.length || 0);
+      
+      // Make a deep copy of the game to avoid reference issues
+      const fullGame = structuredClone(game);
+      
+      await generateGameReport(fullGame, { themeColor: profileData.themeColor });
+      
+      toast({
+        title: "Relatório gerado com sucesso",
+        description: "O PDF foi baixado para o seu dispositivo",
+      });
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
       toast({
         title: "Erro ao gerar relatório",
-        description: "Dados do jogo não estão completos",
+        description: error instanceof Error ? error.message : "Ocorreu um problema ao gerar o PDF",
         variant: "destructive"
       });
-      return;
+    } finally {
+      setIsGenerating(false);
     }
-    
-    // Make a deep copy of the game to avoid reference issues
-    const fullGame = structuredClone(game);
-    
-    generateGameReport(fullGame, { themeColor: profileData.themeColor })
-      .then(() => {
-        toast({
-          title: "Relatório gerado com sucesso",
-          description: "O PDF foi baixado para o seu dispositivo",
-        });
-      })
-      .catch(error => {
-        console.error("Erro ao gerar PDF:", error);
-        toast({
-          title: "Erro ao gerar relatório",
-          description: "Ocorreu um problema ao gerar o PDF",
-          variant: "destructive"
-        });
-      });
   };
   
   return (
@@ -92,9 +101,19 @@ export const GameReport: React.FC<GameReportProps> = ({
       size={size}
       onClick={handleGenerateReport}
       className={className}
+      disabled={isGenerating}
     >
-      <FileText className="mr-1 h-4 w-4" />
-      Baixar Relatório
+      {isGenerating ? (
+        <>
+          <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+          Gerando...
+        </>
+      ) : (
+        <>
+          <FileText className="mr-1 h-4 w-4" />
+          Baixar Relatório
+        </>
+      )}
     </Button>
   );
 };

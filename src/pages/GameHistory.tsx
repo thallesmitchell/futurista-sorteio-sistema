@@ -9,6 +9,7 @@ import { TabsController } from '@/components/game/TabsController';
 import DrawsList from '@/components/game/DrawsList';
 import PlayersList from '@/components/game/PlayersList';
 import { WinnersModal } from '@/components/game/WinnersModal';
+import { WinnerBanner } from '@/components/game/WinnerBanner';
 import { ArrowLeft, Trophy } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { DeleteGameButton } from '@/components/game/DeleteGameButton';
@@ -45,6 +46,7 @@ export default function GameHistory() {
   }
 
   const winners = game.winners || [];
+  const hasWinners = winners.length > 0;
 
   const handleDeleteSuccess = () => {
     navigate('/history');
@@ -62,7 +64,7 @@ export default function GameHistory() {
               </Button>
               <h1 className="text-2xl font-bold">{game.name}</h1>
               
-              {winners.length > 0 && (
+              {hasWinners && (
                 <Button 
                   variant="outline" 
                   size="sm"
@@ -114,6 +116,11 @@ export default function GameHistory() {
           </div>
         </div>
 
+        {/* Sempre mostrar o banner de vencedores se houver vencedores */}
+        {hasWinners && (
+          <WinnerBanner winners={winners} allDrawnNumbers={allDrawnNumbers} />
+        )}
+
         {/* Game Content */}
         <div className="backdrop-blur-sm bg-card/40 border border-primary/20 rounded-xl p-6">
           <TabsController>
@@ -121,8 +128,8 @@ export default function GameHistory() {
               <PlayersList 
                 players={game.players} 
                 allDrawnNumbers={allDrawnNumbers} 
-                currentWinners={winners}
                 onEditPlayer={() => {}} // Read-only in history view
+                currentWinners={winners}
               />
             </TabsContent>
             
