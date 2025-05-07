@@ -19,7 +19,7 @@ export const addPlayersToReport = (
   playersContainer.className = 'pdf-masonry';
   playersContainer.style.columnCount = '2';
   playersContainer.style.columnGap = '15px';
-  playersContainer.style.backgroundColor = '#0F111A'; // Ensure dark background
+  playersContainer.style.backgroundColor = '#020817'; // Updated to match container background
   
   // Important - sort players alphabetically to maintain consistency
   const sortedPlayers = [...players].sort((a, b) => a.name.localeCompare(b.name));
@@ -27,7 +27,7 @@ export const addPlayersToReport = (
   sortedPlayers.forEach(player => {
     const playerBox = document.createElement('div');
     playerBox.className = 'pdf-player-box';
-    playerBox.style.backgroundColor = '#1A1F2C';
+    playerBox.style.backgroundColor = '#0D1526'; // Updated box background color
     playerBox.style.borderRadius = '8px';
     playerBox.style.marginBottom = '15px';
     playerBox.style.overflow = 'hidden';
@@ -35,19 +35,20 @@ export const addPlayersToReport = (
     playerBox.style.breakInside = 'avoid';
     playerBox.style.display = 'inline-block';
     playerBox.style.width = '100%';
+    playerBox.style.border = '1px solid #172842'; // Updated border color
     
     // Player box header with name - highlighted to be more visible
     const playerHeader = document.createElement('div');
-    playerHeader.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+    playerHeader.style.backgroundColor = '#0D1526'; // Match box background
     playerHeader.style.padding = '10px 12px';
-    playerHeader.style.borderBottom = '1px solid rgba(255, 255, 255, 0.1)';
+    playerHeader.style.borderBottom = '1px solid #172842'; // Updated border color
     
     const playerName = document.createElement('h3');
     playerName.textContent = player.name; // Player name clearly visible
     playerName.style.fontSize = '16px';
     playerName.style.fontWeight = '700'; // Make font bolder
     playerName.style.margin = '0';
-    playerName.style.color = '#FFFFFF';
+    playerName.style.color = '#FFFFFF'; // White text for better visibility
     playerName.style.textAlign = 'left'; // Ensure name is aligned left
     
     playerHeader.appendChild(playerName);
@@ -67,7 +68,7 @@ export const addPlayersToReport = (
     const playerInfo = document.createElement('p');
     playerInfo.textContent = `${player.combinations.length} sequência${player.combinations.length !== 1 ? 's' : ''} | Acertos máximos: ${maxHits}`;
     playerInfo.style.fontSize = '12px';
-    playerInfo.style.color = '#9ca3af'; // text-muted-foreground
+    playerInfo.style.color = '#5C719B'; // Updated text color to match design
     playerInfo.style.margin = '0';
     
     playerInfoSection.appendChild(playerInfo);
@@ -86,8 +87,9 @@ export const addPlayersToReport = (
         comboRow.style.flexWrap = 'wrap';
         comboRow.style.gap = '6px';
         comboRow.style.padding = '8px';
-        comboRow.style.backgroundColor = 'rgba(217, 217, 217, 0.1)'; // bg-muted/40
+        comboRow.style.backgroundColor = '#0D1526'; // Updated background color
         comboRow.style.borderRadius = '6px';
+        comboRow.style.border = '1px solid #172842'; // Added border
         comboRow.style.justifyContent = 'center'; // Center the combinations
         
         // Sort numbers for consistency

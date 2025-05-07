@@ -81,14 +81,14 @@ export const generateGameReport = async (game: Game, options: GeneratePdfOptions
     html2canvas: { 
       scale: 2, 
       useCORS: true,
-      backgroundColor: '#0F111A' // Set background color for canvas
+      backgroundColor: '#020817' // Updated background color
     },
     jsPDF: { 
       unit: 'mm', 
       format: 'a4', 
       orientation: 'portrait',
       compress: true, // Enable compression
-      background: '#0F111A' // Set background color for the PDF
+      background: '#020817' // Updated background color
     },
     pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
   };

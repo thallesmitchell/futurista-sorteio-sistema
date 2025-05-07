@@ -8,7 +8,7 @@ export const createReportContainer = (): HTMLElement => {
   reportElement.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"; // Ensure Inter font with fallbacks
   reportElement.style.padding = '20px';
   reportElement.style.margin = '0';
-  reportElement.style.backgroundColor = '#0F111A';
+  reportElement.style.backgroundColor = '#020817'; // Updated to dark blue background
   reportElement.style.color = '#FFFFFF';
   reportElement.style.maxWidth = '100%';
   reportElement.style.minHeight = '100vh'; // Ensure dark background covers full page
@@ -29,8 +29,9 @@ export const addHeaderToReport = (container: HTMLElement, title: string, date: s
   header.style.marginBottom = '30px'; // Increased margin for better visibility
   header.style.padding = '10px';
   header.style.display = 'block'; // Ensure the header is displayed
-  header.style.backgroundColor = '#1A1F2C'; // Distinct background to make header visible
+  header.style.backgroundColor = '#0D1526'; // Updated header background color
   header.style.borderRadius = '8px';
+  header.style.border = '1px solid #172842'; // Added border to match design
   
   const titleElement = document.createElement('div');
   titleElement.style.fontSize = '24px';
