@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import MainLayout from '@/layouts/MainLayout';
@@ -25,9 +26,6 @@ export default function GameAdmin() {
   const { toast } = useToast();
   const playerEditHandlerRef = useRef<any>(null);
 
-  // Keep track of when we've shown the notification, but not for banner display
-  const [hasShownWinnerNotification, setHasShownWinnerNotification] = useState(false);
-
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
   const winners = game?.winners || [];
@@ -44,15 +42,9 @@ export default function GameAdmin() {
       
       setCurrentGame(game);
       
-      // Only show toast notification if this is the first time we're seeing winners
-      if (hasWinners && !hasShownWinnerNotification) {
-        setHasShownWinnerNotification(true);
-        setIsWinnersModalOpen(true);
-        toast({
-          title: "Vencedor Encontrado!",
-          description: `${winners.length > 1 ? 'Vários jogadores acertaram' : 'Um jogador acertou'} todos os 6 números!`,
-          variant: "default",
-        });
+      // Check for winners when game data changes
+      if (game.id && !game.winners?.length) {
+        checkWinners(game.id);
       }
     } else {
       // If game not found, redirect to dashboard
@@ -62,9 +54,8 @@ export default function GameAdmin() {
     // Cleanup on unmount
     return () => {
       setCurrentGame(null);
-      setHasShownWinnerNotification(false);
     };
-  }, [game, gameId, navigate, setCurrentGame, winners, toast, hasWinners, hasShownWinnerNotification]);
+  }, [game, gameId, navigate, setCurrentGame, checkWinners]);
 
   // Show 404 if game not found
   if (!game || game.status === 'closed') {
@@ -117,7 +108,7 @@ export default function GameAdmin() {
           game={game}
         />
 
-        {/* Always show the winner banner when there are winners - no conditional state dependency */}
+        {/* Always show the winner banner when there are winners */}
         {hasWinners && (
           <WinnerBanner 
             winners={winners} 

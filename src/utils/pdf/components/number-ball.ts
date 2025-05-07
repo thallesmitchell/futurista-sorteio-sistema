@@ -36,7 +36,7 @@ export const createNumberBall = (number: number, color: string, isHit: boolean):
   innerSpan.style.lineHeight = '1';
   innerSpan.style.textAlign = 'center';
   innerSpan.style.position = 'absolute';
-  innerSpan.style.top = '20%'; // Changed from 30% to 20% as requested
+  innerSpan.style.top = '23%'; // Updated from 20% to 23% as requested
   innerSpan.style.left = '50%';
   innerSpan.style.transform = 'translate(-50%, -50%)'; // Use transform for perfect centering
   

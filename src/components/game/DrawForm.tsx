@@ -103,8 +103,8 @@ export const DrawForm: React.FC<DrawFormProps> = ({
         }
       }
       
-      // Limpar formulário
-      setDrawNumbers('');
+      // Important: We're no longer clearing the drawNumbers field
+      // setDrawNumbers('');
       
       toast({
         title: "Sorteio registrado",

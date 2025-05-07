@@ -24,7 +24,7 @@ export default function GameHistory() {
 
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
-
+  
   // Set current game for context
   useEffect(() => {
     if (game) {
@@ -116,7 +116,7 @@ export default function GameHistory() {
           </div>
         </div>
 
-        {/* Sempre mostrar o banner de vencedores se houver vencedores */}
+        {/* Always show the winner banner if there are winners */}
         {hasWinners && (
           <WinnerBanner winners={winners} allDrawnNumbers={allDrawnNumbers} />
         )}

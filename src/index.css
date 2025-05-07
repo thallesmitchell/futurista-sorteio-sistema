@@ -69,9 +69,17 @@
     @apply min-h-9 min-w-9;
   }
   
-  /* Improve form elements on mobile */
+  /* Improved form elements on mobile */
   input, select, textarea {
-    font-size: 16px; /* Prevents iOS zoom on focus */
+    font-size: 16px !important; /* Prevents iOS zoom on focus */
+    max-width: 100% !important;
+    width: 100% !important; /* Ensure inputs don't overflow */
+  }
+  
+  /* Better grid and flex layouts on mobile */
+  .grid, .flex {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
   }
 }
 
@@ -144,11 +152,33 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   .mobile-text-center {
     text-align: center !important;
   }
+  
+  /* Improved card layouts on mobile */
+  .card {
+    padding: 12px !important;
+  }
+  
+  /* Improved form inputs on mobile */
+  input, select, textarea {
+    font-size: 16px !important;
+    padding: 8px 12px !important;
+  }
+  
+  /* Smaller table text on mobile */
+  table {
+    font-size: 14px !important;
+  }
+  
+  /* Better button spacing on mobile */
+  button + button {
+    margin-left: 0 !important;
+    margin-top: 8px !important;
+  }
 }
 
 /* Fixes for PDF rendering */
 .pdf-content {
-  background-color: #0F111A !important;
+  background-color: #020817 !important;
   color: #FFFFFF !important;
 }
 
@@ -157,12 +187,60 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
 }
 
 .pdf-masonry {
-  background-color: #0F111A !important;
+  background-color: #020817 !important;
 }
 
 /* Fix for iOS input fields */
 @supports (-webkit-touch-callout: none) {
   input, textarea, select {
     font-size: 16px !important;
+  }
+}
+
+/* Responsive layout improvements */
+@media (max-width: 475px) {
+  .xs\:hidden {
+    display: none !important;
+  }
+  
+  .xs\:block {
+    display: block !important;
+  }
+  
+  .xs\:w-full {
+    width: 100% !important;
+  }
+  
+  /* Improve card padding on very small screens */
+  .card {
+    padding: 10px !important;
+  }
+  
+  /* Smaller margins and paddings */
+  .p-4 {
+    padding: 12px !important;
+  }
+  
+  .m-4 {
+    margin: 12px !important;
+  }
+  
+  /* Stack buttons on very small screens */
+  .flex {
+    flex-wrap: wrap !important;
+  }
+}
+
+/* Better PDF rendering on mobile */
+@media print {
+  .pdf-content {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  /* Ensure proper background color is maintained */
+  html, body {
+    background-color: #020817 !important;
+    color: #FFFFFF !important;
   }
 }

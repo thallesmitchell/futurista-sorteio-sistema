@@ -9,7 +9,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Player, useGame } from '@/contexts/GameContext';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 
 interface PlayerFormProps {
@@ -31,7 +30,6 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
   const [playerNumbers, setPlayerNumbers] = useState('');
   const [formMode, setFormMode] = useState('new'); // 'new' or 'existing'
   const [selectedPlayerId, setSelectedPlayerId] = useState('');
-  const [multiSequence, setMultiSequence] = useState(false);
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { addPlayer, addPlayerCombination, games } = useGame();
@@ -97,8 +95,8 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
     e.preventDefault();
     
     try {
-      if (multiSequence && formMode === 'new') {
-        // Processar múltiplas sequências
+      if (formMode === 'new') {
+        // Always process as multi-sequence now
         const lines = playerNumbers.split('\n').filter(line => line.trim() !== '');
         
         if (lines.length === 0) {
@@ -140,8 +138,8 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
         
         if (hasError) return;
         
-        // Adicionar jogador com a primeira sequência
-        if (externalAddPlayer) {
+        // Adicionar jogador com sequências
+        if (externalAddPlayer && validSequences.length > 0) {
           externalAddPlayer(playerName, validSequences[0]);
           
           // Adicionar as sequências adicionais
@@ -170,8 +168,8 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
           description: `O jogador foi cadastrado com sucesso com ${validSequences.length} sequências`,
         });
       }
-      else if (multiSequence && formMode === 'existing') {
-        // Processar múltiplas sequências para jogador existente
+      else {
+        // Modo de jogador existente - sempre como multi-sequence
         if (!selectedPlayerId) {
           toast({
             title: "Jogador não selecionado",
@@ -229,66 +227,6 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
         toast({
           title: "Combinações adicionadas",
           description: `${validSequences.length} sequências foram adicionadas com sucesso`,
-        });
-      }
-      else {
-        // Modo padrão (sequência única)
-        // Validar números
-        const numbersArray = validateNumbers(playerNumbers);
-        if (!numbersArray) return;
-        
-        if (formMode === 'new') {
-          // Validar nome para novos jogadores
-          if (playerName.trim() === '') {
-            toast({
-              title: "Nome inválido",
-              description: "Por favor, insira um nome para o jogador",
-              variant: "destructive"
-            });
-            return;
-          }
-          
-          // Adicionar novo jogador (use external or context)
-          if (externalAddPlayer) {
-            externalAddPlayer(playerName, numbersArray);
-          } else if (gameId) {
-            addPlayer(gameId, {
-              name: playerName,
-              combinations: [{ numbers: numbersArray, hits: 0 }]
-            });
-          }
-          
-          // Limpar formulário
-          setPlayerName('');
-          setPlayerNumbers('');
-          
-        } else {
-          // Adicionar combinação a jogador existente
-          if (!selectedPlayerId) {
-            toast({
-              title: "Jogador não selecionado",
-              description: "Por favor, selecione um jogador",
-              variant: "destructive"
-            });
-            return;
-          }
-          
-          // Adicionar combinação (use external or context)
-          if (externalAddCombination) {
-            externalAddCombination(selectedPlayerId, numbersArray);
-          } else if (gameId) {
-            addPlayerCombination(gameId, selectedPlayerId, numbersArray);
-          }
-          
-          // Limpar apenas os números
-          setPlayerNumbers('');
-        }
-        
-        toast({
-          title: formMode === 'new' ? "Jogador adicionado" : "Combinação adicionada",
-          description: formMode === 'new' 
-            ? "O jogador foi cadastrado com sucesso" 
-            : "A combinação foi adicionada com sucesso",
         });
       }
     } catch (error) {
@@ -358,37 +296,19 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
             )}
             
             <div className="space-y-2">
-              <div className="flex items-center space-x-2 mb-2">
-                <Checkbox 
-                  id="multi-sequence" 
-                  checked={multiSequence}
-                  onCheckedChange={(checked) => setMultiSequence(checked as boolean)}
-                />
-                <Label htmlFor="multi-sequence">Habilitar multi-sequências</Label>
-              </div>
-              
               <Label htmlFor="player-numbers">
-                Números Escolhidos <span className="text-muted-foreground text-xs">{multiSequence ? '(6 números por linha)' : '(6 números de 1 a 80)'}</span>
+                Números Escolhidos <span className="text-muted-foreground text-xs">(6 números por linha)</span>
               </Label>
               
-              {multiSequence ? (
-                <Textarea
-                  id="player-numbers"
-                  placeholder="Ex: 7, 15, 23, 32, 41, 59
+              <Textarea
+                id="player-numbers"
+                placeholder="Ex: 7, 15, 23, 32, 41, 59
 10, 20, 30, 40, 50, 60
 5, 15, 25, 35, 45, 55"
-                  value={playerNumbers}
-                  onChange={(e) => setPlayerNumbers(e.target.value)}
-                  className="min-h-[120px]"
-                />
-              ) : (
-                <Input
-                  id="player-numbers"
-                  placeholder="Ex: 7, 15, 23, 32, 41, 59"
-                  value={playerNumbers}
-                  onChange={(e) => setPlayerNumbers(e.target.value)}
-                />
-              )}
+                value={playerNumbers}
+                onChange={(e) => setPlayerNumbers(e.target.value)}
+                className="min-h-[120px]"
+              />
             </div>
           </div>
           
