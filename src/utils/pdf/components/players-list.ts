@@ -81,26 +81,36 @@ export const addPlayersToReport = (
     const combinationsContainer = document.createElement('div');
     combinationsContainer.style.display = 'flex';
     combinationsContainer.style.flexDirection = 'column';
-    combinationsContainer.style.gap = '4px'; // REDUCED GAP HERE to fix spacing issue
+    combinationsContainer.style.gap = '8px';
     
     if (player.combinations && player.combinations.length > 0) {
       player.combinations.forEach((combo, comboIndex) => {
         const comboContainer = document.createElement('div');
         comboContainer.style.display = 'flex';
         comboContainer.style.flexDirection = 'column';
-        comboContainer.style.gap = '4px'; // REDUCED GAP HERE
-        comboContainer.style.padding = '6px'; // REDUCED PADDING HERE
+        comboContainer.style.gap = '6px';
+        comboContainer.style.padding = '8px';
         comboContainer.style.backgroundColor = '#0D1526'; // Updated background color
         comboContainer.style.borderRadius = '6px';
         comboContainer.style.border = '1px solid #172842'; // Added border
         
-        // IMPORTANT: Add sequence number label (smaller and less prominent)
+        // Add player name to each sequence box
+        const playerNameLabel = document.createElement('div');
+        playerNameLabel.textContent = player.name;
+        playerNameLabel.style.fontSize = '14px';
+        playerNameLabel.style.fontWeight = '700';
+        playerNameLabel.style.color = '#FFFFFF';
+        playerNameLabel.style.textAlign = 'center';
+        playerNameLabel.style.marginBottom = '4px';
+        comboContainer.appendChild(playerNameLabel);
+        
+        // Add sequence number label
         const sequenceLabel = document.createElement('div');
         sequenceLabel.textContent = `Sequência ${comboIndex + 1}`;
-        sequenceLabel.style.fontSize = '11px';
+        sequenceLabel.style.fontSize = '13px';
         sequenceLabel.style.color = '#8899AA';
-        sequenceLabel.style.fontWeight = '500';
-        sequenceLabel.style.marginBottom = '2px'; // REDUCED MARGIN
+        sequenceLabel.style.fontWeight = '600';
+        sequenceLabel.style.marginBottom = '4px';
         sequenceLabel.style.textAlign = 'center';
         comboContainer.appendChild(sequenceLabel);
         
@@ -108,7 +118,7 @@ export const addPlayersToReport = (
         const comboRow = document.createElement('div');
         comboRow.style.display = 'flex';
         comboRow.style.flexWrap = 'wrap';
-        comboRow.style.gap = '4px'; // REDUCED GAP
+        comboRow.style.gap = '6px';
         comboRow.style.justifyContent = 'center'; // Center the combinations
         
         // Sort numbers for consistency
@@ -118,8 +128,8 @@ export const addPlayersToReport = (
         sortedNumbers.forEach(number => {
           const isNumberHit = drawnNumbersSet.has(number);
           const ball = createNumberBall(number, themeColor, isNumberHit);
-          ball.style.width = '30px'; // SMALLER for more compact layout
-          ball.style.height = '30px'; // SMALLER for more compact layout
+          ball.style.width = '32px'; // Smaller for the player cards
+          ball.style.height = '32px';
           comboRow.appendChild(ball);
         });
         
