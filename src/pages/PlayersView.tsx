@@ -4,11 +4,11 @@ import { useParams, Link } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
 import { Button } from '@/components/ui/button';
 import { FileText, ArrowLeft } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { NumberBadge } from '@/components/game/NumberBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import html2pdf from 'html2pdf.js';
+import { generateGameReport } from '@/utils/pdf/pdfBuilder';
 
 export default function PlayersView() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -56,63 +56,22 @@ export default function PlayersView() {
     return <div className="flex items-center justify-center min-h-screen">Carregando...</div>;
   }
   
-  // Function to generate PDF directly
+  // Função para gerar PDF usando o novo sistema
   const handleGeneratePDF = async () => {
     if (isGenerating) return;
     setIsGenerating(true);
     
     try {
-      // Get the content element
-      const contentElement = document.getElementById('players-view-content');
-      
-      if (!contentElement) {
-        throw new Error('Content element not found');
+      if (!game) {
+        throw new Error('Jogo não encontrado');
       }
       
-      // Clone the content for PDF generation
-      const clonedContent = contentElement.cloneNode(true) as HTMLElement;
-      clonedContent.style.backgroundColor = '#020817';
-      clonedContent.style.color = '#FFFFFF';
-      clonedContent.style.padding = '20px';
-      clonedContent.style.width = '210mm'; // A4 width
-      clonedContent.style.margin = '0 auto';
-      
-      // Add a title to the PDF
-      const titleElement = document.createElement('h1');
-      titleElement.textContent = `Jogadores - ${game.name}`;
-      titleElement.style.textAlign = 'center';
-      titleElement.style.marginBottom = '20px';
-      titleElement.style.color = '#FFFFFF';
-      titleElement.style.fontSize = '24px';
-      
-      clonedContent.insertBefore(titleElement, clonedContent.firstChild);
-      
-      document.body.appendChild(clonedContent);
-      
-      // Generate PDF with specific options
-      const pdfOptions = {
-        margin: 10,
+      // Usar o novo gerador de PDF
+      await generateGameReport(game, {
+        themeColor: profileData.themeColor,
         filename: `jogadores-${game.name.replace(/\s+/g, '-')}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2,
-          useCORS: true,
-          backgroundColor: '#020817'
-        },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait',
-          compress: true,
-          background: '#020817'
-        },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      };
-      
-      await html2pdf().from(clonedContent).set(pdfOptions).save();
-      
-      // Remove the cloned element
-      document.body.removeChild(clonedContent);
+        includeNearWinners: true
+      });
       
       toast({
         title: "PDF gerado com sucesso",

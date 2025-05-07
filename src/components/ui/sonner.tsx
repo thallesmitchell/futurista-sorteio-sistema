@@ -7,8 +7,8 @@ import { Toaster as Sonner } from "sonner"
 type ToasterProps = React.ComponentProps<typeof Sonner>
 
 export function Toaster({ ...props }: ToasterProps) {
-  // Try to use the theme context, but provide a fallback if it's not available
-  let primaryColor = '#39FF14'; // Default color
+  // Tentar usar o contexto de tema, mas fornecer um fallback se não estiver disponível
+  let primaryColor = '#39FF14'; // Cor padrão
   
   try {
     const themeContext = useTheme();
@@ -16,17 +16,22 @@ export function Toaster({ ...props }: ToasterProps) {
       primaryColor = themeContext.primaryColor;
     }
   } catch (error) {
-    console.log('Theme context not available, using default color');
+    console.log('Contexto de tema não disponível, usando cor padrão');
   }
 
   return (
     <Sonner
       theme="light"
       className="toaster group"
+      position="top-right"
       toastOptions={{
+        style: {
+          maxWidth: '420px',
+          width: 'auto'
+        },
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg max-w-[420px] w-auto",
+            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
           description: "group-[.toast]:text-muted-foreground",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",

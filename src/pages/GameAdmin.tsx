@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import MainLayout from '@/layouts/MainLayout';
@@ -12,7 +13,7 @@ import { ConfirmCloseModal } from '@/components/game/ConfirmCloseModal';
 import { Player } from '@/contexts/game/types';
 import { GameHeader } from '@/components/game/GameHeader';
 import { GameAdminForms } from '@/components/game/GameAdminForms';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import PlayerEditHandler from '@/components/game/PlayerEditHandler';
 
 export default function GameAdmin() {
@@ -107,7 +108,7 @@ export default function GameAdmin() {
           game={game}
         />
 
-        {/* Always show the winner banner when there are winners */}
+        {/* Sempre mostrar o banner de vencedor quando houver ganhadores */}
         {hasWinners && (
           <div className="permanent-winner-banner">
             <WinnerBanner 

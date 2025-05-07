@@ -34,8 +34,8 @@ export const NumberBadge = ({
   
   // Apply appropriate styling based on hit status
   const hitClasses = isNumberHit
-    ? 'bg-green-500 text-white border-0 shadow-[0_0_8px_rgba(34,197,94,0.6)]'
-    : 'border border-green-500 text-white bg-background';
+    ? 'bg-green-500 text-white border-0 shadow-[0_0_8px_rgba(34,197,94,0.6)] font-bold'
+    : 'border border-green-500 text-white bg-background font-normal';
   
   return (
     <span className={cn(

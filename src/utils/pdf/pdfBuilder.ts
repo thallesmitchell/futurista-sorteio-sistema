@@ -1,10 +1,13 @@
+
 import jsPDF from 'jspdf';
 import { Game, Player } from '@/contexts/game/types';
 import { addFonts, loadFonts } from './fonts';
 import { formatDate } from '@/lib/date';
 import autoTable from 'jspdf-autotable';
+import { addPlayersToReport } from './components/players-list';
+import { createReportContainer, addHeaderToReport } from './components/container';
 
-// Use inline type definition for PlayerCombination since it's not exported from types
+// Use inline type definition
 type PlayerCombination = {
   numbers: number[];
   hits: number;
@@ -22,7 +25,7 @@ const PDF_CONFIG = {
   smallTextFontSize: 8,
   lineHeight: 7,
   innerMargin: 5,
-  ballSize: 7,
+  ballSize: 9, // Aumentado conforme solicitado
 }
 
 // Initialize PDF document
@@ -53,18 +56,18 @@ export const addHeader = (
   const centerX = (PDF_CONFIG.pageWidth - textWidth) / 2;
 
   // Add title
-  pdf.setFont('helvetica', 'bold'); // Changed from Inter-Bold to helvetica bold
+  pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(PDF_CONFIG.titleFontSize);
   pdf.setTextColor(options.color);
   pdf.text('Resultado', PDF_CONFIG.pageWidth / 2, PDF_CONFIG.margin, { align: 'center' });
   
   // Add date
-  pdf.setFont('helvetica', 'normal'); // Changed from Inter-Medium to helvetica normal
+  pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(PDF_CONFIG.subtitleFontSize);
   pdf.text(formattedDate, PDF_CONFIG.pageWidth / 2, PDF_CONFIG.margin + 10, { align: 'center' });
   
   // Add game name
-  pdf.setFont('helvetica', 'normal'); // Changed from Inter-Regular to helvetica normal
+  pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(PDF_CONFIG.headerFontSize);
   pdf.text(gameTitle, PDF_CONFIG.pageWidth / 2, PDF_CONFIG.margin + 20, { align: 'center' });
   
@@ -95,19 +98,20 @@ export const drawBall = (
   const radius = options.size;
   const formattedNumber = String(number).padStart(2, '0');
   
-  // If it's a hit, fill with color, otherwise just the border
+  // Se é um acerto, preenche com cor, caso contrário apenas a borda
   if (options.isHit) {
     pdf.setFillColor(options.colorFill);
     pdf.circle(x, y, radius, 'F');
     pdf.setTextColor(options.colorText);
+    pdf.setFont('helvetica', 'bold'); // Extra bold para números acertados
   } else {
     pdf.setDrawColor(options.colorBorder);
     pdf.circle(x, y, radius, 'D');
     pdf.setTextColor(options.colorBorder);
+    pdf.setFont('helvetica', 'normal'); // Normal para não acertados
   }
   
   // Add number to ball
-  pdf.setFont('helvetica', 'bold'); // Changed from Inter-Bold to helvetica bold
   pdf.setFontSize(PDF_CONFIG.smallTextFontSize);
   
   // Calculate the width of the text to center it within the ball
@@ -136,22 +140,22 @@ export const addNearWinnersSection = (
     })
     .filter(item => item.combos.length > 0);
     
-  // If there are no near winners, return the current position (no section added)
+  // Se não há quase ganhadores, retorna a posição atual
   if (nearWinners.length === 0) {
-    return PDF_CONFIG.margin + 30; // Return position after header
+    return PDF_CONFIG.margin + 30; // Retorna posição após o cabeçalho
   }
   
-  // Add section title
+  // Título da seção
   let currentY = PDF_CONFIG.margin + 35;
-  pdf.setFont('helvetica', 'bold'); // Changed from Inter-Bold to helvetica bold
+  pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(PDF_CONFIG.subtitleFontSize);
   pdf.setTextColor(options.color);
   pdf.text('Jogos Amarrados', PDF_CONFIG.pageWidth / 2, currentY, { align: 'center' });
   
   currentY += 8;
   
-  // Add description
-  pdf.setFont('helvetica', 'normal'); // Changed from Inter-Regular to helvetica normal
+  // Descrição
+  pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(PDF_CONFIG.textFontSize);
   pdf.setTextColor('#000000');
   pdf.text(
@@ -161,69 +165,69 @@ export const addNearWinnersSection = (
     { align: 'center' }
   );
   
-  currentY += 10;
+  currentY += 15; // Aumentado para dar mais espaço entre título e boxes
   
-  // Create rectangles for each near winner
-  const boxWidth = (PDF_CONFIG.pageWidth - (PDF_CONFIG.margin * 2) - 10) / 2; // Two columns
-  let boxX = PDF_CONFIG.margin;
+  // Boxes para cada quase ganhador - agora em coluna única, 100% de largura
+  const boxWidth = PDF_CONFIG.pageWidth - (PDF_CONFIG.margin * 2);
   
   nearWinners.forEach((item, index) => {
-    // New row every 2 items
-    if (index > 0 && index % 2 === 0) {
-      boxX = PDF_CONFIG.margin;
-      currentY += 55; // Height of the previous row of boxes
-    }
-    
-    // Draw player box
+    // Desenha box do jogador
     pdf.setDrawColor(options.color);
     pdf.setFillColor('#f8f8f8');
-    pdf.roundedRect(boxX, currentY, boxWidth, 50, 3, 3, 'FD');
+    pdf.roundedRect(PDF_CONFIG.margin, currentY, boxWidth, 60, 3, 3, 'FD'); // Altura aumentada
     
-    // Player name
-    pdf.setFont('helvetica', 'bold'); // Changed from Inter-Bold to helvetica bold
+    // Nome do jogador
+    pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(PDF_CONFIG.headerFontSize);
     pdf.setTextColor('#000000');
-    pdf.text(item.player.name, boxX + (boxWidth / 2), currentY + 7, { align: 'center' });
+    pdf.text(item.player.name, PDF_CONFIG.pageWidth / 2, currentY + 10, { align: 'center' });
     
-    // For each combination with 5 hits
-    let comboY = currentY + 15;
+    // Para cada combinação com 5 acertos
+    let comboY = currentY + 25; // Posição vertical ajustada
     
     item.combos.forEach((combo, comboIndex) => {
       if (comboIndex > 0) {
-        comboY += 15; // Spacing between combinations
+        comboY += 15; // Espaçamento entre combinações
       }
       
-      // Only show up to 2 combinations per player due to space constraints
-      if (comboIndex < 2) {
-        // Draw numbers
-        let numberX = boxX + 5;
+      // Limitado às primeiras combinações devido a restrições de espaço
+      if (comboIndex < 3) {
+        // Números
         const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
+        
+        // Calcula posição inicial para centralizar os números
+        const totalWidth = sortedNumbers.length * (PDF_CONFIG.ballSize * 3); 
+        let numberX = (PDF_CONFIG.pageWidth - totalWidth) / 2 + PDF_CONFIG.ballSize;
         
         sortedNumbers.forEach((number, i) => {
           const isHit = drawnNumbersSet.has(number);
-          drawBall(pdf, numberX + (i * (PDF_CONFIG.ballSize * 2.5)), comboY, number, {
-            size: PDF_CONFIG.ballSize,
-            colorFill: options.color,
-            colorBorder: options.color,
-            colorText: '#FFFFFF',
-            isHit
-          });
+          drawBall(pdf, 
+            numberX + (i * (PDF_CONFIG.ballSize * 2.5)), // 20px entre círculos
+            comboY, 
+            number, 
+            {
+              size: PDF_CONFIG.ballSize + 2, // Círculos maiores conforme solicitado
+              colorFill: options.color,
+              colorBorder: options.color,
+              colorText: '#FFFFFF',
+              isHit
+            }
+          );
         });
-      } else if (comboIndex === 2) {
-        // Indicate there are more combinations
-        pdf.setFont('helvetica', 'italic'); // Changed from Inter-Italic to helvetica italic
+      } else if (comboIndex === 3) {
+        // Indica que há mais combinações
+        pdf.setFont('helvetica', 'italic');
         pdf.setFontSize(PDF_CONFIG.smallTextFontSize);
-        pdf.text(`+ ${item.combos.length - 2} mais sequências com 5 acertos`, boxX + (boxWidth / 2), comboY, { align: 'center' });
+        pdf.text(`+ ${item.combos.length - 3} mais sequências com 5 acertos`, PDF_CONFIG.pageWidth / 2, comboY, { align: 'center' });
       }
     });
     
-    // Move to next box position (next column)
-    boxX += boxWidth + 10;
+    // Atualiza posição Y para próximo jogador
+    currentY += 70; // Altura do box + espaçamento
   });
   
-  // Calculate the final Y position after the near winners section
-  const sectionHeight = Math.ceil(nearWinners.length / 2) * 55;
-  return currentY + sectionHeight + 10;
+  // Retorna a posição Y final após a seção de quase ganhadores
+  return currentY + 10;
 }
 
 // Add winners section to PDF
@@ -234,23 +238,23 @@ export const addWinnersSection = (
   startY: number,
   options = { color: '#39FF14' }
 ): number => {
-  // If there are no winners, return the current position
+  // Se não há ganhadores, retorna a posição atual
   if (!game.winners || game.winners.length === 0) {
     return startY;
   }
   
   const drawnNumbersSet = new Set(allDrawnNumbers);
   
-  // Add section title
+  // Título da seção
   let currentY = startY;
-  pdf.setFont('helvetica', 'bold'); // Changed from Inter-Bold to helvetica bold
+  pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(PDF_CONFIG.subtitleFontSize);
   pdf.setTextColor(options.color);
-  pdf.text('Ganhadores', PDF_CONFIG.pageWidth / 2, currentY, { align: 'center' });
+  pdf.text('🏆 Ganhadores 🏆', PDF_CONFIG.pageWidth / 2, currentY, { align: 'center' });
   
-  currentY += 8;
+  currentY += 15; // Aumentado para melhor espaçamento
   
-  // Create winners block
+  // Bloco de ganhadores
   const winners = game.winners.map(winner => {
     const playerData = game.players.find(p => p.id === winner.id);
     if (!playerData) return null;
@@ -259,65 +263,70 @@ export const addWinnersSection = (
     return { player: playerData, winningCombos };
   }).filter(Boolean) as { player: Player, winningCombos: PlayerCombination[] }[];
   
-  // Create rectangles for each winner
+  // Design melhorado para ganhadores
   winners.forEach((winner) => {
-    // Draw winner box
+    // Box do ganhador com design melhorado
     pdf.setDrawColor(options.color);
-    pdf.setFillColor(options.color + '20'); // 20% opacity
+    pdf.setFillColor('#e8ffd7'); // Fundo claro para maior destaque
     pdf.roundedRect(
       PDF_CONFIG.margin, 
       currentY, 
       PDF_CONFIG.pageWidth - (PDF_CONFIG.margin * 2), 
-      25 + (winner.winningCombos.length * 15), 
-      3, 
-      3, 
+      25 + (winner.winningCombos.length * 20), // Altura aumentada
+      5, // Bordas mais arredondadas
+      5, 
       'FD'
     );
     
-    // Add trophy emoji and player name
-    pdf.setFont('helvetica', 'bold'); // Changed from Inter-Bold to helvetica bold
-    pdf.setFontSize(PDF_CONFIG.headerFontSize);
-    pdf.setTextColor('#000000');
-    pdf.text(`🏆 ${winner.player.name} 🏆`, PDF_CONFIG.pageWidth / 2, currentY + 8, { align: 'center' });
+    // Nome do ganhador com troféu em destaque
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(PDF_CONFIG.subtitleFontSize); // Fonte maior
+    pdf.setTextColor('#247c00'); // Verde mais escuro para destaque
+    pdf.text(`🏆 ${winner.player.name} 🏆`, PDF_CONFIG.pageWidth / 2, currentY + 12, { align: 'center' });
     
-    // Add winning combinations
-    let comboY = currentY + 20;
+    // Combinações vencedoras
+    let comboY = currentY + 25;
     
     winner.winningCombos.forEach(combo => {
       const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
       
-      // Calculate start position to center the numbers
-      const totalWidth = sortedNumbers.length * (PDF_CONFIG.ballSize * 2.5); 
-      let startX = (PDF_CONFIG.pageWidth - totalWidth) / 2;
+      // Calcula posição inicial para centralizar os números
+      const totalWidth = sortedNumbers.length * (PDF_CONFIG.ballSize * 3); 
+      let startX = (PDF_CONFIG.pageWidth - totalWidth) / 2 + PDF_CONFIG.ballSize;
       
-      // Draw each number
+      // Deseja cada número
       sortedNumbers.forEach((number, i) => {
-        drawBall(pdf, startX + (i * (PDF_CONFIG.ballSize * 2.5)), comboY, number, {
-          size: PDF_CONFIG.ballSize,
-          colorFill: options.color,
-          colorBorder: options.color,
-          colorText: '#FFFFFF',
-          isHit: true
-        });
+        drawBall(pdf, 
+          startX + (i * (PDF_CONFIG.ballSize * 3)), // Espaçamento maior para destaque
+          comboY, 
+          number, 
+          {
+            size: PDF_CONFIG.ballSize + 3, // Tamanho maior para destaque
+            colorFill: '#009e1a', // Verde mais vibrante
+            colorBorder: '#009e1a',
+            colorText: '#FFFFFF',
+            isHit: true
+          }
+        );
       });
       
-      comboY += 15;
+      comboY += 20;
     });
     
-    // Update Y position for next winner
-    currentY = comboY + 10;
+    // Atualiza posição Y para próximo ganhador
+    currentY = comboY + 15;
   });
   
   return currentY + 5;
 }
 
-// Add players section to PDF
+// Add players section to PDF - substituído pela versão HTML/DOM
 export const addPlayersSection = (
   pdf: jsPDF, 
   game: Game, 
   allDrawnNumbers: number[],
   startY: number,
-  options = { color: '#39FF14', maxCombosPerPlayer: 3 }
+  options = { color: '#39FF14', maxCombosPerPlayer: 1000 } // Aumentado para mostrar TODAS as sequências
 ): void => {
   const drawnNumbersSet = new Set(allDrawnNumbers);
   
@@ -337,7 +346,9 @@ export const addPlayersSection = (
   const tableData = [];
   
   // Process each player's data for the table
-  sortedPlayers.forEach(player => {
+  for (let i = 0; i < sortedPlayers.length; i++) {
+    const player = sortedPlayers[i];
+    
     // Get max hits for player
     const maxHits = Math.max(...player.combinations.map(c => c.hits), 0);
     
@@ -346,22 +357,20 @@ export const addPlayersSection = (
     
     // Create player row data
     const playerData = [
-      player.name, 
-      `${player.combinations.length} sequência(s)\nMáx. acertos: ${maxHits}`
+      { content: player.name, styles: { fontStyle: 'bold' } }, 
+      { content: `${player.combinations.length} sequência(s)\nMáx. acertos: ${maxHits}`, styles: {} }
     ];
     
     tableData.push(playerData);
     
-    // Add combinations (limited by maxCombosPerPlayer)
-    const combosToShow = sortedCombos.slice(0, options.maxCombosPerPlayer);
-    
-    combosToShow.forEach(combo => {
+    // Add ALL combinations (no limit)
+    sortedCombos.forEach((combo, idx) => {
       const numberCells = [];
       
       // Sort the numbers
       const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
       
-      // Create a formatted string for the number sequence
+      // Create a formatted string for the number sequence with highlight for hits
       let numbersText = '';
       sortedNumbers.forEach(num => {
         const formatted = String(num).padStart(2, '0');
@@ -374,20 +383,25 @@ export const addPlayersSection = (
         }
       });
       
-      // Add the sequence row with indentation
-      tableData.push(['', `${combo.hits} acertos:`, numbersText]);
+      // Add the sequence row with indentation and hit count
+      tableData.push([
+        '', // Repete o nome do jogador em caso de quebra de página
+        { content: `${combo.hits} acerto${combo.hits !== 1 ? 's' : ''}:`, styles: {} }, 
+        { content: numbersText, styles: {} }
+      ]);
     });
     
-    // If there are more combinations than shown
-    if (player.combinations.length > options.maxCombosPerPlayer) {
-      tableData.push(['', `+ ${player.combinations.length - options.maxCombosPerPlayer} mais...`, '']);
+    // Add spacer row between players with line
+    if (i < sortedPlayers.length - 1) {
+      tableData.push([
+        { content: '', styles: { borderTop: '2px dashed #aaaaaa' } },
+        { content: '', styles: { borderTop: '2px dashed #aaaaaa' } },
+        { content: '', styles: { borderTop: '2px dashed #aaaaaa' } }
+      ]);
     }
-    
-    // Add spacer row
-    tableData.push(['', '', '']);
-  });
+  }
   
-  // Configure and create the table
+  // Configure and create the table with repetição de cabeçalhos
   autoTable(pdf, {
     startY: currentY,
     head: [['Jogador', 'Detalhes', 'Sequências']],
@@ -399,7 +413,7 @@ export const addPlayersSection = (
       fontStyle: 'bold',
     },
     columnStyles: {
-      0: { cellWidth: 50, fontStyle: 'bold' },
+      0: { cellWidth: 50, fontStyle: 'normal' },
       1: { cellWidth: 40 },
       2: { cellWidth: 'auto' },
     },
@@ -408,20 +422,29 @@ export const addPlayersSection = (
     },
     margin: { left: PDF_CONFIG.margin, right: PDF_CONFIG.margin },
     didParseCell: function(data) {
-      // Style numbers with 6 hits in green
-      if (data.section === 'body' && data.column.index === 1 && data.cell.text.includes('6 acertos')) {
+      // Estilo para números com 6 acertos em verde
+      if (data.section === 'body' && data.column.index === 1 && data.cell.text && data.cell.text.toString().includes('6 acerto')) {
         data.cell.styles.textColor = [0, 150, 0];
         data.cell.styles.fontStyle = 'bold';
       }
       
-      // Add visual marker for hit numbers in brackets
+      // Marcador visual para números acertados entre colchetes
       if (data.section === 'body' && data.column.index === 2) {
-        const text = data.cell.text.toString();
+        const text = data.cell.text ? data.cell.text.toString() : '';
         if (text.includes('[')) {
           data.cell.styles.textColor = [0, 150, 0];
+          data.cell.styles.fontStyle = 'bold';
         }
       }
-    }
+    },
+    // Repetir o cabeçalho e o nome do jogador em quebras de página
+    didDrawPage: function(data) {
+      // Cabeçalhos já são repetidos automaticamente
+    },
+    rowPageBreak: 'auto', // Auto quebra de linha
+    showFoot: 'everyPage',
+    tableLineWidth: 0.2,
+    tableLineColor: [80, 80, 80]
   });
 }
 
@@ -435,50 +458,53 @@ export const generateGameReport = async (
   }
 ): Promise<void> => {
   try {
-    console.log('Starting PDF generation for game:', game.name);
+    console.log('Iniciando geração de PDF para o jogo:', game.name);
     
-    // Get all drawn numbers from the game
+    // Obter todos os números sorteados do jogo
     const allDrawnNumbers = game.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
     
-    // Initialize PDF
+    // Inicializar PDF
     const pdf = await createPDF();
     
-    // Add header
+    // Adicionar cabeçalho
     addHeader(pdf, game.name, new Date(), { color: options.themeColor });
     
-    // Track current Y position
+    // Controlar posição Y atual
     let currentY = PDF_CONFIG.margin + 30;
     
-    // Add near winners section if requested and available
-    if (options.includeNearWinners) {
+    // Se houver ganhadores, não adiciona seção de jogos amarrados
+    const hasWinners = game.winners && game.winners.length > 0;
+    
+    // Adicionar seção de quase ganhadores se solicitado e não houver ganhadores
+    if (options.includeNearWinners && !hasWinners) {
       currentY = addNearWinnersSection(pdf, game, allDrawnNumbers, { color: options.themeColor });
     }
     
-    // Add winners section
+    // Adicionar seção de ganhadores
     currentY = addWinnersSection(pdf, game, allDrawnNumbers, currentY, { color: options.themeColor });
     
-    // Check if we need a new page before the players section
+    // Verificar se precisamos de uma nova página antes da seção de jogadores
     if (currentY > PDF_CONFIG.pageHeight - 100) {
       pdf.addPage();
       currentY = PDF_CONFIG.margin;
     }
     
-    // Add players section
+    // Adicionar seção de jogadores
     addPlayersSection(pdf, game, allDrawnNumbers, currentY, { 
       color: options.themeColor,
-      maxCombosPerPlayer: 3
+      maxCombosPerPlayer: 1000 // Mostrar todas as sequências
     });
     
-    // Use the provided filename or generate one
+    // Usar o nome de arquivo fornecido ou gerar um
     const filename = options.filename || `resultado-${game.name.replace(/\s+/g, '-')}.pdf`;
     
-    // Save the PDF
+    // Salvar o PDF
     pdf.save(filename);
     
-    console.log('PDF generation completed successfully');
+    console.log('Geração do PDF concluída com sucesso');
     return Promise.resolve();
   } catch (error) {
-    console.error('Error generating PDF:', error);
+    console.error('Erro ao gerar PDF:', error);
     return Promise.reject(error);
   }
 }

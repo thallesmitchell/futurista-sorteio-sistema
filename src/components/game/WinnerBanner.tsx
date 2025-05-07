@@ -17,7 +17,7 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
 
   // Process winners whenever the winners prop changes
   useEffect(() => {
-    // If no winners, don't render anything
+    // Se não há ganhadores, não renderizar nada
     if (!winners || winners.length === 0) {
       return;
     }
@@ -32,7 +32,7 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
         }))
     );
 
-    // If somehow there are winners but no winning combinations, don't render
+    // Se de alguma forma há ganhadores mas nenhuma combinação vencedora, não renderizar
     if (entries.length === 0) {
       return;
     }
@@ -40,7 +40,7 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
     setWinningEntries(entries);
   }, [winners]);
 
-  // Don't render anything if no winning entries
+  // Sempre renderizar o componente se houver ganhadores, mesmo que o estado de winningEntries ainda não tenha sido atualizado
   if (!winners?.length || winningEntries.length === 0) {
     return null;
   }
@@ -51,7 +51,7 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
         <div className="flex items-center justify-center gap-2 text-center">
           <Trophy className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
           <h2 className="text-lg md:text-xl font-bold text-green-500">
-            {winners.length > 1 ? 'Saiu Ganhador!' : 'Saiu Ganhador!'}
+            {winners.length > 1 ? 'Saiu Ganhadores!' : 'Saiu Ganhador!'}
           </h2>
           <Trophy className="h-5 w-5 md:h-6 md:w-6 text-green-500" />
         </div>

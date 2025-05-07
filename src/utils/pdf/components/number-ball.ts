@@ -5,42 +5,42 @@
 export const createNumberBall = (number: number, color: string, isHit: boolean): HTMLElement => {
   const ball = document.createElement('div');
   ball.className = 'pdf-number-ball';
-  ball.style.width = '36px'; // Reduced from 40px
-  ball.style.height = '36px'; // Reduced from 40px
+  ball.style.width = '36px'; // Tamanho reduzido
+  ball.style.height = '36px'; // Tamanho reduzido
   ball.style.borderRadius = '50%';
   ball.style.display = 'flex';
   ball.style.justifyContent = 'center';
   ball.style.alignItems = 'center';
-  ball.style.fontWeight = 'bold';
-  ball.style.fontSize = '14px'; // Reduced from 16px
-  ball.style.position = 'relative'; // Add position relative for better control
-  ball.style.lineHeight = '1'; // Add explicit line height to reduce spacing
+  ball.style.fontSize = '14px'; // Tamanho da fonte reduzido
+  ball.style.position = 'relative';
+  ball.style.lineHeight = '1';
+  ball.style.margin = '0 10px'; // Espaçamento entre os números (20px entre círculos)
   
-  // Format number with leading zero
+  // Formata o número com zero à esquerda
   const formattedNumber = String(number).padStart(2, '0');
   
-  // Number styling based on hit status
+  // Estilo baseado no estado de acerto
   if (isHit) {
-    ball.style.backgroundColor = color; // Green background for hit numbers
-    ball.style.color = 'white'; // White text for contrast
-    ball.style.border = `2px solid ${color}`;
+    ball.style.backgroundColor = color; // Fundo verde para números acertados
+    ball.style.color = 'white'; // Texto branco para contraste
+    ball.style.fontWeight = '900'; // Peso black para números acertados
   } else {
-    ball.style.backgroundColor = '#1A1F2C';
-    ball.style.color = '#FFFFFF';
-    ball.style.border = `1px solid ${color}`;
+    ball.style.backgroundColor = '#1A1F2C'; // Fundo escuro para não acertados
+    ball.style.color = '#FFFFFF'; // Texto branco
+    ball.style.border = `1px solid ${color}`; // Borda verde
+    ball.style.fontWeight = '400'; // Peso normal para não acertados
   }
   
-  // Create inner span for proper vertical centering
+  // Span interno para centralização vertical adequada
   const innerSpan = document.createElement('span');
   innerSpan.textContent = formattedNumber;
   innerSpan.style.display = 'inline-block';
-  innerSpan.style.lineHeight = '1';
   innerSpan.style.textAlign = 'center';
   innerSpan.style.position = 'absolute';
-  innerSpan.style.top = '50%'; // Changed to perfect middle
+  innerSpan.style.top = '50%';
   innerSpan.style.left = '50%';
-  innerSpan.style.transform = 'translate(-50%, -50%)'; // Use transform for perfect centering
-  innerSpan.style.fontSize = '14px'; // Explicit font size
+  innerSpan.style.transform = 'translate(-50%, -50%)'; // Centralização perfeita
+  innerSpan.style.fontSize = isHit ? '15px' : '14px'; // Fonte maior para acertados
   
   ball.appendChild(innerSpan);
   return ball;
