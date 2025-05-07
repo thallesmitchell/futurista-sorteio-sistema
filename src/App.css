@@ -4,7 +4,7 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
 }
 
 .logo {
@@ -41,4 +41,9 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* Override for any serif fonts */
+h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, select, textarea {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
 }
