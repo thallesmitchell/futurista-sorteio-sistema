@@ -75,7 +75,16 @@ export const GameReport: React.FC<GameReportProps> = ({
       console.log('Winners count:', game.winners?.length || 0);
       
       // Make a deep copy of the game to avoid reference issues
-      const fullGame = structuredClone(game);
+      const fullGame = JSON.parse(JSON.stringify(game));
+      
+      // Ensure each player has their name in the sequences for the PDF
+      fullGame.players = fullGame.players.map(player => {
+        // Make sure player name is properly set
+        if (!player.name) {
+          player.name = "Jogador sem nome";
+        }
+        return player;
+      });
       
       await generateGameReport(fullGame, { themeColor: profileData.themeColor });
       
