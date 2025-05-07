@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText, FilePdf, Loader2 } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Game } from '@/contexts/game/types';
 import { supabase } from '@/integrations/supabase/client';
@@ -74,9 +74,10 @@ export const GameReport: React.FC<GameReportProps> = ({
       console.log('Draws count:', game.dailyDraws.length);
       console.log('Winners count:', game.winners?.length || 0);
       
-      // Generate PDF using our new system
+      // Generate PDF using our new system with all required parameters
       await generateGameReport(game, {
         themeColor: profileData.themeColor,
+        filename: `resultado-${game.name.replace(/\s+/g, '-')}.pdf`,
         includeNearWinners: true
       });
       
@@ -111,7 +112,7 @@ export const GameReport: React.FC<GameReportProps> = ({
         </>
       ) : (
         <>
-          <FilePdf className="mr-1 h-4 w-4" />
+          <FileText className="mr-1 h-4 w-4" />
           Baixar Relatório
         </>
       )}

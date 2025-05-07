@@ -1,11 +1,13 @@
 
-# Fonts for PDF Generation
+# PDF Generation Fonts
 
-This directory contains the necessary font files for PDF generation:
+This directory was intended for custom fonts for PDF generation. However, to simplify the implementation and avoid build issues, we now use the default fonts provided by the jsPDF library.
 
-- Inter-Regular.ttf
-- Inter-Bold.ttf
-- Inter-Medium.ttf
-- Inter-Italic.ttf
+## Default Fonts Available in jsPDF
 
-These fonts are used by the PDF generation system to ensure consistent typography in generated reports.
+- helvetica (normal, bold, italic, bolditalic)
+- courier (normal, bold, italic, bolditalic)
+- times (normal, bold, italic, bolditalic) 
+- zapfdingbats
+
+These fonts are built into the PDF standard and are guaranteed to work without the need for external font files.

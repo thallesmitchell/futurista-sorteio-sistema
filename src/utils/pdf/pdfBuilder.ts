@@ -1,9 +1,14 @@
-
 import jsPDF from 'jspdf';
-import { Game, Player, PlayerCombination } from '@/contexts/game/types';
+import { Game, Player } from '@/contexts/game/types';
 import { addFonts, loadFonts } from './fonts';
 import { formatDate } from '@/lib/date';
 import autoTable from 'jspdf-autotable';
+
+// Use inline type definition for PlayerCombination since it's not exported from types
+type PlayerCombination = {
+  numbers: number[];
+  hits: number;
+};
 
 // PDF generation configuration
 const PDF_CONFIG = {
@@ -48,18 +53,18 @@ export const addHeader = (
   const centerX = (PDF_CONFIG.pageWidth - textWidth) / 2;
 
   // Add title
-  pdf.setFont('Inter-Bold');
+  pdf.setFont('helvetica', 'bold'); // Changed from Inter-Bold to helvetica bold
   pdf.setFontSize(PDF_CONFIG.titleFontSize);
   pdf.setTextColor(options.color);
   pdf.text('Resultado', PDF_CONFIG.pageWidth / 2, PDF_CONFIG.margin, { align: 'center' });
   
   // Add date
-  pdf.setFont('Inter-Medium');
+  pdf.setFont('helvetica', 'normal'); // Changed from Inter-Medium to helvetica normal
   pdf.setFontSize(PDF_CONFIG.subtitleFontSize);
   pdf.text(formattedDate, PDF_CONFIG.pageWidth / 2, PDF_CONFIG.margin + 10, { align: 'center' });
   
   // Add game name
-  pdf.setFont('Inter-Regular');
+  pdf.setFont('helvetica', 'normal'); // Changed from Inter-Regular to helvetica normal
   pdf.setFontSize(PDF_CONFIG.headerFontSize);
   pdf.text(gameTitle, PDF_CONFIG.pageWidth / 2, PDF_CONFIG.margin + 20, { align: 'center' });
   
@@ -102,7 +107,7 @@ export const drawBall = (
   }
   
   // Add number to ball
-  pdf.setFont('Inter-Bold');
+  pdf.setFont('helvetica', 'bold'); // Changed from Inter-Bold to helvetica bold
   pdf.setFontSize(PDF_CONFIG.smallTextFontSize);
   
   // Calculate the width of the text to center it within the ball
@@ -138,7 +143,7 @@ export const addNearWinnersSection = (
   
   // Add section title
   let currentY = PDF_CONFIG.margin + 35;
-  pdf.setFont('Inter-Bold');
+  pdf.setFont('helvetica', 'bold'); // Changed from Inter-Bold to helvetica bold
   pdf.setFontSize(PDF_CONFIG.subtitleFontSize);
   pdf.setTextColor(options.color);
   pdf.text('Jogos Amarrados', PDF_CONFIG.pageWidth / 2, currentY, { align: 'center' });
@@ -146,7 +151,7 @@ export const addNearWinnersSection = (
   currentY += 8;
   
   // Add description
-  pdf.setFont('Inter-Regular');
+  pdf.setFont('helvetica', 'normal'); // Changed from Inter-Regular to helvetica normal
   pdf.setFontSize(PDF_CONFIG.textFontSize);
   pdf.setTextColor('#000000');
   pdf.text(
@@ -175,7 +180,7 @@ export const addNearWinnersSection = (
     pdf.roundedRect(boxX, currentY, boxWidth, 50, 3, 3, 'FD');
     
     // Player name
-    pdf.setFont('Inter-Bold');
+    pdf.setFont('helvetica', 'bold'); // Changed from Inter-Bold to helvetica bold
     pdf.setFontSize(PDF_CONFIG.headerFontSize);
     pdf.setTextColor('#000000');
     pdf.text(item.player.name, boxX + (boxWidth / 2), currentY + 7, { align: 'center' });
@@ -206,7 +211,7 @@ export const addNearWinnersSection = (
         });
       } else if (comboIndex === 2) {
         // Indicate there are more combinations
-        pdf.setFont('Inter-Italic');
+        pdf.setFont('helvetica', 'italic'); // Changed from Inter-Italic to helvetica italic
         pdf.setFontSize(PDF_CONFIG.smallTextFontSize);
         pdf.text(`+ ${item.combos.length - 2} mais sequências com 5 acertos`, boxX + (boxWidth / 2), comboY, { align: 'center' });
       }
@@ -238,7 +243,7 @@ export const addWinnersSection = (
   
   // Add section title
   let currentY = startY;
-  pdf.setFont('Inter-Bold');
+  pdf.setFont('helvetica', 'bold'); // Changed from Inter-Bold to helvetica bold
   pdf.setFontSize(PDF_CONFIG.subtitleFontSize);
   pdf.setTextColor(options.color);
   pdf.text('Ganhadores', PDF_CONFIG.pageWidth / 2, currentY, { align: 'center' });
@@ -270,7 +275,7 @@ export const addWinnersSection = (
     );
     
     // Add trophy emoji and player name
-    pdf.setFont('Inter-Bold');
+    pdf.setFont('helvetica', 'bold'); // Changed from Inter-Bold to helvetica bold
     pdf.setFontSize(PDF_CONFIG.headerFontSize);
     pdf.setTextColor('#000000');
     pdf.text(`🏆 ${winner.player.name} 🏆`, PDF_CONFIG.pageWidth / 2, currentY + 8, { align: 'center' });
@@ -318,7 +323,7 @@ export const addPlayersSection = (
   
   // Add section title
   let currentY = startY;
-  pdf.setFont('Inter-Bold');
+  pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(PDF_CONFIG.subtitleFontSize);
   pdf.setTextColor('#000000');
   pdf.text('Jogadores', PDF_CONFIG.pageWidth / 2, currentY, { align: 'center' });
@@ -464,9 +469,8 @@ export const generateGameReport = async (
       maxCombosPerPlayer: 3
     });
     
-    // Generate filename with game name
-    const sanitizedGameName = game.name.replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-    const filename = `resultado-${sanitizedGameName}.pdf`;
+    // Use the provided filename or generate one
+    const filename = options.filename || `resultado-${game.name.replace(/\s+/g, '-')}.pdf`;
     
     // Save the PDF
     pdf.save(filename);
