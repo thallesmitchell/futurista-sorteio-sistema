@@ -13,6 +13,7 @@ export const createReportContainer = (): HTMLElement => {
   reportElement.style.maxWidth = '100%';
   reportElement.style.minHeight = '100vh'; // Ensure dark background covers full page
   reportElement.style.boxSizing = 'border-box'; // Ensure padding is included in dimensions
+  reportElement.style.overflow = 'hidden'; // Prevent any scrollbars
   
   return reportElement;
 };

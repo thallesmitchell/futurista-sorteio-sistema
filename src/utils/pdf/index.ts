@@ -54,7 +54,6 @@ export const generateGameReport = async (game: Game, options: GeneratePdfOptions
   }
   
   // Add players in masonry layout
-  // First add winners if they exist, then add regular players
   console.log('Adding players to PDF, total players:', game.players.length);
   
   // Sort all players (including winners) by name

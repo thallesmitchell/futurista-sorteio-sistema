@@ -6,6 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useGame } from '@/contexts/GameContext';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { NumberBadge } from './NumberBadge';
 
 interface DrawFormProps {
   onAddDraw?: (date: string, numbersArray: number[]) => void;
@@ -22,14 +25,28 @@ export const DrawForm: React.FC<DrawFormProps> = ({
 }) => {
   const [drawNumbers, setDrawNumbers] = useState('');
   const [drawDate, setDrawDate] = useState('');
+  const [recentDraws, setRecentDraws] = useState<Array<{date: string, numbers: number[]}>>([]);
   const { toast } = useToast();
-  const { addDailyDraw, checkWinners } = useGame();
+  const { addDailyDraw, checkWinners, games } = useGame();
 
   // Inicializar data do sorteio com hoje ao montar o componente
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     setDrawDate(today);
-  }, []);
+    
+    // Load recent draws if gameId is provided
+    if (gameId) {
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.dailyDraws) {
+        setRecentDraws(
+          currentGame.dailyDraws
+            .map(draw => ({ date: draw.date, numbers: draw.numbers }))
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .slice(0, 5)
+        );
+      }
+    }
+  }, [gameId, games]);
 
   // Process numbers function
   const processNumberString = (numberStr: string) => {
@@ -92,6 +109,12 @@ export const DrawForm: React.FC<DrawFormProps> = ({
         await addDailyDraw(gameId, {
           date: drawDate,
           numbers: uniqueNumbers
+        });
+        
+        // Update recent draws
+        setRecentDraws(prevDraws => {
+          const newDraw = { date: drawDate, numbers: uniqueNumbers };
+          return [newDraw, ...prevDraws].slice(0, 5);
         });
         
         // Check for winners immediately after adding a new draw
@@ -157,6 +180,42 @@ export const DrawForm: React.FC<DrawFormProps> = ({
             Registrar Sorteio
           </Button>
         </form>
+        
+        {/* Tabela de Resultados Recentes */}
+        {recentDraws.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-2">Resultados Recentes</h3>
+            <div className="border rounded-lg">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Números Sorteados</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentDraws.map((draw, index) => (
+                    <TableRow key={`${draw.date}-${index}`}>
+                      <TableCell>{new Date(draw.date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {draw.numbers.sort((a, b) => a - b).map(number => (
+                            <NumberBadge 
+                              key={number} 
+                              number={number} 
+                              size="sm" 
+                              isHit={true} 
+                            />
+                          ))}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

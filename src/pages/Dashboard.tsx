@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
@@ -16,6 +17,7 @@ import { GameReport } from '@/components/game/GameReport';
 import { CalendarPlus, ChevronRight, FileText, LayoutList, Plus, Settings } from 'lucide-react';
 import { Game } from '@/contexts/GameContext';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -99,48 +101,50 @@ export default function Dashboard() {
 
     return (
       <div className="border rounded-lg overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[300px]">Nome do Jogo</TableHead>
-              <TableHead className="hidden sm:table-cell">{isHistory ? "Encerrado em" : "Iniciado em"}</TableHead>
-              <TableHead className="hidden md:table-cell">Jogadores</TableHead>
-              <TableHead className="hidden md:table-cell">Sorteios</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {gamesList.map(game => (
-              <TableRow key={game.id} className="hover:bg-muted/50">
-                <TableCell className="font-medium">{game.name}</TableCell>
-                <TableCell className="hidden sm:table-cell">
-                  {new Date(isHistory ? game.endDate! : game.startDate).toLocaleDateString()}
-                </TableCell>
-                <TableCell className="hidden md:table-cell">{game.players.length}</TableCell>
-                <TableCell className="hidden md:table-cell">{game.dailyDraws.length}</TableCell>
-                <TableCell className="text-right space-x-1">
-                  <DeleteGameButton gameId={game.id} variant="ghost" size="sm" />
-                  <GameReport game={game} variant="ghost" size="sm" />
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => navigate(isHistory ? `/history/${game.id}` : `/admin/${game.id}`)}
-                  >
-                    {isHistory ? "Visualizar" : "Administrar"}
-                    <ChevronRight className="ml-1 h-4 w-4" />
-                  </Button>
-                </TableCell>
+        <ScrollArea className="max-w-full">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[300px]">Nome do Jogo</TableHead>
+                <TableHead className="hidden sm:table-cell">{isHistory ? "Encerrado em" : "Iniciado em"}</TableHead>
+                <TableHead className="hidden md:table-cell">Jogadores</TableHead>
+                <TableHead className="hidden md:table-cell">Sorteios</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {gamesList.map(game => (
+                <TableRow key={game.id} className="hover:bg-muted/50">
+                  <TableCell className="font-medium">{game.name}</TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    {new Date(isHistory ? game.endDate! : game.startDate).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">{game.players.length}</TableCell>
+                  <TableCell className="hidden md:table-cell">{game.dailyDraws.length}</TableCell>
+                  <TableCell className="text-right space-x-1">
+                    <DeleteGameButton gameId={game.id} variant="ghost" size="sm" />
+                    <GameReport game={game} variant="ghost" size="sm" />
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => navigate(isHistory ? `/history/${game.id}` : `/admin/${game.id}`)}
+                    >
+                      {isHistory ? "Visualizar" : "Administrar"}
+                      <ChevronRight className="ml-1 h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </ScrollArea>
       </div>
     );
   };
 
   return (
     <MainLayout>
-      <div className="space-y-8 animate-fade-in">
+      <div className="space-y-8 animate-fade-in overflow-x-hidden w-full">
         {/* Header */}
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Dashboard</h1>
@@ -199,7 +203,7 @@ export default function Dashboard() {
             </div>
             <LayoutList className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-hidden">
             {renderGameList(activeGames)}
           </CardContent>
           <CardFooter className="border-t pt-4">
@@ -221,7 +225,7 @@ export default function Dashboard() {
             </div>
             <LayoutList className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="overflow-x-hidden">
             {renderGameList(closedGames.slice(0, 5), true)}
           </CardContent>
           {closedGames.length > 5 && (

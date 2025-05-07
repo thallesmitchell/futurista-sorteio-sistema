@@ -43,13 +43,14 @@ export const addPlayersToReport = (
     playerHeader.style.padding = '10px 12px';
     playerHeader.style.borderBottom = '1px solid #172842'; // Updated border color
     
+    // Create a player name header that stands out more
     const playerName = document.createElement('h3');
     playerName.textContent = player.name; // Player name clearly visible
-    playerName.style.fontSize = '16px';
-    playerName.style.fontWeight = '700'; // Make font bolder
+    playerName.style.fontSize = '18px'; // Larger font size
+    playerName.style.fontWeight = '800'; // Extra bold
     playerName.style.margin = '0';
     playerName.style.color = '#FFFFFF'; // White text for better visibility
-    playerName.style.textAlign = 'left'; // Ensure name is aligned left
+    playerName.style.textAlign = 'center'; // Center the player name
     
     playerHeader.appendChild(playerName);
     playerBox.appendChild(playerHeader);
@@ -63,13 +64,15 @@ export const addPlayersToReport = (
     playerInfoSection.style.display = 'flex';
     playerInfoSection.style.flexDirection = 'column';
     playerInfoSection.style.marginBottom = '12px';
+    playerInfoSection.style.textAlign = 'center'; // Center the info
     
     const maxHits = Math.max(...player.combinations.map(c => c.hits), 0);
     const playerInfo = document.createElement('p');
     playerInfo.textContent = `${player.combinations.length} sequência${player.combinations.length !== 1 ? 's' : ''} | Acertos máximos: ${maxHits}`;
-    playerInfo.style.fontSize = '12px';
+    playerInfo.style.fontSize = '14px'; // Larger for better visibility
     playerInfo.style.color = '#5C719B'; // Updated text color to match design
     playerInfo.style.margin = '0';
+    playerInfo.style.fontWeight = '600'; // Make it bolder
     
     playerInfoSection.appendChild(playerInfo);
     playerContent.appendChild(playerInfoSection);
@@ -81,15 +84,31 @@ export const addPlayersToReport = (
     combinationsContainer.style.gap = '8px';
     
     if (player.combinations && player.combinations.length > 0) {
-      player.combinations.forEach(combo => {
+      player.combinations.forEach((combo, comboIndex) => {
+        const comboContainer = document.createElement('div');
+        comboContainer.style.display = 'flex';
+        comboContainer.style.flexDirection = 'column';
+        comboContainer.style.gap = '6px';
+        comboContainer.style.padding = '8px';
+        comboContainer.style.backgroundColor = '#0D1526'; // Updated background color
+        comboContainer.style.borderRadius = '6px';
+        comboContainer.style.border = '1px solid #172842'; // Added border
+        
+        // Add sequence number label
+        const sequenceLabel = document.createElement('div');
+        sequenceLabel.textContent = `Sequência ${comboIndex + 1}`;
+        sequenceLabel.style.fontSize = '13px';
+        sequenceLabel.style.color = '#8899AA';
+        sequenceLabel.style.fontWeight = '600';
+        sequenceLabel.style.marginBottom = '4px';
+        sequenceLabel.style.textAlign = 'center';
+        comboContainer.appendChild(sequenceLabel);
+        
+        // Numbers row
         const comboRow = document.createElement('div');
         comboRow.style.display = 'flex';
         comboRow.style.flexWrap = 'wrap';
         comboRow.style.gap = '6px';
-        comboRow.style.padding = '8px';
-        comboRow.style.backgroundColor = '#0D1526'; // Updated background color
-        comboRow.style.borderRadius = '6px';
-        comboRow.style.border = '1px solid #172842'; // Added border
         comboRow.style.justifyContent = 'center'; // Center the combinations
         
         // Sort numbers for consistency
@@ -104,7 +123,8 @@ export const addPlayersToReport = (
           comboRow.appendChild(ball);
         });
         
-        combinationsContainer.appendChild(comboRow);
+        comboContainer.appendChild(comboRow);
+        combinationsContainer.appendChild(comboContainer);
       });
     }
     

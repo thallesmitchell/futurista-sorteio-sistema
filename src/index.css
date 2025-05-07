@@ -55,6 +55,7 @@
     overflow-x: hidden;
     width: 100vw;
     max-width: 100%;
+    overscroll-behavior: none;
   }
 
   /* Mobile viewport improvements */
@@ -62,6 +63,7 @@
     overflow-x: hidden;
     width: 100vw;
     max-width: 100%;
+    overscroll-behavior: none;
   }
   
   /* Improve tap target sizes on mobile */
@@ -80,6 +82,18 @@
   .grid, .flex {
     max-width: 100% !important;
     overflow-x: hidden !important;
+  }
+
+  /* Ensure content never causes horizontal scrollbars */
+  .container, main, section, div, table {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Fix for tables and responsive containers */
+  table {
+    table-layout: fixed;
+    width: 100%;
   }
 }
 
@@ -129,6 +143,15 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
 
 .animate-pulse-slow {
   animation: pulse-slow 3s infinite;
+}
+
+/* Prevent horizontal scrollbars */
+.overflow-x-hidden {
+  overflow-x: hidden;
+}
+
+.max-w-full {
+  max-width: 100% !important;
 }
 
 /* Mobile navigation improvements */
@@ -183,11 +206,17 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
 }
 
 .pdf-player-box {
-  background-color: #1A1F2C !important;
+  background-color: #0D1526 !important;
 }
 
 .pdf-masonry {
   background-color: #020817 !important;
+}
+
+/* Fix for scrollbars in the table container */
+.overflow-auto {
+  max-width: 100%;
+  overflow-x: clip;
 }
 
 /* Fix for iOS input fields */

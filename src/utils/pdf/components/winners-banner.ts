@@ -53,11 +53,11 @@ export const addWinnersBanner = (
   const trophyLeft = document.createElement('div');
   trophyLeft.innerHTML = '🏆';
   trophyLeft.style.color = '#25C17E';
-  trophyLeft.style.fontSize = '18px';
+  trophyLeft.style.fontSize = '24px'; // Larger trophy icons
 
   const bannerTitle = document.createElement('h2');
   bannerTitle.textContent = winners.length > 1 ? 'Vencedores Encontrados!' : 'Vencedor Encontrado!';
-  bannerTitle.style.fontSize = '20px';
+  bannerTitle.style.fontSize = '24px'; // Larger text
   bannerTitle.style.fontWeight = 'bold';
   bannerTitle.style.color = '#25C17E';
   bannerTitle.style.margin = '0';
@@ -65,7 +65,7 @@ export const addWinnersBanner = (
   const trophyRight = document.createElement('div');
   trophyRight.innerHTML = '🏆';
   trophyRight.style.color = '#25C17E';
-  trophyRight.style.fontSize = '18px';
+  trophyRight.style.fontSize = '24px'; // Larger trophy icons
   
   bannerHeader.appendChild(trophyLeft);
   bannerHeader.appendChild(bannerTitle);
@@ -75,7 +75,7 @@ export const addWinnersBanner = (
   // Winners grid
   const winnersGrid = document.createElement('div');
   winnersGrid.style.display = 'grid';
-  winnersGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+  winnersGrid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(250px, 1fr))';
   winnersGrid.style.gap = '12px';
   
   winningEntries.forEach((entry, index) => {
@@ -89,7 +89,7 @@ export const addWinnersBanner = (
     const playerName = document.createElement('p');
     playerName.textContent = entry.playerName;
     playerName.style.fontWeight = '700';
-    playerName.style.fontSize = '16px';
+    playerName.style.fontSize = '20px'; // Larger text
     playerName.style.marginBottom = '10px';
     playerName.style.color = '#22c55e'; // Verde mais claro
     playerName.style.textAlign = 'center'; // Center player name
