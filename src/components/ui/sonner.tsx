@@ -26,7 +26,7 @@ export function Toaster({ ...props }: ToasterProps) {
       position="top-right"
       toastOptions={{
         style: {
-          maxWidth: '420px',
+          maxWidth: '320px', // Limitando a largura conforme solicitado
           width: 'auto'
         },
         classNames: {

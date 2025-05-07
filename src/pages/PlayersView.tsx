@@ -9,6 +9,7 @@ import { NumberBadge } from '@/components/game/NumberBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { generateGameReport } from '@/utils/pdf/pdfBuilder';
+import { WinnerBanner } from '@/components/game/WinnerBanner';
 
 export default function PlayersView() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -23,6 +24,8 @@ export default function PlayersView() {
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
   const drawnNumbersSet = new Set(allDrawnNumbers);
+  const winners = game?.winners || [];
+  const hasWinners = winners.length > 0;
   
   // Fetch profile data for theme color
   useEffect(() => {
@@ -128,6 +131,16 @@ export default function PlayersView() {
           </div>
         </div>
 
+        {/* Mostrar banner de vencedores se houver */}
+        {hasWinners && (
+          <div className="px-4 md:px-0 mb-4">
+            <WinnerBanner 
+              winners={winners} 
+              allDrawnNumbers={allDrawnNumbers}
+            />
+          </div>
+        )}
+
         {/* Players List - styled similarly to PlayerList component but without edit buttons */}
         <div id="players-view-content" className="space-y-4 pb-8 px-4 md:px-0">
           <div className="columns-1 xs:columns-3 gap-3 space-y-0 w-full">
@@ -153,7 +166,7 @@ export default function PlayersView() {
                         key={`${player.id}-${idx}`} 
                         className={`flex flex-wrap gap-1 p-2 rounded-md justify-center ${
                           isWinningCombo 
-                          ? 'bg-green-500/20 border border-green-500/50 animate-pulse-slow' 
+                          ? 'bg-green-500/20 border border-green-500/50' 
                           : 'bg-muted/40'
                         }`}
                       >

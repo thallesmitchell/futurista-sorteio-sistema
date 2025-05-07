@@ -14,7 +14,7 @@ export const addPlayersToReport = (
   // Convert allDrawnNumbers to a Set for faster lookups
   const drawnNumbersSet = new Set(allDrawnNumbers);
   
-  // Container for column layout
+  // Container for masonry layout
   const playersContainer = document.createElement('div');
   playersContainer.className = 'pdf-players-container';
   playersContainer.style.backgroundColor = '#020817';
@@ -75,7 +75,7 @@ export const addPlayersToReport = (
     playerInfoSection.appendChild(playerInfo);
     playerContent.appendChild(playerInfoSection);
     
-    // Combinations section - show ALL combinations
+    // Combinations section - show ALL combinations as requested
     const combinationsContainer = document.createElement('div');
     combinationsContainer.style.display = 'flex';
     combinationsContainer.style.flexDirection = 'column';

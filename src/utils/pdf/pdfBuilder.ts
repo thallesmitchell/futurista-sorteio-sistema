@@ -6,8 +6,9 @@ import { formatDate } from '@/lib/date';
 import autoTable from 'jspdf-autotable';
 import { addPlayersToReport } from './components/players-list';
 import { createReportContainer, addHeaderToReport } from './components/container';
+import { addWinnersBanner } from './components/winners-banner';
 
-// Use inline type definition
+// Definição do tipo PlayerCombination
 type PlayerCombination = {
   numbers: number[];
   hits: number;
@@ -25,7 +26,7 @@ const PDF_CONFIG = {
   smallTextFontSize: 8,
   lineHeight: 7,
   innerMargin: 5,
-  ballSize: 9, // Aumentado conforme solicitado
+  ballSize: 9, // Tamanho base das bolas
 }
 
 // Initialize PDF document
@@ -165,16 +166,16 @@ export const addNearWinnersSection = (
     { align: 'center' }
   );
   
-  currentY += 15; // Aumentado para dar mais espaço entre título e boxes
+  currentY += 15; // Espaço entre título e boxes
   
-  // Boxes para cada quase ganhador - agora em coluna única, 100% de largura
+  // Boxes para cada quase ganhador - cada um ocupando 100% da largura conforme solicitado
   const boxWidth = PDF_CONFIG.pageWidth - (PDF_CONFIG.margin * 2);
   
   nearWinners.forEach((item, index) => {
     // Desenha box do jogador
     pdf.setDrawColor(options.color);
     pdf.setFillColor('#f8f8f8');
-    pdf.roundedRect(PDF_CONFIG.margin, currentY, boxWidth, 60, 3, 3, 'FD'); // Altura aumentada
+    pdf.roundedRect(PDF_CONFIG.margin, currentY, boxWidth, 50, 3, 3, 'FD'); // Altura ajustada
     
     // Nome do jogador
     pdf.setFont('helvetica', 'bold');
@@ -196,17 +197,19 @@ export const addNearWinnersSection = (
         const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
         
         // Calcula posição inicial para centralizar os números
-        const totalWidth = sortedNumbers.length * (PDF_CONFIG.ballSize * 3); 
-        let numberX = (PDF_CONFIG.pageWidth - totalWidth) / 2 + PDF_CONFIG.ballSize;
+        const ballSize = PDF_CONFIG.ballSize + 5; // 10px maior conforme solicitado
+        const spacing = 20; // 20px de distância entre círculos
+        const totalWidth = sortedNumbers.length * spacing; 
+        let numberX = (PDF_CONFIG.pageWidth - totalWidth) / 2 + ballSize / 2;
         
         sortedNumbers.forEach((number, i) => {
           const isHit = drawnNumbersSet.has(number);
           drawBall(pdf, 
-            numberX + (i * (PDF_CONFIG.ballSize * 2.5)), // 20px entre círculos
+            numberX + (i * spacing), 
             comboY, 
             number, 
             {
-              size: PDF_CONFIG.ballSize + 2, // Círculos maiores conforme solicitado
+              size: ballSize, // Bolas 10px maiores conforme solicitado
               colorFill: options.color,
               colorBorder: options.color,
               colorText: '#FFFFFF',
@@ -223,14 +226,14 @@ export const addNearWinnersSection = (
     });
     
     // Atualiza posição Y para próximo jogador
-    currentY += 70; // Altura do box + espaçamento
+    currentY += 60; // Altura do box + espaçamento
   });
   
   // Retorna a posição Y final após a seção de quase ganhadores
   return currentY + 10;
 }
 
-// Add winners section to PDF
+// Add winners section to PDF - atualizado conforme solicitado no anexo
 export const addWinnersSection = (
   pdf: jsPDF, 
   game: Game, 
@@ -245,14 +248,14 @@ export const addWinnersSection = (
   
   const drawnNumbersSet = new Set(allDrawnNumbers);
   
-  // Título da seção
+  // Título da seção - usando o formato "SAIU GANHADOR!" como mostrado na imagem
   let currentY = startY;
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(PDF_CONFIG.subtitleFontSize);
-  pdf.setTextColor(options.color);
-  pdf.text('🏆 Ganhadores 🏆', PDF_CONFIG.pageWidth / 2, currentY, { align: 'center' });
+  pdf.setTextColor('#009e1a'); // Verde mais escuro para destaque
+  pdf.text('SAIU GANHADOR!', PDF_CONFIG.pageWidth / 2, currentY, { align: 'center' });
   
-  currentY += 15; // Aumentado para melhor espaçamento
+  currentY += 15; // Espaçamento melhorado
   
   // Bloco de ganhadores
   const winners = game.winners.map(winner => {
@@ -263,26 +266,38 @@ export const addWinnersSection = (
     return { player: playerData, winningCombos };
   }).filter(Boolean) as { player: Player, winningCombos: PlayerCombination[] }[];
   
-  // Design melhorado para ganhadores
+  // Design melhorado para ganhadores - baseado na referência visual
   winners.forEach((winner) => {
-    // Box do ganhador com design melhorado
-    pdf.setDrawColor(options.color);
-    pdf.setFillColor('#e8ffd7'); // Fundo claro para maior destaque
+    // Box do ganhador com design melhorado, mais arredondado e verde
+    pdf.setDrawColor('#009e1a');
+    pdf.setFillColor('#e4f9e8'); // Fundo verde claro
     pdf.roundedRect(
       PDF_CONFIG.margin, 
       currentY, 
       PDF_CONFIG.pageWidth - (PDF_CONFIG.margin * 2), 
-      25 + (winner.winningCombos.length * 20), // Altura aumentada
-      5, // Bordas mais arredondadas
-      5, 
+      25 + (winner.winningCombos.length * 20), // Altura ajustada para conter todos os elementos
+      10, // Bordas mais arredondadas conforme mostrado na imagem
+      10, 
       'FD'
     );
     
-    // Nome do ganhador com troféu em destaque
+    // Adicionando ícones de troféu nas laterais (simulados com emoji)
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(20);
+    pdf.setTextColor('#009e1a');
+    
+    // Troféu esquerdo
+    pdf.text('🏆', PDF_CONFIG.margin + 15, currentY + 12);
+    
+    // Nome do jogador centralizado
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(PDF_CONFIG.subtitleFontSize); // Fonte maior
-    pdf.setTextColor('#247c00'); // Verde mais escuro para destaque
-    pdf.text(`🏆 ${winner.player.name} 🏆`, PDF_CONFIG.pageWidth / 2, currentY + 12, { align: 'center' });
+    pdf.setFontSize(PDF_CONFIG.subtitleFontSize);
+    pdf.setTextColor('#009e1a');
+    pdf.text(winner.player.name.toUpperCase(), PDF_CONFIG.pageWidth / 2, currentY + 12, { align: 'center' });
+    
+    // Troféu direito
+    const trophyWidth = pdf.getStringUnitWidth('🏆') * 20 / pdf.internal.scaleFactor;
+    pdf.text('🏆', PDF_CONFIG.pageWidth - PDF_CONFIG.margin - 15 - trophyWidth, currentY + 12);
     
     // Combinações vencedoras
     let comboY = currentY + 25;
@@ -291,17 +306,19 @@ export const addWinnersSection = (
       const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
       
       // Calcula posição inicial para centralizar os números
-      const totalWidth = sortedNumbers.length * (PDF_CONFIG.ballSize * 3); 
-      let startX = (PDF_CONFIG.pageWidth - totalWidth) / 2 + PDF_CONFIG.ballSize;
+      const ballSize = PDF_CONFIG.ballSize + 3; // Tamanho maior para destaque
+      const spacing = 20; // Espaçamento entre bolas
+      const totalWidth = sortedNumbers.length * spacing; 
+      let startX = (PDF_CONFIG.pageWidth - totalWidth) / 2 + ballSize / 2;
       
       // Deseja cada número
       sortedNumbers.forEach((number, i) => {
         drawBall(pdf, 
-          startX + (i * (PDF_CONFIG.ballSize * 3)), // Espaçamento maior para destaque
+          startX + (i * spacing), // Espaçamento entre bolas
           comboY, 
           number, 
           {
-            size: PDF_CONFIG.ballSize + 3, // Tamanho maior para destaque
+            size: ballSize, // Tamanho maior para destaque
             colorFill: '#009e1a', // Verde mais vibrante
             colorBorder: '#009e1a',
             colorText: '#FFFFFF',
@@ -326,7 +343,7 @@ export const addPlayersSection = (
   game: Game, 
   allDrawnNumbers: number[],
   startY: number,
-  options = { color: '#39FF14', maxCombosPerPlayer: 1000 } // Aumentado para mostrar TODAS as sequências
+  options = { color: '#39FF14', maxCombosPerPlayer: 1000 } // Mostrar TODAS as sequências conforme solicitado
 ): void => {
   const drawnNumbersSet = new Set(allDrawnNumbers);
   
@@ -363,10 +380,8 @@ export const addPlayersSection = (
     
     tableData.push(playerData);
     
-    // Add ALL combinations (no limit)
+    // Mostrar TODAS as sequências conforme solicitado
     sortedCombos.forEach((combo, idx) => {
-      const numberCells = [];
-      
       // Sort the numbers
       const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
       
@@ -377,26 +392,27 @@ export const addPlayersSection = (
         const hit = drawnNumbersSet.has(num);
         
         if (hit) {
+          // Só os números acertados ficam em negrito e verde
           numbersText += `[${formatted}] `; // Highlight hit numbers
         } else {
           numbersText += `${formatted} `;
         }
       });
       
-      // Add the sequence row with indentation and hit count
+      // Add the sequence row with hit count
       tableData.push([
-        '', // Repete o nome do jogador em caso de quebra de página
+        { content: '', styles: {} }, // Espaço vazio para identação, nome será repetido na quebra de página
         { content: `${combo.hits} acerto${combo.hits !== 1 ? 's' : ''}:`, styles: {} }, 
         { content: numbersText, styles: {} }
       ]);
     });
     
-    // Add spacer row between players with line
+    // Add spacer row between players with dashed line
     if (i < sortedPlayers.length - 1) {
       tableData.push([
-        { content: '', styles: { borderTop: '2px dashed #aaaaaa' } },
-        { content: '', styles: { borderTop: '2px dashed #aaaaaa' } },
-        { content: '', styles: { borderTop: '2px dashed #aaaaaa' } }
+        { content: '', styles: { borderTop: '3px dashed #172842' } },
+        { content: '', styles: { borderTop: '3px dashed #172842' } },
+        { content: '', styles: { borderTop: '3px dashed #172842' } }
       ]);
     }
   }
@@ -432,6 +448,7 @@ export const addPlayersSection = (
       if (data.section === 'body' && data.column.index === 2) {
         const text = data.cell.text ? data.cell.text.toString() : '';
         if (text.includes('[')) {
+          // Apenas os números entre colchetes ficam verdes
           data.cell.styles.textColor = [0, 150, 0];
           data.cell.styles.fontStyle = 'bold';
         }
@@ -439,7 +456,7 @@ export const addPlayersSection = (
     },
     // Repetir o cabeçalho e o nome do jogador em quebras de página
     didDrawPage: function(data) {
-      // Cabeçalhos já são repetidos automaticamente
+      // Cabeçalhos são repetidos automaticamente
     },
     rowPageBreak: 'auto', // Auto quebra de linha
     showFoot: 'everyPage',
@@ -472,15 +489,15 @@ export const generateGameReport = async (
     // Controlar posição Y atual
     let currentY = PDF_CONFIG.margin + 30;
     
-    // Se houver ganhadores, não adiciona seção de jogos amarrados
+    // Se houver ganhadores, não adiciona seção de jogos amarrados (conforme solicitado)
     const hasWinners = game.winners && game.winners.length > 0;
     
-    // Adicionar seção de quase ganhadores se solicitado e não houver ganhadores
+    // Adicionar seção de quase ganhadores somente se não houver ganhadores e se solicitado
     if (options.includeNearWinners && !hasWinners) {
       currentY = addNearWinnersSection(pdf, game, allDrawnNumbers, { color: options.themeColor });
     }
     
-    // Adicionar seção de ganhadores
+    // Adicionar seção de ganhadores (se houver)
     currentY = addWinnersSection(pdf, game, allDrawnNumbers, currentY, { color: options.themeColor });
     
     // Verificar se precisamos de uma nova página antes da seção de jogadores
@@ -489,10 +506,10 @@ export const generateGameReport = async (
       currentY = PDF_CONFIG.margin;
     }
     
-    // Adicionar seção de jogadores
+    // Adicionar seção de jogadores - mostrando TODAS as sequências
     addPlayersSection(pdf, game, allDrawnNumbers, currentY, { 
       color: options.themeColor,
-      maxCombosPerPlayer: 1000 // Mostrar todas as sequências
+      maxCombosPerPlayer: 1000 // Mostrar todas as sequências conforme solicitado
     });
     
     // Usar o nome de arquivo fornecido ou gerar um
