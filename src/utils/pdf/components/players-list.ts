@@ -36,18 +36,19 @@ export const addPlayersToReport = (
     playerBox.style.display = 'inline-block';
     playerBox.style.width = '100%';
     
-    // Player box header with name
+    // Player box header with name - highlighted to be more visible
     const playerHeader = document.createElement('div');
-    playerHeader.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
-    playerHeader.style.padding = '8px 12px';
+    playerHeader.style.backgroundColor = 'rgba(0, 0, 0, 0.3)';
+    playerHeader.style.padding = '10px 12px';
     playerHeader.style.borderBottom = '1px solid rgba(255, 255, 255, 0.1)';
     
     const playerName = document.createElement('h3');
-    playerName.textContent = player.name;
+    playerName.textContent = player.name; // Player name clearly visible
     playerName.style.fontSize = '16px';
-    playerName.style.fontWeight = '600';
+    playerName.style.fontWeight = '700'; // Make font bolder
     playerName.style.margin = '0';
     playerName.style.color = '#FFFFFF';
+    playerName.style.textAlign = 'left'; // Ensure name is aligned left
     
     playerHeader.appendChild(playerName);
     playerBox.appendChild(playerHeader);
@@ -87,7 +88,7 @@ export const addPlayersToReport = (
         comboRow.style.padding = '8px';
         comboRow.style.backgroundColor = 'rgba(217, 217, 217, 0.1)'; // bg-muted/40
         comboRow.style.borderRadius = '6px';
-        comboRow.style.justifyContent = 'flex-start';
+        comboRow.style.justifyContent = 'center'; // Center the combinations
         
         // Sort numbers for consistency
         const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);

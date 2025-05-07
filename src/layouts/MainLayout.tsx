@@ -28,8 +28,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-background to-background/90">
       <Sidebar />
-      <main className="flex-1 p-4 md:p-8 overflow-auto">
-        <div className="max-w-7xl mx-auto">
+      <main className="flex-1 p-2 sm:p-4 md:p-6 lg:p-8 overflow-auto w-full max-w-full">
+        <div className="max-w-7xl mx-auto w-full">
           {children}
         </div>
       </main>

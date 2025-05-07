@@ -49,6 +49,29 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+    width: 100vw;
+    max-width: 100%;
+  }
+
+  /* Mobile viewport improvements */
+  html {
+    overflow-x: hidden;
+    width: 100vw;
+    max-width: 100%;
+  }
+  
+  /* Improve tap target sizes on mobile */
+  button, a, input[type="button"], input[type="submit"] {
+    @apply min-h-9 min-w-9;
+  }
+  
+  /* Improve form elements on mobile */
+  input, select, textarea {
+    font-size: 16px; /* Prevents iOS zoom on focus */
   }
 }
 
@@ -62,6 +85,18 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
 }
 
+/* Responsive font sizes */
+@screen xs {
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+}
+
+@screen md {
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.5rem; }
+}
+
+/* Animation keyframes */
 @keyframes glow {
   0%, 100% {
     box-shadow: 0 0 15px rgba(34, 197, 94, 0.5);
@@ -86,4 +121,48 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
 
 .animate-pulse-slow {
   animation: pulse-slow 3s infinite;
+}
+
+/* Mobile navigation improvements */
+@media (max-width: 640px) {
+  .td-truncate {
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .mobile-full-width {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  .mobile-stack {
+    flex-direction: column !important;
+  }
+  
+  .mobile-text-center {
+    text-align: center !important;
+  }
+}
+
+/* Fixes for PDF rendering */
+.pdf-content {
+  background-color: #0F111A !important;
+  color: #FFFFFF !important;
+}
+
+.pdf-player-box {
+  background-color: #1A1F2C !important;
+}
+
+.pdf-masonry {
+  background-color: #0F111A !important;
+}
+
+/* Fix for iOS input fields */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
 }

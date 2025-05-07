@@ -61,8 +61,8 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
         />
       </div>
 
-      {/* Changed to masonry layout using CSS columns */}
-      <div className="columns-1 md:columns-2 lg:columns-3 gap-4 space-y-0">
+      {/* Changed to masonry layout using CSS columns - responsive */}
+      <div className="columns-1 xs:columns-2 md:columns-3 gap-4 space-y-0 w-full overflow-x-hidden">
         {filteredPlayers.map((player) => {
           const playerIsWinner = isWinner(player.id);
           
@@ -76,13 +76,13 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
               }`}
             >
               <CardContent className={`p-4 ${isMobile ? 'px-3 py-3' : ''}`}>
-                <div className="flex justify-between items-center mb-3 md:mb-4">
-                  <div className="space-y-1">
-                    <h3 className={`font-semibold ${isMobile ? 'text-base' : 'text-lg'} flex items-center gap-2`}>
-                      {playerIsWinner && <Trophy className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-green-500`} />}
-                      {player.name}
+                <div className="flex justify-between items-center mb-3 md:mb-4 flex-wrap gap-2">
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <h3 className={`font-semibold ${isMobile ? 'text-base' : 'text-lg'} flex items-center gap-2 flex-wrap`}>
+                      {playerIsWinner && <Trophy className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-green-500 flex-shrink-0`} />}
+                      <span className="truncate">{player.name}</span>
                       {playerIsWinner && (
-                        <span className="ml-2 px-2 py-0.5 text-xs font-medium rounded-full bg-green-500 text-white flex items-center gap-1">
+                        <span className="ml-auto px-2 py-0.5 text-xs font-medium rounded-full bg-green-500 text-white flex items-center gap-1">
                           <Trophy className="h-3 w-3" /> Vencedor!
                         </span>
                       )}
@@ -96,7 +96,7 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                     variant="outline" 
                     size={isMobile ? "sm" : "default"}
                     onClick={() => onEditPlayer(player)}
-                    className={isMobile ? "px-2 py-1 text-xs" : ""}
+                    className={isMobile ? "px-3 py-1 text-xs flex-shrink-0" : "flex-shrink-0"}
                   >
                     Editar
                   </Button>
@@ -110,24 +110,26 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                     return (
                       <div 
                         key={`${player.id}-${idx}`} 
-                        className={`flex flex-wrap gap-1 md:gap-1.5 p-1.5 md:p-2 rounded-md ${
+                        className={`flex flex-wrap gap-1 md:gap-1.5 p-1.5 md:p-2 rounded-md justify-center ${
                           isWinningCombo 
                           ? 'bg-green-500/20 border border-green-500/50 animate-pulse-slow' 
                           : 'bg-muted/40'
                         }`}
                       >
-                        {combination.numbers.map((number, nIdx) => {
-                          const isNumberHit = drawnNumbersSet.has(number);
-                          
-                          return (
-                            <NumberBadge
-                              key={`${player.id}-${idx}-${nIdx}`}
-                              number={number}
-                              size={isMobile ? "sm" : "md"}
-                              isHit={isNumberHit}
-                            />
-                          );
-                        })}
+                        {combination.numbers
+                          .sort((a, b) => a - b)
+                          .map((number, nIdx) => {
+                            const isNumberHit = drawnNumbersSet.has(number);
+                            
+                            return (
+                              <NumberBadge
+                                key={`${player.id}-${idx}-${nIdx}`}
+                                number={number}
+                                size={isMobile ? "sm" : "md"}
+                                isHit={isNumberHit}
+                              />
+                            );
+                          })}
                       </div>
                     );
                   })}

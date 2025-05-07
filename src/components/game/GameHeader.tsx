@@ -47,14 +47,14 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
     <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-2 md:space-y-0 w-full">
       <div className="space-y-1 w-full md:w-auto">
         <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-bold leading-none tracking-tight">
+          <h2 className="text-xl md:text-2xl font-bold leading-none tracking-tight truncate">
             {gameName}
           </h2>
           <Badge variant="outline" className="text-xs">
             ID: {gameId.substring(0, 8)}
           </Badge>
         </div>
-        <p className="text-sm text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1">
+        <p className="text-xs md:text-sm text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1">
           <span className="flex items-center gap-1">
             <CalendarDays className="h-3 w-3" />
             {isMobile ? 'Início: ' : 'Iniciado '}{formattedDate}

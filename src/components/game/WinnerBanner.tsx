@@ -13,14 +13,12 @@ interface WinnerBannerProps {
 
 export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNumbers }) => {
   const isMobile = useIsMobile();
-  const [showBanner, setShowBanner] = useState<boolean>(false);
   const [winningEntries, setWinningEntries] = useState<Array<{playerName: string, numbers: number[]}>>([]); 
 
   // Process winners whenever the winners prop changes
   useEffect(() => {
     // If no winners, don't render anything
     if (!winners || winners.length === 0) {
-      setShowBanner(false);
       return;
     }
     
@@ -36,16 +34,14 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
 
     // If somehow there are winners but no winning combinations, don't render
     if (entries.length === 0) {
-      setShowBanner(false);
       return;
     }
     
     setWinningEntries(entries);
-    setShowBanner(true);
   }, [winners]);
 
-  // Don't render anything if no winners or no winning entries
-  if (!showBanner || winningEntries.length === 0) {
+  // Don't render anything if no winning entries
+  if (!winners?.length || winningEntries.length === 0) {
     return null;
   }
 

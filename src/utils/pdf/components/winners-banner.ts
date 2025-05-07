@@ -85,12 +85,14 @@ export const addWinnersBanner = (
     entryBox.style.borderRadius = '8px';
     entryBox.style.border = '1px solid rgba(34, 197, 94, 0.5)';
     
+    // Player name - made more prominent
     const playerName = document.createElement('p');
     playerName.textContent = entry.playerName;
-    playerName.style.fontWeight = '600';
-    playerName.style.fontSize = '14px';
-    playerName.style.marginBottom = '8px';
+    playerName.style.fontWeight = '700';
+    playerName.style.fontSize = '16px';
+    playerName.style.marginBottom = '10px';
     playerName.style.color = '#22c55e'; // Verde mais claro
+    playerName.style.textAlign = 'center'; // Center player name
     
     const numbersContainer = document.createElement('div');
     numbersContainer.style.display = 'flex';

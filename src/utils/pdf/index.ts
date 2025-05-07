@@ -47,19 +47,20 @@ export const generateGameReport = async (game: Game, options: GeneratePdfOptions
   // Add header
   addHeaderToReport(reportElement, reportTitle, formattedDateForDisplay);
   
-  // Add winners banner if there are winners
+  // Add winners banner at the top, before the player list
   if (winners.length > 0) {
     console.log('Adding winners banner to PDF');
     addWinnersBanner(reportElement, winners, allDrawnNumbers, options.themeColor || '#25C17E');
   }
   
   // Add players in masonry layout
-  const regularPlayers = [...game.players]
-    .filter(p => !winnerIds.includes(p.id))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  // First add winners if they exist, then add regular players
+  console.log('Adding players to PDF, total players:', game.players.length);
   
-  console.log('Adding players to PDF, total players:', regularPlayers.length);
-  addPlayersToReport(reportElement, regularPlayers, allDrawnNumbers, options.themeColor || '#25C17E');
+  // Sort all players (including winners) by name
+  const sortedPlayers = [...game.players].sort((a, b) => a.name.localeCompare(b.name));
+  
+  addPlayersToReport(reportElement, sortedPlayers, allDrawnNumbers, options.themeColor || '#25C17E');
   
   // Check if the reportElement has content before generating
   if (!reportElement.innerHTML || reportElement.innerHTML.trim() === '') {
