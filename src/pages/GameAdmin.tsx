@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import MainLayout from '@/layouts/MainLayout';
@@ -26,8 +25,8 @@ export default function GameAdmin() {
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
   const { toast } = useToast();
   const playerEditHandlerRef = useRef<any>(null);
-  
-  // Modified to always show winners
+
+  // Keep track of when we've shown the notification, but not for banner display
   const [hasShownWinnerNotification, setHasShownWinnerNotification] = useState(false);
 
   const game = games.find(g => g.id === gameId);
@@ -46,7 +45,7 @@ export default function GameAdmin() {
       
       setCurrentGame(game);
       
-      // Check for winners if they exist and haven't been notified yet
+      // Only show toast notification if this is the first time we're seeing winners
       if (hasWinners && !hasShownWinnerNotification) {
         setHasShownWinnerNotification(true);
         setIsWinnersModalOpen(true);
@@ -126,9 +125,12 @@ export default function GameAdmin() {
           />
         </div>
 
-        {/* Sempre mostrar o banner de vencedores se houver vencedores */}
+        {/* Always show the winner banner when there are winners - no conditional state dependency */}
         {hasWinners && (
-          <WinnerBanner winners={winners} allDrawnNumbers={allDrawnNumbers} />
+          <WinnerBanner 
+            winners={winners} 
+            allDrawnNumbers={allDrawnNumbers}
+          />
         )}
 
         {/* Game Forms */}
