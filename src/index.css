@@ -269,17 +269,3 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   visibility: visible !important;
   opacity: 1 !important;
 }
-
-/* Toast width fix */
-.max-w-\[420px\] {
-  max-width: 320px !important;
-}
-
-/* Fix player buttons size */
-.player-buttons .btn-small {
-  transform: scale(0.75);
-  padding: 0 8px !important;
-  min-height: 24px !important;
-  min-width: 24px !important;
-  font-size: 0.75rem !important;
-}

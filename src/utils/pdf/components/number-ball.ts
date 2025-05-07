@@ -3,23 +3,45 @@
  * Creates a number ball with proper vertical alignment
  */
 export const createNumberBall = (number: number, color: string, isHit: boolean): HTMLElement => {
-  const ball = document.createElement('span');
+  const ball = document.createElement('div');
   ball.className = 'pdf-number-ball';
-  ball.style.display = 'inline-block';
-  ball.style.margin = '0 2px';
+  ball.style.width = '36px'; // Maintaining size
+  ball.style.height = '36px'; // Maintaining size
+  ball.style.borderRadius = '50%';
+  ball.style.display = 'flex';
+  ball.style.justifyContent = 'center';
+  ball.style.alignItems = 'center';
+  ball.style.position = 'relative';
+  ball.style.lineHeight = '1';
+  ball.style.margin = '0 10px'; // 20px between circles as requested
   
   // Format number with leading zero
   const formattedNumber = String(number).padStart(2, '0');
   
   // Style based on hit status
   if (isHit) {
-    ball.style.color = color; // Green text for hit numbers
+    ball.style.backgroundColor = color; // Green background for hit numbers
+    ball.style.color = 'white'; // White text for contrast
     ball.style.fontWeight = '900'; // Black weight for hit numbers (as requested)
+    ball.style.fontSize = '15px'; // Slightly larger for hit numbers
   } else {
-    ball.style.color = '#FFFFFF'; // White text for non-hits
+    ball.style.backgroundColor = '#1A1F2C'; // Dark background for non-hits
+    ball.style.color = '#FFFFFF'; // White text
+    ball.style.border = `1px solid ${color}`; // Green border
     ball.style.fontWeight = '400'; // Normal weight for non-hits
+    ball.style.fontSize = '14px'; // Standard size for non-hit numbers
   }
   
-  ball.textContent = formattedNumber;
+  // Inner span for proper vertical centering
+  const innerSpan = document.createElement('span');
+  innerSpan.textContent = formattedNumber;
+  innerSpan.style.display = 'inline-block';
+  innerSpan.style.textAlign = 'center';
+  innerSpan.style.position = 'absolute';
+  innerSpan.style.top = '50%';
+  innerSpan.style.left = '50%';
+  innerSpan.style.transform = 'translate(-50%, -50%)'; // Perfect centering
+  
+  ball.appendChild(innerSpan);
   return ball;
 };

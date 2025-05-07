@@ -1,5 +1,6 @@
 
 import { Player } from '@/contexts/game/types';
+import { createNumberBall } from './number-ball';
 import { createPlayerCombination } from './player-combination';
 
 /**
@@ -25,11 +26,16 @@ export const addNearWinnersSection = (
 
   // Create section container
   const sectionContainer = document.createElement('div');
-  sectionContainer.style.marginBottom = '20px';
+  sectionContainer.className = 'near-winners-section';
+  sectionContainer.style.marginBottom = '30px';
+  sectionContainer.style.pageBreakInside = 'avoid';
+  sectionContainer.style.breakInside = 'avoid';
   
   // Section title
   const sectionTitle = document.createElement('h2');
   sectionTitle.textContent = 'Jogos Amarrados';
+  sectionTitle.style.fontSize = '20px';
+  sectionTitle.style.fontWeight = 'bold';
   sectionTitle.style.color = themeColor;
   sectionTitle.style.textAlign = 'center';
   sectionTitle.style.margin = '0 0 10px 0';
@@ -38,97 +44,119 @@ export const addNearWinnersSection = (
   // Section description
   const sectionDesc = document.createElement('p');
   sectionDesc.textContent = 'Jogadores com 5 acertos (falta apenas 1 número para ganhar)';
+  sectionDesc.style.fontSize = '14px';
+  sectionDesc.style.color = '#8899AA';
   sectionDesc.style.textAlign = 'center';
-  sectionDesc.style.margin = '0 0 15px 0';
+  sectionDesc.style.margin = '0 0 20px 0';
   sectionContainer.appendChild(sectionDesc);
   
   // Convert allDrawnNumbers to a Set for faster lookups
   const drawnNumbersSet = new Set(allDrawnNumbers);
   
-  // Create table for near winners
-  const table = document.createElement('table');
-  table.style.width = '100%';
-  table.style.borderCollapse = 'collapse';
-  
-  // Table header
-  const thead = document.createElement('thead');
-  const headerRow = document.createElement('tr');
-  
-  const playerHeader = document.createElement('th');
-  playerHeader.textContent = 'Jogador';
-  playerHeader.style.padding = '8px';
-  playerHeader.style.backgroundColor = '#333';
-  playerHeader.style.color = '#fff';
-  playerHeader.style.textAlign = 'left';
-  
-  const combosHeader = document.createElement('th');
-  combosHeader.textContent = 'Sequências com 5 acertos';
-  combosHeader.style.padding = '8px';
-  combosHeader.style.backgroundColor = '#333';
-  combosHeader.style.color = '#fff';
-  combosHeader.style.textAlign = 'left';
-  
-  headerRow.appendChild(playerHeader);
-  headerRow.appendChild(combosHeader);
-  thead.appendChild(headerRow);
-  table.appendChild(thead);
-  
-  // Table body
-  const tbody = document.createElement('tbody');
-  
-  nearWinners.forEach((item, index) => {
-    const row = document.createElement('tr');
+  // Add each near winner in a separate box
+  nearWinners.forEach(item => {
+    const playerBox = document.createElement('div');
+    playerBox.style.backgroundColor = '#0D1526';
+    playerBox.style.borderRadius = '8px';
+    playerBox.style.border = '1px solid #172842';
+    playerBox.style.padding = '15px';
+    playerBox.style.marginBottom = '15px';
+    playerBox.style.width = '100%'; // 100% width as requested
     
-    // Alternate row color
-    if (index % 2 === 0) {
-      row.style.backgroundColor = '#f9f9f9';
-    }
+    // Player name
+    const playerName = document.createElement('h3');
+    playerName.textContent = item.player.name;
+    playerName.style.fontSize = '18px';
+    playerName.style.fontWeight = 'bold';
+    playerName.style.margin = '0 0 15px 0';
+    playerName.style.color = '#FFFFFF';
+    playerName.style.textAlign = 'center';
+    playerBox.appendChild(playerName);
     
-    const playerCell = document.createElement('td');
-    playerCell.textContent = item.player.name;
-    playerCell.style.padding = '8px';
-    playerCell.style.fontWeight = 'bold';
-    playerCell.style.verticalAlign = 'top';
+    // Container for combinations
+    const combosContainer = document.createElement('div');
+    combosContainer.style.display = 'flex';
+    combosContainer.style.flexDirection = 'column';
+    combosContainer.style.gap = '15px';
+    combosContainer.style.alignItems = 'center';
     
-    const combosCell = document.createElement('td');
-    combosCell.style.padding = '8px';
-    
-    item.combos.forEach((combo, comboIndex) => {
-      if (comboIndex > 0) {
-        const separator = document.createElement('hr');
-        separator.style.margin = '5px 0';
-        separator.style.border = 'none';
-        separator.style.borderTop = '1px solid #ccc';
-        combosCell.appendChild(separator);
-      }
+    // Show maximum 3 combinations, then indicate if there are more
+    const maxToShow = 3;
+    item.combos.slice(0, maxToShow).forEach(combo => {
+      // Create a row with the near winning numbers
+      const comboRow = document.createElement('div');
+      comboRow.style.display = 'flex';
+      comboRow.style.justifyContent = 'center';
+      comboRow.style.gap = '20px'; // 20px between circles as requested
       
-      const comboRow = createPlayerCombination(combo.numbers, drawnNumbersSet, themeColor);
-      combosCell.appendChild(comboRow);
+      // Sort numbers for consistency
+      const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
+      
+      sortedNumbers.forEach(number => {
+        // Check if this number is in drawn numbers
+        const isNumberHit = drawnNumbersSet.has(number);
+        
+        // Create a ball with increased size (10px larger)
+        const ball = document.createElement('div');
+        ball.style.width = '46px'; // 36px + 10px
+        ball.style.height = '46px'; // 36px + 10px 
+        ball.style.borderRadius = '50%';
+        ball.style.display = 'flex';
+        ball.style.justifyContent = 'center';
+        ball.style.alignItems = 'center';
+        ball.style.position = 'relative';
+        
+        // Format number with leading zero
+        const formattedNumber = String(number).padStart(2, '0');
+        
+        // Style based on hit status
+        if (isNumberHit) {
+          ball.style.backgroundColor = themeColor;
+          ball.style.color = 'white';
+          ball.style.fontWeight = '900';
+          ball.style.fontSize = '17px';
+        } else {
+          ball.style.backgroundColor = '#1A1F2C';
+          ball.style.color = '#FFFFFF';
+          ball.style.border = `1px solid ${themeColor}`;
+          ball.style.fontWeight = '400';
+          ball.style.fontSize = '16px';
+        }
+        
+        // Inner span for proper vertical centering
+        const innerSpan = document.createElement('span');
+        innerSpan.textContent = formattedNumber;
+        innerSpan.style.display = 'inline-block';
+        innerSpan.style.textAlign = 'center';
+        innerSpan.style.position = 'absolute';
+        innerSpan.style.top = '50%';
+        innerSpan.style.left = '50%';
+        innerSpan.style.transform = 'translate(-50%, -50%)';
+        
+        ball.appendChild(innerSpan);
+        comboRow.appendChild(ball);
+      });
+      
+      combosContainer.appendChild(comboRow);
     });
     
-    row.appendChild(playerCell);
-    row.appendChild(combosCell);
-    tbody.appendChild(row);
-    
-    // Add separator between players
-    if (index < nearWinners.length - 1) {
-      const separatorRow = document.createElement('tr');
-      const separatorCell = document.createElement('td');
-      separatorCell.colSpan = 2;
-      separatorCell.style.padding = '0';
-      
-      const separator = document.createElement('hr');
-      separator.style.border = 'none';
-      separator.style.borderTop = '3px dashed #172842';
-      separator.style.margin = '8px 0';
-      
-      separatorCell.appendChild(separator);
-      separatorRow.appendChild(separatorCell);
-      tbody.appendChild(separatorRow);
+    // If there are more combinations than shown, add a note
+    if (item.combos.length > maxToShow) {
+      const moreInfo = document.createElement('p');
+      moreInfo.textContent = `+ ${item.combos.length - maxToShow} mais sequência${
+        item.combos.length - maxToShow !== 1 ? 's' : ''
+      } com 5 acertos`;
+      moreInfo.style.fontSize = '13px';
+      moreInfo.style.color = '#5C719B';
+      moreInfo.style.margin = '5px 0 0 0';
+      moreInfo.style.textAlign = 'center';
+      moreInfo.style.fontStyle = 'italic';
+      combosContainer.appendChild(moreInfo);
     }
+    
+    playerBox.appendChild(combosContainer);
+    sectionContainer.appendChild(playerBox);
   });
   
-  table.appendChild(tbody);
-  sectionContainer.appendChild(table);
   container.appendChild(sectionContainer);
 };

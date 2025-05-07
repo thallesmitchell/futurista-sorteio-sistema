@@ -3,41 +3,43 @@
  * Creates the main container for the PDF report
  */
 export const createReportContainer = (): HTMLElement => {
-  const container = document.createElement('div');
-  container.className = 'pdf-content';
-  container.style.fontFamily = 'Arial, sans-serif';
-  container.style.maxWidth = '100%';
-  container.style.margin = '0 auto';
-  container.style.padding = '20px';
-  container.style.backgroundColor = '#fff';
-  container.style.color = '#000';
+  const reportElement = document.createElement('div');
+  reportElement.className = 'pdf-content';
+  reportElement.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"; // Ensure Inter font with fallbacks
+  reportElement.style.padding = '20px';
+  reportElement.style.margin = '0';
+  reportElement.style.backgroundColor = '#020817'; // Updated to dark blue background
+  reportElement.style.color = '#FFFFFF';
+  reportElement.style.maxWidth = '100%';
+  reportElement.style.minHeight = '100vh'; // Ensure dark background covers full page
+  reportElement.style.boxSizing = 'border-box'; // Ensure padding is included in dimensions
+  reportElement.style.overflow = 'hidden'; // Prevent any scrollbars
   
-  return container;
+  return reportElement;
 };
 
 /**
- * Adds a header to the PDF report
+ * Adds the header section to the PDF report
  */
-export const addHeaderToReport = (
-  container: HTMLElement,
-  title: string,
-  date: string
-): void => {
+export const addHeaderToReport = (container: HTMLElement, title: string, date: string): void => {
   const header = document.createElement('div');
+  header.className = 'pdf-header';
   header.style.textAlign = 'center';
-  header.style.marginBottom = '20px';
+  header.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"; // Explicit font family
+  header.style.fontWeight = 'bold';
+  header.style.marginBottom = '30px'; // Increased margin for better visibility
+  header.style.padding = '10px';
+  header.style.display = 'block'; // Ensure the header is displayed
+  header.style.backgroundColor = '#0D1526'; // Updated header background color
+  header.style.borderRadius = '8px';
+  header.style.border = '1px solid #172842'; // Added border to match design
   
-  const titleElem = document.createElement('h1');
-  titleElem.textContent = title;
-  titleElem.style.margin = '0 0 10px 0';
-  titleElem.style.fontSize = '24px';
+  const titleElement = document.createElement('div');
+  titleElement.style.fontSize = '24px';
+  titleElement.style.fontFamily = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif"; // Explicit font family
+  titleElement.style.margin = '10px 0';
+  titleElement.innerHTML = `${title}<br/>${date}`;
   
-  const dateElem = document.createElement('p');
-  dateElem.textContent = date;
-  dateElem.style.margin = '0';
-  dateElem.style.fontSize = '16px';
-  
-  header.appendChild(titleElem);
-  header.appendChild(dateElem);
+  header.appendChild(titleElement);
   container.appendChild(header);
 };
