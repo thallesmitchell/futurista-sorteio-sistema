@@ -3,19 +3,21 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, Trophy } from 'lucide-react';
+import { Search, Trophy, Eye } from 'lucide-react';
 import { Player } from '@/contexts/game/types';
 import { NumberBadge } from './NumberBadge';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Link } from 'react-router-dom';
 
 export interface PlayersListProps {
   players: Player[];
   allDrawnNumbers: number[];
   onEditPlayer: (player: Player) => void;
   currentWinners: Player[];
+  gameId?: string;
 }
 
-export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWinners }: PlayersListProps) => {
+export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWinners, gameId }: PlayersListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const isMobile = useIsMobile();
   
@@ -51,14 +53,28 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-        <Input
-          placeholder="Buscar jogador..."
-          className="pl-10"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      <div className="flex gap-2 items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="Buscar jogador..."
+            className="pl-10"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        {gameId && (
+          <Button 
+            variant="outline" 
+            size={isMobile ? "sm" : "default"} 
+            asChild
+          >
+            <Link to={`/game/players/${gameId}`}>
+              <Eye className="mr-1 h-4 w-4" />
+              Ver Jogadas
+            </Link>
+          </Button>
+        )}
       </div>
 
       {/* Changed to masonry layout using CSS columns - responsive */}

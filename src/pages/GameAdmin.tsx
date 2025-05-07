@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useRef } from 'react';
 import MainLayout from '@/layouts/MainLayout';
@@ -139,6 +138,7 @@ export default function GameAdmin() {
               allDrawnNumbers={allDrawnNumbers}
               onEditPlayer={handleEditPlayer}
               currentWinners={winners}
+              gameId={game.id} // Pass gameId to PlayersList
             />
           </TabsContent>
           

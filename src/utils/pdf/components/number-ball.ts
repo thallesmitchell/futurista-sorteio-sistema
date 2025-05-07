@@ -5,15 +5,16 @@
 export const createNumberBall = (number: number, color: string, isHit: boolean): HTMLElement => {
   const ball = document.createElement('div');
   ball.className = 'pdf-number-ball';
-  ball.style.width = '40px';
-  ball.style.height = '40px';
+  ball.style.width = '36px'; // Reduced from 40px
+  ball.style.height = '36px'; // Reduced from 40px
   ball.style.borderRadius = '50%';
   ball.style.display = 'flex';
   ball.style.justifyContent = 'center';
   ball.style.alignItems = 'center';
   ball.style.fontWeight = 'bold';
-  ball.style.fontSize = '16px';
+  ball.style.fontSize = '14px'; // Reduced from 16px
   ball.style.position = 'relative'; // Add position relative for better control
+  ball.style.lineHeight = '1'; // Add explicit line height to reduce spacing
   
   // Format number with leading zero
   const formattedNumber = String(number).padStart(2, '0');
@@ -36,9 +37,10 @@ export const createNumberBall = (number: number, color: string, isHit: boolean):
   innerSpan.style.lineHeight = '1';
   innerSpan.style.textAlign = 'center';
   innerSpan.style.position = 'absolute';
-  innerSpan.style.top = '23%'; // Updated from 20% to 23% as requested
+  innerSpan.style.top = '50%'; // Changed to perfect middle
   innerSpan.style.left = '50%';
   innerSpan.style.transform = 'translate(-50%, -50%)'; // Use transform for perfect centering
+  innerSpan.style.fontSize = '14px'; // Explicit font size
   
   ball.appendChild(innerSpan);
   return ball;
