@@ -78,6 +78,21 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [accentColor, setAccentColor] = useState<string>('#FF39EA');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
+  // Aplicar CSS customizado para garantir a fonte correta
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      html, body, button, input, select, textarea {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
   // Atualizar tema quando o perfil do usuário carregar
   useEffect(() => {
     if (userProfile?.theme_color) {
@@ -95,10 +110,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setSecondaryColor(palette.secondaryColor);
     setAccentColor(palette.accentColor);
 
-    // Aplicar variáveis CSS ao documento
-    document.documentElement.style.setProperty('--color-primary', palette.primaryColor);
-    document.documentElement.style.setProperty('--color-secondary', palette.secondaryColor);
-    document.documentElement.style.setProperty('--color-accent', palette.accentColor);
+    // Aplicar variáveis CSS ao documento - usando !important para garantir prioridade
+    document.documentElement.style.setProperty('--color-primary', palette.primaryColor, 'important');
+    document.documentElement.style.setProperty('--color-secondary', palette.secondaryColor, 'important');
+    document.documentElement.style.setProperty('--color-accent', palette.accentColor, 'important');
+    
+    // Também atualizar as variáveis de cor do Tailwind
+    const hue = hexToHSL(palette.primaryColor).h;
+    document.documentElement.style.setProperty('--primary', `${hue} 100% 54%`, 'important');
   };
 
   return (
