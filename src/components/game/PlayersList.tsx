@@ -109,14 +109,14 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                       Acertos máximos: {Math.max(...player.combinations.map(c => c.hits), 0)}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 player-buttons">
                     <Button 
                       variant="outline" 
-                      size={isMobile ? "sm" : "default"}
+                      size="sm"
                       onClick={() => onEditPlayer(player)}
-                      className={isMobile ? "px-3 py-1 text-xs flex-shrink-0" : "flex-shrink-0"}
+                      className="btn-small px-2 py-1 text-xs h-7"
                     >
-                      <Pencil className="h-3.5 w-3.5 mr-1" />
+                      <Pencil className="h-3 w-3 mr-1" />
                       Editar
                     </Button>
                     
@@ -124,7 +124,8 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                       playerId={player.id}
                       gameId={gameId || ''}
                       playerName={player.name}
-                      size={isMobile ? "sm" : "default"}
+                      size="sm"
+                      className="btn-small h-7"
                     />
                   </div>
                 </div>

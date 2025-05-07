@@ -44,4 +44,4 @@ export const createNumberBall = (number: number, color: string, isHit: boolean):
   
   ball.appendChild(innerSpan);
   return ball;
-};
+}

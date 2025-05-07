@@ -25,6 +25,7 @@ export const addPlayersToReport = (
   const sortedPlayers = [...players].sort((a, b) => a.name.localeCompare(b.name));
   
   sortedPlayers.forEach((player, playerIndex) => {
+    // Create player container that avoids page breaks if possible
     const playerBox = document.createElement('div');
     playerBox.className = 'pdf-player-box';
     playerBox.style.backgroundColor = '#0D1526';
@@ -121,7 +122,7 @@ export const addPlayersToReport = (
       separator.style.borderTop = '3px dashed #172842';
       separator.style.margin = '20px 0';
       separator.style.width = '100%';
-      playerContent.appendChild(separator);
+      separator.style.pageBreakAfter = 'avoid';
     }
     
     playersContainer.appendChild(playerBox);

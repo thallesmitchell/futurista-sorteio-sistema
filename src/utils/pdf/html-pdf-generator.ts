@@ -29,7 +29,7 @@ export const generateHtmlGameReport = async (game: Game, options: GeneratePdfOpt
     const day = String(currentDate.getDate()).padStart(2, '0');
     const month = months[currentDate.getMonth()];
     const year = currentDate.getFullYear();
-    const formattedDateForDisplay = `${day}/${month}/${year}`;
+    const formattedDateForDisplay = `${day} de ${month} de ${year}`;
     
     // Get all drawn numbers from all draws
     const allDrawnNumbers = game.dailyDraws.flatMap(draw => draw.numbers);
