@@ -5,7 +5,7 @@
 export const createReportContainer = (): HTMLElement => {
   const reportElement = document.createElement('div');
   reportElement.className = 'pdf-content';
-  reportElement.style.fontFamily = 'Montserrat, sans-serif'; // Using Montserrat font
+  reportElement.style.fontFamily = 'Inter, sans-serif'; // Using Inter font
   reportElement.style.padding = '20px';
   reportElement.style.margin = '0';
   reportElement.style.backgroundColor = '#0F111A';
@@ -13,13 +13,13 @@ export const createReportContainer = (): HTMLElement => {
   reportElement.style.maxWidth = '100%';
   reportElement.style.minHeight = '100vh'; // Ensure dark background covers full page
   
-  // Add stylesheet for Montserrat font
-  const montserratStyle = document.createElement('style');
-  montserratStyle.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap');
-    * { font-family: 'Montserrat', sans-serif; }
+  // Add stylesheet for Inter font
+  const fontStyle = document.createElement('style');
+  fontStyle.textContent = `
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+    * { font-family: 'Inter', sans-serif; }
   `;
-  reportElement.appendChild(montserratStyle);
+  reportElement.appendChild(fontStyle);
   
   return reportElement;
 };
