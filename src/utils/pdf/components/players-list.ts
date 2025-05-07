@@ -19,6 +19,7 @@ export const addPlayersToReport = (
   playersContainer.className = 'pdf-masonry';
   playersContainer.style.columnCount = '2';
   playersContainer.style.columnGap = '15px';
+  playersContainer.style.backgroundColor = '#0F111A'; // Ensure dark background
   
   // Important - sort players alphabetically to maintain consistency
   const sortedPlayers = [...players].sort((a, b) => a.name.localeCompare(b.name));
@@ -35,21 +36,31 @@ export const addPlayersToReport = (
     playerBox.style.display = 'inline-block';
     playerBox.style.width = '100%';
     
-    // Player info section
-    const playerContent = document.createElement('div');
-    playerContent.style.padding = '16px';
-    
-    // Player name and info header
-    const playerInfoSection = document.createElement('div');
-    playerInfoSection.style.display = 'flex';
-    playerInfoSection.style.flexDirection = 'column';
-    playerInfoSection.style.marginBottom = '12px';
+    // Player box header with name
+    const playerHeader = document.createElement('div');
+    playerHeader.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
+    playerHeader.style.padding = '8px 12px';
+    playerHeader.style.borderBottom = '1px solid rgba(255, 255, 255, 0.1)';
     
     const playerName = document.createElement('h3');
     playerName.textContent = player.name;
     playerName.style.fontSize = '16px';
     playerName.style.fontWeight = '600';
-    playerName.style.margin = '0 0 4px 0';
+    playerName.style.margin = '0';
+    playerName.style.color = '#FFFFFF';
+    
+    playerHeader.appendChild(playerName);
+    playerBox.appendChild(playerHeader);
+    
+    // Player info section
+    const playerContent = document.createElement('div');
+    playerContent.style.padding = '12px';
+    
+    // Player info with combinations count
+    const playerInfoSection = document.createElement('div');
+    playerInfoSection.style.display = 'flex';
+    playerInfoSection.style.flexDirection = 'column';
+    playerInfoSection.style.marginBottom = '12px';
     
     const maxHits = Math.max(...player.combinations.map(c => c.hits), 0);
     const playerInfo = document.createElement('p');
@@ -58,7 +69,6 @@ export const addPlayersToReport = (
     playerInfo.style.color = '#9ca3af'; // text-muted-foreground
     playerInfo.style.margin = '0';
     
-    playerInfoSection.appendChild(playerName);
     playerInfoSection.appendChild(playerInfo);
     playerContent.appendChild(playerInfoSection);
     

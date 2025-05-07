@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
@@ -189,10 +190,10 @@ export default function SuperAdminDashboard() {
         console.warn('Warning:', result.warning);
       }
       
-      // Update local admins list
+      // Update local admins list temporarily
       if (result.user) {
-        setAdmins(prev => [...prev, {
-          id: crypto.randomUUID(),
+        const newAdminRelationship = {
+          id: result.relationshipId || crypto.randomUUID(),
           super_admin_id: user!.id,
           admin_id: result.user.id,
           created_at: new Date().toISOString(),
@@ -203,7 +204,9 @@ export default function SuperAdminDashboard() {
             username: data.username,
             role: 'admin'
           }
-        }]);
+        };
+        
+        setAdmins(prev => [...prev, newAdminRelationship]);
       }
       
       // Reset form and close dialog
@@ -214,6 +217,14 @@ export default function SuperAdminDashboard() {
         title: "Administrador adicionado",
         description: `${data.username} (${data.email}) foi adicionado com sucesso.`,
       });
+      
+      // Refresh the admins list after adding a new admin
+      window.setTimeout(() => {
+        if (user && isSuperAdmin) {
+          fetchAdmins();
+        }
+      }, 1000);
+      
     } catch (error) {
       console.error("Erro ao adicionar administrador:", error);
       toast({
@@ -225,6 +236,60 @@ export default function SuperAdminDashboard() {
       setIsSubmitting(false);
     }
   });
+
+  // Fetch admins function to be called after adding a new admin
+  const fetchAdmins = async () => {
+    if (!user) return;
+    
+    setIsLoadingAdmins(true);
+    try {
+      // Fetch admin-superadmin relationships
+      const { data: relationships, error: relError } = await supabase
+        .from('admin_relationships')
+        .select('*')
+        .eq('super_admin_id', user.id);
+        
+      if (relError) throw relError;
+      
+      if (relationships && relationships.length > 0) {
+        // For each relationship, fetch the admin's profile details
+        const adminDetails = await Promise.all(
+          relationships.map(async (rel) => {
+            // Fetch profile
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', rel.admin_id)
+              .single();
+              
+            return {
+              ...rel,
+              admin: {
+                id: rel.admin_id,
+                email: profileData?.username || 'Email não disponível',
+                created_at: profileData?.created_at || new Date().toISOString(),
+                username: profileData?.username || 'Administrador sem nome',
+                role: profileData?.role || 'admin'
+              }
+            };
+          })
+        );
+        
+        setAdmins(adminDetails);
+      } else {
+        setAdmins([]);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar administradores:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar a lista de administradores.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingAdmins(false);
+    }
+  };
 
   // Remove an administrator
   const handleDeleteAdmin = async (adminId: string) => {

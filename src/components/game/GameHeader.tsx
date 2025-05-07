@@ -1,12 +1,13 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Trophy } from 'lucide-react';
-import { Player } from '@/contexts/game/types';
-import { GameReport } from '@/components/game/GameReport';
-import { DeleteGameButton } from '@/components/game/DeleteGameButton';
+import { Users, CalendarDays, Trophy, XSquare } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { Player, Game } from '@/contexts/game/types';
+import { ptBR } from 'date-fns/locale';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { GameReport } from './GameReport';
 
 interface GameHeaderProps {
   gameId: string;
@@ -17,6 +18,8 @@ interface GameHeaderProps {
   winners: Player[];
   onWinnersClick: () => void;
   onCloseGameClick: () => void;
+  showDownloadButton?: boolean;
+  game?: Game;
 }
 
 export const GameHeader: React.FC<GameHeaderProps> = ({
@@ -27,83 +30,67 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
   drawsCount,
   winners,
   onWinnersClick,
-  onCloseGameClick
+  onCloseGameClick,
+  showDownloadButton = false,
+  game
 }) => {
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const hasWinners = winners && winners.length > 0;
+  
+  // Format the start date
+  const formattedDate = formatDistanceToNow(new Date(startDate), {
+    addSuffix: true,
+    locale: ptBR
+  });
   
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
-      <div className="space-y-1">
+    <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-2 md:space-y-0 w-full">
+      <div className="space-y-1 w-full md:w-auto">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8 md:h-10 md:w-10" onClick={() => navigate('/dashboard')}>
-            <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
-          </Button>
-          <h1 className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold`}>{gameName}</h1>
-          
-          {winners.length > 0 && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              className="ml-1 md:ml-2 bg-primary/10 text-primary hover:bg-primary/20 text-xs md:text-sm px-2 py-0.5 h-auto"
+          <h2 className="text-2xl font-bold leading-none tracking-tight">
+            {gameName}
+          </h2>
+          <Badge variant="outline" className="text-xs">
+            ID: {gameId.substring(0, 8)}
+          </Badge>
+        </div>
+        <p className="text-sm text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1">
+          <span className="flex items-center gap-1">
+            <CalendarDays className="h-3 w-3" />
+            {isMobile ? 'Início: ' : 'Iniciado '}{formattedDate}
+          </span>
+          <span className="flex items-center gap-1">
+            <Users className="h-3 w-3" />
+            {playersCount} {playersCount === 1 ? 'jogador' : 'jogadores'}
+          </span>
+          <span className="flex items-center gap-1">
+            <CalendarDays className="h-3 w-3" />
+            {drawsCount} {drawsCount === 1 ? 'sorteio' : 'sorteios'}
+          </span>
+          {hasWinners && (
+            <Badge 
+              className="bg-green-500 hover:bg-green-600 cursor-pointer animate-pulse-slow flex items-center gap-1"
               onClick={onWinnersClick}
             >
-              <Trophy className="mr-1 h-3 w-3 md:h-4 md:w-4" />
-              {winners.length} Ganhador{winners.length !== 1 ? 'es' : ''}
-            </Button>
+              <Trophy className="h-3 w-3" />
+              {winners.length} {winners.length === 1 ? 'vencedor' : 'vencedores'}
+            </Badge>
           )}
-        </div>
-        
-        <div className="flex flex-wrap gap-2 md:gap-4 text-xs md:text-sm">
-          <div className="flex items-center">
-            <span className="text-muted-foreground mr-1 md:mr-2">Criado em:</span>
-            <span>{new Date(startDate).toLocaleDateString()}</span>
-          </div>
-          
-          <div className="flex items-center">
-            <span className="text-muted-foreground mr-1 md:mr-2">Jogadores:</span>
-            <span>{playersCount}</span>
-          </div>
-          
-          <div className="flex items-center">
-            <span className="text-muted-foreground mr-1 md:mr-2">Sorteios:</span>
-            <span>{drawsCount}</span>
-          </div>
-        </div>
+        </p>
       </div>
       
-      <div className="flex flex-wrap gap-2 mt-2 md:mt-0">
-        <GameReport
-          game={{
-            id: gameId,
-            name: gameName,
-            startDate,
-            players: [], // These are filled in by the GameReport component
-            dailyDraws: [], // These are filled in by the GameReport component
-            winners: winners,
-            status: 'active',
-            endDate: null
-          }}
-          variant="outline"
-          size={isMobile ? "sm" : "default"}
-          className={isMobile ? "text-xs px-2 py-1 h-8" : ""}
-        />
-
-        <DeleteGameButton 
-          gameId={gameId}
-          variant="outline"
-          size={isMobile ? "sm" : "default"}
-          onSuccess={() => navigate('/dashboard')}
-        />
+      <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+        {showDownloadButton && game && (
+          <GameReport game={game} variant="outline" size="sm" />
+        )}
         
         <Button 
           variant="destructive" 
-          size={isMobile ? "sm" : "default"}
+          size="sm"
           onClick={onCloseGameClick}
-          disabled={winners.length > 0}
-          className={isMobile ? "text-xs h-8" : ""}
         >
-          {winners.length > 0 ? 'Jogo Encerrado' : 'Encerrar Jogo'}
+          <XSquare className="h-4 w-4 mr-2" />
+          Encerrar Jogo
         </Button>
       </div>
     </div>

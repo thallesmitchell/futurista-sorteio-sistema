@@ -17,7 +17,7 @@ export const generateGameReport = async (game: Game, options: GeneratePdfOptions
   console.log('Game data:', {
     players: game.players.length,
     dailyDraws: game.dailyDraws.length,
-    winners: game.winners.length,
+    winners: game.winners?.length || 0,
   });
   
   // Get current date for the report
@@ -77,7 +77,11 @@ export const generateGameReport = async (game: Game, options: GeneratePdfOptions
     margin: 0, // Remove margins completely
     filename: `${reportTitle.toLowerCase().replace(/\s+/g, '-')}-${game.name.replace(/\s+/g, '-')}.pdf`,
     image: { type: 'jpeg', quality: 0.85 }, // Reduced quality for better compression
-    html2canvas: { scale: 2, useCORS: true },
+    html2canvas: { 
+      scale: 2, 
+      useCORS: true,
+      backgroundColor: '#0F111A' // Set background color for canvas
+    },
     jsPDF: { 
       unit: 'mm', 
       format: 'a4', 

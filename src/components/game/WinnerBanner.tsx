@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Trophy } from 'lucide-react';
 import { Player } from '@/contexts/game/types';
 import { Card } from '@/components/ui/card';
@@ -13,22 +13,41 @@ interface WinnerBannerProps {
 
 export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNumbers }) => {
   const isMobile = useIsMobile();
+  const [showBanner, setShowBanner] = useState<boolean>(false);
+  const [winningEntries, setWinningEntries] = useState<Array<{playerName: string, numbers: number[]}>>([]); 
 
-  // If no winners, don't render anything
-  if (!winners.length) return null;
-  
-  // Get winning combinations (6 hits)
-  const winningEntries = winners.flatMap(winner => 
-    winner.combinations
-      .filter(combo => combo.hits === 6)
-      .map(combo => ({ 
-        playerName: winner.name, 
-        numbers: combo.numbers 
-      }))
-  );
+  // Process winners whenever the winners prop changes
+  useEffect(() => {
+    // If no winners, don't render anything
+    if (!winners || winners.length === 0) {
+      setShowBanner(false);
+      return;
+    }
+    
+    // Get winning combinations (6 hits)
+    const entries = winners.flatMap(winner => 
+      winner.combinations
+        .filter(combo => combo.hits === 6)
+        .map(combo => ({ 
+          playerName: winner.name, 
+          numbers: combo.numbers 
+        }))
+    );
 
-  // If somehow there are winners but no winning combinations, don't render
-  if (!winningEntries.length) return null;
+    // If somehow there are winners but no winning combinations, don't render
+    if (entries.length === 0) {
+      setShowBanner(false);
+      return;
+    }
+    
+    setWinningEntries(entries);
+    setShowBanner(true);
+  }, [winners]);
+
+  // Don't render anything if no winners or no winning entries
+  if (!showBanner || winningEntries.length === 0) {
+    return null;
+  }
 
   return (
     <Card className="w-full border-2 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)] bg-green-500/10 overflow-hidden mb-4 animate-glow-green">
@@ -44,21 +63,23 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {winningEntries.map((entry, index) => (
             <div 
-              key={index} 
+              key={`winner-entry-${index}`} 
               className="bg-green-500/20 p-2 md:p-3 rounded-lg border border-green-500/50"
             >
               <p className="font-semibold text-sm md:text-base mb-1 text-green-400">
                 {entry.playerName}
               </p>
               <div className="flex flex-wrap gap-1 md:gap-2 justify-center">
-                {entry.numbers.map((number, idx) => (
-                  <NumberBadge
-                    key={`${index}-${idx}`}
-                    number={number}
-                    size={isMobile ? "sm" : "md"}
-                    isHit={true}
-                  />
-                ))}
+                {entry.numbers
+                  .sort((a, b) => a - b)
+                  .map((number, idx) => (
+                    <NumberBadge
+                      key={`${index}-${idx}`}
+                      number={number}
+                      size={isMobile ? "sm" : "md"}
+                      isHit={true}
+                    />
+                  ))}
               </div>
             </div>
           ))}
