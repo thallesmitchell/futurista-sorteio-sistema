@@ -58,7 +58,7 @@ export const highlightedCellRenderer = (data: any): void => {
 export const getStandardTableStyles = () => {
   return {
     styles: {
-      overflow: 'linebreak',
+      overflow: 'linebreak' as 'linebreak', // Fixed: Properly typed as literal type
       cellPadding: 5,
       fontSize: 11,
       textColor: [0, 0, 0],
