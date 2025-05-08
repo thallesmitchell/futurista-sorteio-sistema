@@ -45,7 +45,8 @@ const drawSectionHeader = (
     { align: 'center' }
   );
   
-  return currentY + 15;
+  // Increased space before table starts
+  return currentY + 20;
 };
 
 /**
@@ -151,21 +152,32 @@ const generateNearWinnersTable = (
       styles: {
         overflow: 'linebreak',
         cellPadding: 5,
-        fontSize: 10,
+        fontSize: 11, // Slightly larger for better readability
         textColor: [0, 0, 0],
+        lineWidth: 0.1,
+      },
+      headStyles: {
+        fillColor: [240, 240, 240],
+        textColor: [0, 0, 0],
+        fontStyle: 'bold',
+        halign: 'left',
+        fontSize: 12, // Slightly larger for header
       },
       columnStyles: {
-        0: { cellWidth: 'auto', fontStyle: 'bold' },
-        1: { cellWidth: 'auto' }
+        0: { cellWidth: 80, fontStyle: 'bold' }, // Fixed width for player names
+        1: { cellWidth: 'auto', halign: 'left' }  // Auto width for sequences
       },
       didParseCell: cellRenderer,
       margin: { left: PDF_CONFIG.margin, right: PDF_CONFIG.margin },
       tableLineWidth: 0.2,
-      tableLineColor: [200, 200, 200]
+      tableLineColor: [200, 200, 200],
+      alternateRowStyles: {
+        fillColor: [248, 248, 248]  // Light gray for alternating rows
+      },
     });
     
-    // Get final Y position
-    const finalY = (pdf as any).lastAutoTable.finalY + 15;
+    // Get final Y position and add more space after table
+    const finalY = (pdf as any).lastAutoTable.finalY + 20; // More space after table
     return finalY;
   } catch (error) {
     console.error("Error generating near winners table:", error);
