@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from '@/components/ui/drawer';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -47,8 +47,8 @@ export const PlayerEditModal = ({
     
     // Verificar se cada linha tem exatamente 6 números válidos
     const invalidLines = lines.map((line, index) => {
-      // Aceitar vários separadores: vírgula, ponto, hífen ou espaço
-      const numbers = line.split(/[\s,.-]+/).filter(num => num.trim());
+      // Aceitar qualquer caractere que não seja um número como separador
+      const numbers = line.split(/[^\d]+/).filter(num => num.trim());
       
       // Converter para números e verificar se são válidos (> 0 e <= 80)
       const invalidNumbers = numbers
@@ -108,43 +108,48 @@ export const PlayerEditModal = ({
             "font-mono",
             isMobile ? "h-[150px] text-base" : "h-[200px]"
           )}
+          inputMode={isMobile ? "numeric" : "text"}
         />
         <p className="text-sm text-muted-foreground">
           Digite cada sequência em uma linha separada.<br/>
-          Cada linha deve ter 6 números entre 1 e 80.<br/>
-          Você pode separar os números por hífens, vírgulas, pontos ou espaços.<br/>
-          Exemplos:<br/>
-          01-02-03-04-05-06<br/>
-          07,08,09,10,11,12<br/>
-          13.14.15.16.17.18<br/>
-          19 20 21 22 23 24
+          Cada linha deve ter exatamente 6 números entre 1 e 80.<br/>
+          Qualquer caractere que não seja número será tratado como separador.
         </p>
       </div>
     </div>
   );
 
   const footer = (
-    <>
-      <Button type="button" variant="outline" onClick={() => setIsOpen(false)} disabled={isLoading}>
+    <div className="mt-6 flex gap-2 w-full">
+      <Button 
+        type="button" 
+        variant="outline" 
+        onClick={() => setIsOpen(false)} 
+        disabled={isLoading}
+        className="flex-1"
+      >
         Cancelar
       </Button>
-      <Button type="button" onClick={handleSave} disabled={isLoading} className="min-w-[100px]">
+      <Button 
+        type="button" 
+        onClick={handleSave} 
+        disabled={isLoading} 
+        className="flex-1"
+      >
         {isLoading ? "Salvando..." : "Salvar"}
       </Button>
-    </>
+    </div>
   );
 
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={setIsOpen}>
         <DrawerContent className="px-4">
-          <DrawerHeader>
+          <DrawerHeader className="text-center pb-2">
             <DrawerTitle>Editar Jogador</DrawerTitle>
           </DrawerHeader>
           {content}
-          <DrawerFooter className="mt-0">
-            {footer}
-          </DrawerFooter>
+          {footer}
         </DrawerContent>
       </Drawer>
     );
@@ -157,9 +162,7 @@ export const PlayerEditModal = ({
           <DialogTitle>Editar Jogador</DialogTitle>
         </DialogHeader>
         {content}
-        <DialogFooter>
-          {footer}
-        </DialogFooter>
+        {footer}
       </DialogContent>
     </Dialog>
   );

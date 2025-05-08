@@ -12,6 +12,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useForm } from 'react-hook-form';
 import { DeleteGameButton } from '@/components/game/DeleteGameButton';
 import { GameReport } from '@/components/game/GameReport';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Import icons
 import { CalendarPlus, ChevronRight, FileText, LayoutList, Plus, Settings } from 'lucide-react';
@@ -22,13 +23,14 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 export default function Dashboard() {
   const navigate = useNavigate();
   const { games, addGame } = useGame();
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   const form = useForm({
     defaultValues: {
-      name: '',
+      name: userProfile?.default_game_name || '',
     },
   });
   
@@ -86,15 +88,55 @@ export default function Dashboard() {
   // Reset form when dialog closes
   useEffect(() => {
     if (!open) {
-      form.reset();
+      form.reset({
+        name: userProfile?.default_game_name || ''
+      });
     }
-  }, [open, form]);
+  }, [open, form, userProfile]);
 
   const renderGameList = (gamesList: Game[], isHistory: boolean = false) => {
     if (gamesList.length === 0) {
       return (
         <div className="text-center py-8 text-muted-foreground">
           <p>{isHistory ? "Nenhum jogo encerrado recentemente." : "Nenhum jogo ativo no momento."}</p>
+        </div>
+      );
+    }
+
+    if (isMobile) {
+      // Card-based layout for mobile
+      return (
+        <div className="space-y-3">
+          {gamesList.map(game => (
+            <Card key={game.id} className="overflow-hidden">
+              <CardHeader className="p-3">
+                <CardTitle className="text-base truncate">{game.name}</CardTitle>
+                <CardDescription className="text-xs">
+                  {new Date(isHistory ? game.endDate! : game.startDate).toLocaleDateString()}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-3 pt-0">
+                <div className="grid grid-cols-2 gap-1 text-sm">
+                  <div className="text-muted-foreground">Jogadores:</div>
+                  <div>{game.players.length}</div>
+                  <div className="text-muted-foreground">Sorteios:</div>
+                  <div>{game.dailyDraws.length}</div>
+                </div>
+              </CardContent>
+              <CardFooter className="p-3 pt-0 flex justify-end gap-1">
+                <DeleteGameButton gameId={game.id} variant="ghost" size="sm" />
+                <GameReport game={game} variant="ghost" size="sm" />
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate(isHistory ? `/history/${game.id}` : `/admin/${game.id}`)}
+                >
+                  {isHistory ? "Visualizar" : "Administrar"}
+                  <ChevronRight className="ml-1 h-4 w-4" />
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
         </div>
       );
     }

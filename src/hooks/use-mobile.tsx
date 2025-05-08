@@ -24,3 +24,10 @@ export function useIsMobile() {
 
   return isMobile
 }
+
+// This helper allows component to access the mobile state directly
+// without needing to import the hook and create local state
+export function getMobileStatus(): boolean {
+  if (typeof window === 'undefined') return false
+  return window.innerWidth < MOBILE_BREAKPOINT
+}

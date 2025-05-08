@@ -21,6 +21,7 @@ export default function ProfileSettings() {
   const [selectedColor, setSelectedColor] = useState<string>(primaryColor || '#39FF14');
   const [isUploading, setIsUploading] = useState(false);
   const [username, setUsername] = useState('');
+  const [defaultGameName, setDefaultGameName] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
 
@@ -28,6 +29,7 @@ export default function ProfileSettings() {
     if (userProfile) {
       setSelectedColor(userProfile.theme_color || '#39FF14');
       setUsername(userProfile.username || '');
+      setDefaultGameName(userProfile.default_game_name || '');
     }
   }, [userProfile]);
 
@@ -44,7 +46,8 @@ export default function ProfileSettings() {
         .from('profiles')
         .update({
           username,
-          theme_color: selectedColor
+          theme_color: selectedColor,
+          default_game_name: defaultGameName
         })
         .eq('id', user.id);
 
@@ -130,8 +133,8 @@ export default function ProfileSettings() {
         
         <Tabs defaultValue="appearance" className="w-full">
           <TabsList className="grid grid-cols-2 w-full md:w-[400px]">
-            <TabsTrigger value="appearance">Aparência</TabsTrigger>
-            <TabsTrigger value="account">Conta</TabsTrigger>
+            <TabsTrigger value="appearance" className="px-4">Aparência</TabsTrigger>
+            <TabsTrigger value="account" className="px-4">Conta</TabsTrigger>
           </TabsList>
           
           <TabsContent value="appearance">
@@ -220,7 +223,7 @@ export default function ProfileSettings() {
               <CardHeader>
                 <CardTitle>Informações da Conta</CardTitle>
                 <CardDescription>
-                  Atualize suas informações pessoais.
+                  Atualize suas informações pessoais e preferências.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -243,6 +246,19 @@ export default function ProfileSettings() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                   />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="defaultGameName">Nome Padrão do Jogo</Label>
+                  <Input
+                    id="defaultGameName"
+                    value={defaultGameName}
+                    onChange={(e) => setDefaultGameName(e.target.value)}
+                    placeholder="Ex: KM80"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Este nome será usado como padrão ao criar novos jogos.
+                  </p>
                 </div>
                 
                 <div className="space-y-2">

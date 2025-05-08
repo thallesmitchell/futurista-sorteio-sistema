@@ -51,3 +51,23 @@ export const formatDate = (date: Date | string | null | undefined): string => {
     return 'Erro na formatação';
   }
 };
+
+/**
+ * Get current date in São Paulo timezone (Brazil)
+ */
+export const getCurrentSaoPauloDate = (): Date => {
+  // Create date object for current time
+  const now = new Date();
+  
+  // São Paulo (Brazil) is UTC-3, so adjust the time
+  // This is a simple implementation for Brazil Standard Time (no DST handling)
+  const saoPauloOffsetHours = -3;
+  const utcOffsetMinutes = now.getTimezoneOffset();
+  const saoPauloOffsetMinutes = saoPauloOffsetHours * 60;
+  const differenceMinutes = saoPauloOffsetMinutes - (-utcOffsetMinutes);
+  
+  // Adjust the time by the difference in minutes
+  const saoPauloTime = new Date(now.getTime() + differenceMinutes * 60000);
+  
+  return saoPauloTime;
+};

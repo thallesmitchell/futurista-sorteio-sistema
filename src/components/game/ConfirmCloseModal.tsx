@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -33,30 +33,36 @@ export const ConfirmCloseModal: React.FC<ConfirmCloseModalProps> = ({
   );
 
   const renderFooter = () => (
-    <>
-      <Button variant="outline" onClick={() => setIsOpen(false)}>
+    <div className="mt-4 flex gap-2 w-full">
+      <Button 
+        variant="outline" 
+        onClick={() => setIsOpen(false)}
+        className="flex-1"
+      >
         Cancelar
       </Button>
-      <Button variant="destructive" onClick={onConfirm}>
+      <Button 
+        variant="destructive" 
+        onClick={onConfirm}
+        className="flex-1"
+      >
         Encerrar Jogo
       </Button>
-    </>
+    </div>
   );
 
   if (isMobile) {
     return (
       <Drawer open={isOpen} onOpenChange={setIsOpen}>
         <DrawerContent className="px-4">
-          <DrawerHeader>
+          <DrawerHeader className="text-center pb-2">
             <DrawerTitle>Encerrar Jogo</DrawerTitle>
             <DrawerDescription>
               Tem certeza que deseja encerrar este jogo? Esta ação não pode ser desfeita.
             </DrawerDescription>
           </DrawerHeader>
           {renderContent()}
-          <DrawerFooter>
-            {renderFooter()}
-          </DrawerFooter>
+          {renderFooter()}
         </DrawerContent>
       </Drawer>
     );
@@ -64,7 +70,7 @@ export const ConfirmCloseModal: React.FC<ConfirmCloseModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-md glass-panel">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Encerrar Jogo</DialogTitle>
           <DialogDescription>
@@ -72,9 +78,7 @@ export const ConfirmCloseModal: React.FC<ConfirmCloseModalProps> = ({
           </DialogDescription>
         </DialogHeader>
         {renderContent()}
-        <DialogFooter>
-          {renderFooter()}
-        </DialogFooter>
+        {renderFooter()}
       </DialogContent>
     </Dialog>
   );
