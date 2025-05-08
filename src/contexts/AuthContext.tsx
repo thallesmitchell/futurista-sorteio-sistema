@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
@@ -177,16 +176,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Fixed logout function with clean-up and force refresh
   const logout = async () => {
     try {
-      await supabase.auth.signOut();
+      // Clean up auth state in storage
+      const cleanupAuthState = () => {
+        // Remove standard auth tokens
+        localStorage.removeItem('supabase.auth.token');
+        // Remove all Supabase auth keys from localStorage
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+            localStorage.removeItem(key);
+          }
+        });
+        // Remove from sessionStorage if in use
+        Object.keys(sessionStorage || {}).forEach((key) => {
+          if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+            sessionStorage.removeItem(key);
+          }
+        });
+      };
+      
+      // Clean up first
+      cleanupAuthState();
+      
+      // Attempt global sign out
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (signOutError) {
+        console.error("Error during sign out:", signOutError);
+        // Continue even if this fails
+      }
       
       toast({
         title: "Logout realizado",
         description: "Você foi desconectado do sistema"
       });
       
-      navigate('/');
+      // Force navigation and page reload for a clean state
+      window.location.href = '/';
     } catch (error) {
       toast({
         title: "Erro durante o logout",

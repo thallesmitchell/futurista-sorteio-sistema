@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import { Game } from '@/contexts/game/types';
 
@@ -9,10 +8,10 @@ export const PDF_CONFIG = {
   margin: 15,            // Page margins
   lineHeight: 7,         // Standard line height
   fontSizes: {
-    title: 21,           // Increased from 16 to 21
-    subtitle: 19,        // Increased from 14 to 19
-    normal: 15,          // Increased from 10 to 15
-    small: 13            // Increased from 8 to 13
+    title: 19,           // Reduced from 21 to 19
+    subtitle: 17,        // Reduced from 19 to 17
+    normal: 13,          // Reduced from 15 to 13
+    small: 11            // Reduced from 13 to 11
   }
 };
 
@@ -259,8 +258,9 @@ const addPlayers = (
         }
       }
       
-      // Add player name
+      // Add player name - ensure consistent font size for all players
       pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(PDF_CONFIG.fontSizes.normal); // Set consistent font size
       pdf.text(`${player.name || 'Jogador sem nome'}`, PDF_CONFIG.margin, yPosition);
       
       // Add player stats
@@ -304,12 +304,10 @@ const addPlayers = (
               return { num: numStr, isHit };
             });
           
-          // Add hits count
-          pdf.setFontSize(PDF_CONFIG.fontSizes.small);
-          pdf.text(`${combo.hits || 0} acertos:`, PDF_CONFIG.margin + 5, yPosition);
+          // Removed "X acertos:" text - start directly with the numbers
           
-          // Add numbers with hits highlighted
-          let xPos = PDF_CONFIG.margin + 30;
+          // Draw numbers with hits highlighted
+          let xPos = PDF_CONFIG.margin + 10; // Adjusted starting position
           pdf.setFont("helvetica", "normal");
           
           for (let i = 0; i < formattedNumbers.length; i++) {
@@ -324,9 +322,9 @@ const addPlayers = (
               pdf.setFont("helvetica", "normal");
             }
             
-            // Adjust spacing based on larger font
+            // Adjust spacing based on font size
             pdf.text(num, xPos, yPosition);
-            xPos += 12; // Increased spacing for larger font
+            xPos += 10; // Adjusted spacing for smaller font
           }
           
           // Reset text color
@@ -344,7 +342,7 @@ const addPlayers = (
         yPosition
       );
       
-      yPosition += 7; // Increased spacing between players
+      yPosition += 7; // Spacing between players
     } catch (error) {
       console.error("Error processing player:", error);
       continue;

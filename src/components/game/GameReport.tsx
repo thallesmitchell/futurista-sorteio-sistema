@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileText, Loader2 } from 'lucide-react';
@@ -7,7 +6,7 @@ import { Game } from '@/contexts/game/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { generateSimplePdf } from '@/utils/pdf/simplePdfGenerator';
+import { generateSimplePdf } from '@/utils/pdf';
 
 interface GameReportProps {
   game: Game;
