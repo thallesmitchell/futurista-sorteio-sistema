@@ -58,11 +58,10 @@ export const generateSimplePdf = async (
       console.log('Adding winners section in PDF (winners found)');
       yPosition = addWinnersSection(pdf, game, yPosition);
       console.log(`Y-position after winners section: ${yPosition}`);
-    }
-    
-    // Add near winners section if requested - even when winners exist
-    if (options.includeNearWinners !== false) {
-      console.log('Including near winners section in PDF');
+    } 
+    // Only add near winners section if there are NO winners and if requested
+    else if (options.includeNearWinners !== false) {
+      console.log('Including near winners section in PDF (no winners found)');
       yPosition = addNearWinnersSection(pdf, game, allDrawnNumbers, { color: options.themeColor || '#39FF14' });
       console.log(`Y-position after near winners section: ${yPosition}`);
     } else {
