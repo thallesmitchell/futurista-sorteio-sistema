@@ -115,8 +115,8 @@ export const addPlayersListSection = (
   // Players title
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(PDF_CONFIG.fontSizes.subtitle);
-  pdf.setTextColor(0, 0, 0);
-  pdf.text("Jogadores", PDF_CONFIG.pageWidth / 2, yPosition, { align: "center" });
+  pdf.setTextColor(0, 177, 115);
+  pdf.text("### Jogadores ###", PDF_CONFIG.pageWidth / 2, yPosition, { align: "center" });
   
   yPosition += PDF_CONFIG.lineHeight * 1.5;
   
@@ -153,7 +153,7 @@ export const addPlayersListSection = (
       // Add player name - ensure consistent font size for all players
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(PDF_CONFIG.fontSizes.normal); // Set consistent font size
-      pdf.text(`${player.name || 'Jogador sem nome'}`, PDF_CONFIG.margin, yPosition);
+      pdf.text(`${player.name || 'Jogador sem nome'}:`, PDF_CONFIG.margin, yPosition);
       
       // Add player stats
       pdf.setFont("helvetica", "normal");
@@ -161,7 +161,7 @@ export const addPlayersListSection = (
       
       const comboCount = Array.isArray(player.combinations) ? player.combinations.length : 0;
       pdf.text(
-        `${comboCount} sequência(s) - Max acertos: ${maxHits}`, 
+        `${comboCount} jogos | Acertos combinados: ${maxHits}`, 
         PDF_CONFIG.pageWidth - PDF_CONFIG.margin, 
         yPosition,
         { align: "right" }
