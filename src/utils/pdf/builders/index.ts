@@ -8,7 +8,7 @@
 export * from './base-pdf';
 
 // Section builders
-export * from './winners';
+export { addWinnersSection as addWinnersList } from './winners';
 export * from './near-winners';
 export * from './players';
 export * from './players-section';

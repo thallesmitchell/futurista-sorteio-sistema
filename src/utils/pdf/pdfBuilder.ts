@@ -5,7 +5,7 @@ import {
   createPDF, 
   addHeader,
   addNearWinnersSection,
-  addWinnersSection,
+  addWinnersList, // Updated import name to resolve conflict
   addPlayersSection,
   PDF_CONFIG
 } from './builders';
@@ -67,7 +67,7 @@ export const generateGameReport = async (
     }
     
     // Add winners section (if any)
-    currentY = addWinnersSection(pdf, game, allDrawnNumbers, currentY, { color: options.themeColor });
+    currentY = addWinnersList(pdf, game, allDrawnNumbers, currentY, { color: options.themeColor });
     
     // Check if we need a new page before players section
     if (currentY > PDF_CONFIG.pageHeight - 100) {
