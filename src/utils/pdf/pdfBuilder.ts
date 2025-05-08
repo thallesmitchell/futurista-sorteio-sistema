@@ -45,14 +45,11 @@ export const generateGameReport = async (
     console.log(`Total drawn numbers: ${allDrawnNumbers.length}`);
     
     // Initialize PDF with white background
-    const pdf = await createPDF();
+    const pdf = createPDF();
     
     // Add header with better error handling for dates
     const gameName = typeof game.name === 'string' ? game.name : 'Resultado';
-    addHeader(pdf, gameName, game.startDate || new Date(), { color: options.themeColor });
-    
-    // Track current Y position
-    let currentY = PDF_CONFIG.margin + 30;
+    let currentY = addHeader(pdf, gameName, game.startDate || new Date(), { color: options.themeColor });
     
     // If there are winners, don't add near winners section
     const hasWinners = Array.isArray(game.winners) && game.winners.length > 0;
