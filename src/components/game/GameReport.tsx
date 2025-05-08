@@ -7,7 +7,7 @@ import { Game } from '@/contexts/game/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { generateGameReport } from '@/utils/pdf/pdfBuilder';
+import { generateGameReport } from '@/utils/pdf';
 
 interface GameReportProps {
   game: Game;
@@ -30,7 +30,7 @@ export const GameReport: React.FC<GameReportProps> = ({
     themeColor: '#39FF14' // Default color
   });
   
-  // Fetch current admin profile
+  // Fetch current admin profile for theme color
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user) return;
@@ -74,7 +74,7 @@ export const GameReport: React.FC<GameReportProps> = ({
       console.log('Draws count:', game.dailyDraws.length);
       console.log('Winners count:', game.winners?.length || 0);
       
-      // Use simplified jsPDF-based generator
+      // Generate the PDF report
       await generateGameReport(game, {
         themeColor: profileData.themeColor,
         filename: `resultado-${game.name.replace(/\s+/g, '-')}.pdf`,
@@ -82,14 +82,14 @@ export const GameReport: React.FC<GameReportProps> = ({
       });
       
       toast({
-        title: "Report generated successfully",
-        description: "The PDF has been downloaded to your device",
+        title: "Relatório gerado com sucesso",
+        description: "O PDF foi baixado no seu dispositivo",
       });
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      console.error("Erro ao gerar PDF:", error);
       toast({
-        title: "Error generating report",
-        description: error instanceof Error ? error.message : "A problem occurred while generating the PDF",
+        title: "Erro ao gerar relatório",
+        description: error instanceof Error ? error.message : "Ocorreu um problema ao gerar o PDF",
         variant: "destructive"
       });
     } finally {
@@ -108,12 +108,12 @@ export const GameReport: React.FC<GameReportProps> = ({
       {isGenerating ? (
         <>
           <Loader2 className="mr-1 h-4 w-4 animate-spin" />
-          Generating...
+          Gerando...
         </>
       ) : (
         <>
           <FileText className="mr-1 h-4 w-4" />
-          Download Report
+          Baixar Relatório
         </>
       )}
     </Button>

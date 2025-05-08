@@ -1,18 +1,22 @@
 
 import { jsPDF } from 'jspdf';
 
-// Function to load font files
+/**
+ * Load standard fonts for PDF generation
+ * Using built-in fonts for maximum compatibility
+ */
 export const loadFonts = async (pdf: jsPDF): Promise<void> => {
-  // We'll use the standard fonts available in jsPDF instead of trying to load custom fonts
-  // This prevents issues with missing font files
+  // We use the standard fonts available in jsPDF for compatibility
   console.log('Using standard fonts for PDF generation');
   return Promise.resolve();
 };
 
-// Add standard fonts to the PDF document
+/**
+ * Add standard fonts to the PDF document
+ */
 export const addFonts = (pdf: jsPDF): void => {
   try {
-    // Use the default Helvetica font that comes built into PDF
+    // Use standard Helvetica font that's built into jsPDF
     pdf.setFont('helvetica');
     console.log('Successfully set helvetica font for PDF');
   } catch (error) {

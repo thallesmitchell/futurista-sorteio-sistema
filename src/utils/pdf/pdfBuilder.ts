@@ -9,9 +9,14 @@ import {
   addPlayersSection,
   PDF_CONFIG
 } from './builders';
-import autoTable from 'jspdf-autotable';
 
-// Generate and download complete PDF report
+/**
+ * Generate and download complete PDF report for a game
+ * 
+ * @param game The game data to generate a report for
+ * @param options Configuration options for the PDF
+ * @returns Promise that resolves when the PDF is generated
+ */
 export const generateGameReport = async (
   game: Game,
   options = { 
@@ -21,7 +26,7 @@ export const generateGameReport = async (
   }
 ): Promise<void> => {
   try {
-    console.log('Iniciando geração de PDF para o jogo:', game.name);
+    console.log('Generating PDF report for game:', game.name);
     
     // Get all drawn numbers from the game
     const allDrawnNumbers = game.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
@@ -55,7 +60,7 @@ export const generateGameReport = async (
     // Add players section in a tabular format
     addPlayersSection(pdf, game, allDrawnNumbers, currentY, { 
       color: options.themeColor,
-      maxCombosPerPlayer: 1000 // Show all sequences as requested
+      maxCombosPerPlayer: 1000 // Show all sequences for completeness
     });
     
     // Use provided filename or generate one

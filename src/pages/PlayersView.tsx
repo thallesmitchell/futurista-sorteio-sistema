@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { NumberBadge } from '@/components/game/NumberBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { generateGameReport } from '@/utils/pdf/pdfBuilder';
+import { generateGameReport } from '@/utils/pdf';
 import { WinnerBanner } from '@/components/game/WinnerBanner';
 
 export default function PlayersView() {
@@ -58,7 +58,7 @@ export default function PlayersView() {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
   
-  // Function to generate PDF using the new simplified system
+  // Function to generate PDF using the standardized system
   const handleGeneratePDF = async () => {
     if (isGenerating) return;
     setIsGenerating(true);
@@ -68,7 +68,7 @@ export default function PlayersView() {
         throw new Error('Game not found');
       }
       
-      // Use the simplified PDF generator
+      // Use the standardized PDF generator
       await generateGameReport(game, {
         themeColor: profileData.themeColor,
         filename: `players-${game.name.replace(/\s+/g, '-')}.pdf`,
@@ -76,14 +76,14 @@ export default function PlayersView() {
       });
       
       toast({
-        title: "PDF generated successfully",
-        description: "The PDF was downloaded to your device",
+        title: "PDF gerado com sucesso",
+        description: "O PDF foi baixado no seu dispositivo",
       });
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      console.error("Erro ao gerar PDF:", error);
       toast({
-        title: "Error generating report",
-        description: error instanceof Error ? error.message : "A problem occurred while generating the PDF",
+        title: "Erro ao gerar relatório",
+        description: error instanceof Error ? error.message : "Ocorreu um problema ao gerar o PDF",
         variant: "destructive"
       });
     } finally {

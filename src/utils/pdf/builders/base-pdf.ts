@@ -3,7 +3,10 @@ import jsPDF from 'jspdf';
 import { addFonts, loadFonts } from '../fonts';
 import { formatDate } from '@/lib/date';
 
-// PDF generation configuration
+/**
+ * PDF generation configuration with standard A4 dimensions
+ * and consistent font sizes for different elements
+ */
 export const PDF_CONFIG = {
   pageWidth: 210,       // A4 width in mm
   pageHeight: 297,      // A4 height in mm
@@ -17,23 +20,37 @@ export const PDF_CONFIG = {
   innerMargin: 5,       // Inner spacing
 }
 
-// Initialize PDF document with white background
+/**
+ * Initialize a new PDF document with proper setup
+ * @returns Promise<jsPDF> A properly initialized PDF document
+ */
 export const createPDF = async (): Promise<jsPDF> => {
   // Create new document
   const pdf = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
     format: 'a4',
+    putOnlyUsedFonts: true, // Optimize PDF size
   });
   
   // Load and register fonts
   await loadFonts(pdf);
   addFonts(pdf);
   
+  // Set white background
+  pdf.setFillColor(255, 255, 255);
+  pdf.rect(0, 0, PDF_CONFIG.pageWidth, PDF_CONFIG.pageHeight, 'F');
+  
   return pdf;
 }
 
-// Add header section to PDF
+/**
+ * Add standard header section to PDF
+ * @param pdf The PDF document
+ * @param gameTitle Title of the game to display
+ * @param date Date to display (defaults to current date)
+ * @param options Additional options including text color
+ */
 export const addHeader = (
   pdf: jsPDF, 
   gameTitle: string, 
