@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/components/ui/use-toast";
@@ -58,8 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           theme_color: data.theme_color,
           logo_url: data.logo_url,
           default_game_name: data.default_game_name,
-          site_name: data.site_name,
-          logo_width: data.logo_width
+          site_name: data.site_name || null,  // Handle the case where it doesn't exist yet in DB
+          logo_width: data.logo_width || null  // Handle the case where it doesn't exist yet in DB
         };
         
         setUserProfile(profile);
