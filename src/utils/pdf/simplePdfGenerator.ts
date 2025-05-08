@@ -9,10 +9,10 @@ export const PDF_CONFIG = {
   margin: 15,            // Page margins
   lineHeight: 7,         // Standard line height
   fontSizes: {
-    title: 16,
-    subtitle: 14,
-    normal: 10,
-    small: 8
+    title: 21,           // Increased from 16 to 21
+    subtitle: 19,        // Increased from 14 to 19
+    normal: 15,          // Increased from 10 to 15
+    small: 13            // Increased from 8 to 13
   }
 };
 
@@ -277,17 +277,22 @@ const addPlayers = (
       
       yPosition += PDF_CONFIG.lineHeight;
       
-      // Add combinations (limit to 3 per player to save space)
+      // Add ALL combinations (remove limit of 3 per player)
       if (Array.isArray(player.combinations)) {
         // Sort by hits (highest first)
         const sortedCombos = [...player.combinations]
           .filter(c => c && typeof c === 'object')
           .sort((a, b) => (b.hits || 0) - (a.hits || 0));
         
-        const combosToShow = sortedCombos.slice(0, 3);
-        
-        for (const combo of combosToShow) {
+        // Show all combinations - removed limit
+        for (const combo of sortedCombos) {
           if (!combo || !Array.isArray(combo.numbers)) continue;
+          
+          // Check if we need to add a new page for this combination
+          if (yPosition > PDF_CONFIG.pageHeight - 20) {
+            pdf.addPage();
+            yPosition = PDF_CONFIG.margin;
+          }
           
           // Format the numbers
           const formattedNumbers = combo.numbers
@@ -304,46 +309,31 @@ const addPlayers = (
           pdf.text(`${combo.hits || 0} acertos:`, PDF_CONFIG.margin + 5, yPosition);
           
           // Add numbers with hits highlighted
-          let numbersText = '';
+          let xPos = PDF_CONFIG.margin + 30;
           pdf.setFont("helvetica", "normal");
           
           for (let i = 0; i < formattedNumbers.length; i++) {
             const { num, isHit } = formattedNumbers[i];
             if (isHit) {
               // Draw highlighted number
-              const xPos = PDF_CONFIG.margin + 30 + (i * 10);
               pdf.setTextColor(0, 158, 26); // Green
               pdf.setFont("helvetica", "bold");
-              pdf.text(num, xPos, yPosition);
             } else {
               // Draw regular number
-              const xPos = PDF_CONFIG.margin + 30 + (i * 10);
               pdf.setTextColor(0, 0, 0); // Black
               pdf.setFont("helvetica", "normal");
-              pdf.text(num, xPos, yPosition);
             }
+            
+            // Adjust spacing based on larger font
+            pdf.text(num, xPos, yPosition);
+            xPos += 12; // Increased spacing for larger font
           }
           
           // Reset text color
           pdf.setTextColor(0, 0, 0);
           yPosition += PDF_CONFIG.lineHeight;
         }
-        
-        // If there are more combinations
-        if (sortedCombos.length > 3) {
-          pdf.setFontSize(PDF_CONFIG.fontSizes.small);
-          pdf.setFont("helvetica", "italic");
-          pdf.text(
-            `+ ${sortedCombos.length - 3} mais sequência(s)`, 
-            PDF_CONFIG.margin + 5, 
-            yPosition
-          );
-          yPosition += PDF_CONFIG.lineHeight;
-        }
       }
-      
-      // Add spacing between players
-      yPosition += 3;
       
       // Add a separator line
       pdf.setDrawColor(200, 200, 200);
@@ -354,7 +344,7 @@ const addPlayers = (
         yPosition
       );
       
-      yPosition += 5;
+      yPosition += 7; // Increased spacing between players
     } catch (error) {
       console.error("Error processing player:", error);
       continue;

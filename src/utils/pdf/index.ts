@@ -5,8 +5,8 @@
  * Provides functions to generate game reports as PDFs
  */
 
-// Export our simplified PDF generator
-export { generateSimplePdf, PDF_CONFIG } from './simplePdfGenerator';
+// Export the simplified PDF generator and configuration
+export { generateSimplePdf, PDF_CONFIG, createPDF } from './simplePdfGenerator';
 
 // Re-export types
 export * from './types';
