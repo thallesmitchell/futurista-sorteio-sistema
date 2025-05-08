@@ -73,7 +73,7 @@ export const getStandardTableStyles = () => {
     },
     margin: { left: PDF_CONFIG.margin, right: PDF_CONFIG.margin },
     tableLineWidth: 0.2,
-    tableLineColor: [200, 200, 200],
+    tableLineColor: [200, 200, 200] as [number, number, number], // Fixed: Explicitly typed as RGB tuple
     alternateRowStyles: {
       fillColor: [248, 248, 248]
     },
