@@ -22,7 +22,7 @@ export const generateNearWinnersTable = (
     // Definir larguras exatas das colunas - IMPORTANTE para manter alinhamento
     const columnWidths = {
       0: { cellWidth: 80 },  // Coluna do jogador
-      1: { cellWidth: 100 } // Coluna da sequência - usando número em vez de 'auto'
+      1: { cellWidth: 90 } // Coluna da sequência - usando número em vez de 'auto'
     };
     
     // Process the table data to replace the content with empty strings
@@ -46,7 +46,7 @@ export const generateNearWinnersTable = (
       body: [], // Sem corpo de tabela aqui
       theme: 'striped',
       styles: {
-        cellPadding: 6,
+        cellPadding: 5,
         fontSize: 11,
         lineColor: [200, 200, 200],
         lineWidth: 0.1,
