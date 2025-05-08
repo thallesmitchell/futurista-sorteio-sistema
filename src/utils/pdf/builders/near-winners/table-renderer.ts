@@ -53,8 +53,7 @@ export const generateNearWinnersTable = (
       didDrawCell: function(data) {
         // Apply highlighting for cells with specific content
         if (data.column.index === 1 && data.cell.text) {
-          // Fix: Handle data.cell.text as string[] (which is what jspdf-autotable provides)
-          // Check if we have text content in the cell
+          // Handle data.cell.text as string[] (which is what jspdf-autotable provides)
           const cellTextArray = data.cell.text as string[];
           
           // If there's no text or it's empty, return early
@@ -62,8 +61,10 @@ export const generateNearWinnersTable = (
             return;
           }
           
-          // Get the text content from the array
-          let cellText = cellTextArray.join(' ');
+          // Get the text content from the array - clear autotable text content
+          // to avoid duplication - we'll manually draw it instead
+          const cellText = cellTextArray.join(' ');
+          data.cell.text = []; // Clear the cell's original text 
           
           // Check if this cell has numbers to highlight
           if (cellText.includes('*')) {
@@ -101,10 +102,6 @@ export const generateNearWinnersTable = (
             
             // Restore the graphics state
             pdf.restoreGraphicsState();
-            
-            // Clear the cell's text content as we've manually drawn it
-            // Fix: Assign empty array instead of empty string
-            data.cell.text = [];
           }
         }
       }
