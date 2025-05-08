@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { PDF_CONFIG } from '../base-pdf';
@@ -21,7 +22,7 @@ export const generateNearWinnersTable = (
     // Definir larguras exatas das colunas - IMPORTANTE para manter alinhamento
     const columnWidths = {
       0: { cellWidth: 80 },  // Coluna do jogador
-      1: { cellWidth: 100 } // Coluna da sequência
+      1: { cellWidth: 100 } // Coluna da sequência - usando número em vez de 'auto'
     };
     
     // Process the table data to replace the content with empty strings
@@ -35,46 +36,17 @@ export const generateNearWinnersTable = (
     const tableWidth = pdf.internal.pageSize.width - 40; // 20px de margem em cada lado
     const marginLeft = 20;
     
-    // TÍTULO ÚNICO: Criar uma tabela de título que ocupa toda a largura
+    // CABEÇALHO: Criar uma tabela apenas para o cabeçalho
     autoTable(pdf, {
       startY: currentY,
       margin: { left: marginLeft },
       tableWidth: tableWidth,
+     // head: [['Jogador', 'Sequência (5 acertos)']],
       head: [['Jogadores na risca da prêmio!']],
       body: [], // Sem corpo de tabela aqui
       theme: 'striped',
       styles: {
-        cellPadding: 8,
-        fontSize: 14,
-        lineColor: [200, 200, 200],
-        lineWidth: 0.1,
-      },
-      headStyles: {
-        fillColor: [240, 240, 240],
-        textColor: [0, 0, 0],
-        fontStyle: 'bold',
-        halign: 'center', // Centraliza o título
-        fontSize: 14,
-      },
-      // Configuração para ter apenas uma coluna que ocupa toda a largura
-      columnStyles: {
-        0: { cellWidth: tableWidth }
-      }
-    });
-    
-    // Obter a posição Y após a tabela de título
-    const titleEndY = (pdf as any).lastAutoTable.finalY;
-    
-    // CABEÇALHO DAS COLUNAS: Agora criamos o cabeçalho das colunas
-    autoTable(pdf, {
-      startY: titleEndY,
-      margin: { left: marginLeft },
-      tableWidth: tableWidth,
-      head: [['Jogador', 'Sequência (5 acertos)']],
-      body: [], // Sem corpo de tabela aqui
-      theme: 'striped',
-      styles: {
-        cellPadding: 5,
+        cellPadding: 6,
         fontSize: 11,
         lineColor: [200, 200, 200],
         lineWidth: 0.1,
@@ -83,13 +55,13 @@ export const generateNearWinnersTable = (
         fillColor: [240, 240, 240],
         textColor: [0, 0, 0],
         fontStyle: 'bold',
-        halign: 'left',
+        halign: 'center',
         fontSize: 12,
       },
-      columnStyles: columnWidths // Usar as larguras de coluna definidas
+      columnStyles: columnWidths // Usar as mesmas larguras de coluna
     });
     
-    // Obter a posição Y após a tabela de cabeçalho
+    // Obter a posição Y após a primeira tabela (apenas cabeçalho)
     const headerEndY = (pdf as any).lastAutoTable.finalY;
     
     // CORPO: Agora renderizamos o corpo da tabela separadamente
@@ -103,6 +75,7 @@ export const generateNearWinnersTable = (
       styles: {
         cellPadding: 5,
         fontSize: 11,
+        halign: 'center',
         lineColor: [200, 200, 200],
         lineWidth: 0.1,
       },
