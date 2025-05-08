@@ -50,10 +50,6 @@ export const generateSimplePdf = async (
     // Add header section using the standardized builder and the last draw date
     let yPosition = addHeader(pdf, game.name, lastDrawDate, { color: options.themeColor || '#39FF14' });
     
-    // Adicionar seção de sorteios realizados logo após o cabeçalho
-    yPosition = addDrawsSection(pdf, game.dailyDraws, yPosition);
-    console.log(`Y-position after draws section: ${yPosition}`);
-    
     // Get all drawn numbers from the game
     const allDrawnNumbers = safeGetDrawnNumbers(game);
     console.log(`Total drawn numbers: ${allDrawnNumbers.length}`);
@@ -67,14 +63,38 @@ export const generateSimplePdf = async (
       console.log('Adding winners section in PDF (winners found)');
       yPosition = addWinnersSection(pdf, game, yPosition);
       console.log(`Y-position after winners section: ${yPosition}`);
+      
+      // Check if we need to add a new page before the draws section
+      if (yPosition > PDF_CONFIG.pageHeight - 40) {
+        pdf.addPage();
+        yPosition = PDF_CONFIG.margin;
+      }
+      
+      // Adicionar seção de sorteios realizados após a seção de vencedores
+      yPosition = addDrawsSection(pdf, game.dailyDraws, yPosition);
+      console.log(`Y-position after draws section: ${yPosition}`);
     } 
     // Only add near winners section if there are NO winners and if requested
     else if (options.includeNearWinners !== false) {
       console.log('Including near winners section in PDF (no winners found)');
       yPosition = addNearWinnersSection(pdf, game, allDrawnNumbers, { color: options.themeColor || '#39FF14' });
       console.log(`Y-position after near winners section: ${yPosition}`);
+      
+      // Check if we need to add a new page before the draws section
+      if (yPosition > PDF_CONFIG.pageHeight - 40) {
+        pdf.addPage();
+        yPosition = PDF_CONFIG.margin;
+      }
+      
+      // Adicionar seção de sorteios realizados após a seção de jogos amarrados
+      yPosition = addDrawsSection(pdf, game.dailyDraws, yPosition);
+      console.log(`Y-position after draws section: ${yPosition}`);
     } else {
       console.log('Near winners section was not requested to be included');
+      
+      // Adicionar seção de sorteios realizados logo após o cabeçalho
+      yPosition = addDrawsSection(pdf, game.dailyDraws, yPosition);
+      console.log(`Y-position after draws section: ${yPosition}`);
     }
     
     // Check if we need to add a new page before players list

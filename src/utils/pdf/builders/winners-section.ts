@@ -16,8 +16,11 @@ export const addWinnersSection = (
   yPosition: number
 ): number => {
   if (!game.winners || !Array.isArray(game.winners) || game.winners.length === 0) {
+    console.log('No winners to display in PDF');
     return yPosition;
   }
+  
+  console.log(`Adding ${game.winners.length} winners to PDF`);
   
   // Winners title
   pdf.setFont("helvetica", "bold");
@@ -31,7 +34,12 @@ export const addWinnersSection = (
   for (const winner of game.winners) {
     try {
       const playerData = game.players.find(p => p.id === winner.id);
-      if (!playerData) continue;
+      if (!playerData) {
+        console.log(`Winner player data not found for id: ${winner.id}`);
+        continue;
+      }
+      
+      console.log(`Adding winner: ${playerData.name}`);
       
       // Add winner name
       pdf.setFont("helvetica", "bold");
@@ -42,12 +50,16 @@ export const addWinnersSection = (
       
       // Find winning combinations
       const winningCombos = playerData.combinations.filter(c => c.hits === 6);
+      console.log(`Found ${winningCombos.length} winning combinations`);
       
       pdf.setFont("helvetica", "normal");
       
       // Add each combination
       for (const combo of winningCombos) {
-        if (!combo.numbers || !Array.isArray(combo.numbers)) continue;
+        if (!combo.numbers || !Array.isArray(combo.numbers)) {
+          console.log('Invalid combination numbers');
+          continue;
+        }
         
         const numbersText = combo.numbers
           .filter(n => typeof n === 'number')
