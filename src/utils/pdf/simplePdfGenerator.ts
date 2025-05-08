@@ -5,6 +5,7 @@ import { createPDF, PDF_CONFIG, addHeader } from './builders/base-pdf';
 import { addNearWinnersSection } from './builders/near-winners';
 import { addPlayersListSection, safeGetDrawnNumbers } from './builders/players-section';
 import { addWinnersSection } from './builders/winners-section';
+import { addDrawsSection, getLastDrawDate } from './builders/draws-section';
 import { GeneratePdfOptions } from './types';
 
 /**
@@ -42,8 +43,16 @@ export const generateSimplePdf = async (
     // Create PDF document
     const pdf = createPDF();
     
-    // Add header section using the standardized builder
-    let yPosition = addHeader(pdf, game.name, game.startDate, { color: options.themeColor || '#39FF14' });
+    // Obter a data do último sorteio (se houver) ou usar a data de início do jogo
+    const lastDrawDate = getLastDrawDate(game.dailyDraws) || game.startDate;
+    console.log('Data do último sorteio:', lastDrawDate);
+    
+    // Add header section using the standardized builder and the last draw date
+    let yPosition = addHeader(pdf, game.name, lastDrawDate, { color: options.themeColor || '#39FF14' });
+    
+    // NOVA SEÇÃO: Adicionar seção de sorteios realizados logo após o cabeçalho
+    yPosition = addDrawsSection(pdf, game.dailyDraws, yPosition);
+    console.log(`Y-position after draws section: ${yPosition}`);
     
     // Get all drawn numbers from the game
     const allDrawnNumbers = safeGetDrawnNumbers(game);

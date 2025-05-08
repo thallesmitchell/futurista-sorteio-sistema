@@ -19,6 +19,7 @@ export { safeGetDrawnNumbers } from './builders/players-section';
 export { addNearWinnersSection } from './builders/near-winners';
 export { addWinnersSection } from './builders/winners-section';
 export { addPlayersListSection } from './builders/players-section';
+export { addDrawsSection, getLastDrawDate } from './builders/draws-section';
 
 // Re-export types
 export * from './types';

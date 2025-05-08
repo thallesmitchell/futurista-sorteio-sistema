@@ -67,7 +67,25 @@ export const addHeader = (
   // Format and add date
   let formattedDate = "Data indisponível";
   try {
-    formattedDate = formatDate(date);
+    // Usar formatação personalizada para dia e mês
+    if (date instanceof Date || typeof date === 'string') {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      if (!isNaN(dateObj.getTime())) {
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        
+        // Meses em português (abreviados)
+        const monthsShort = [
+          'jan', 'fev', 'mar', 'abr', 'maio', 'jun', 
+          'jul', 'ago', 'set', 'out', 'nov', 'dez'
+        ];
+        const month = monthsShort[dateObj.getMonth()];
+        const year = dateObj.getFullYear();
+        
+        formattedDate = `${day}/${month}/${year}`;
+      }
+    } else {
+      formattedDate = formatDate(date);
+    }
   } catch (error) {
     console.error('Error formatting date in addHeader:', error);
   }
