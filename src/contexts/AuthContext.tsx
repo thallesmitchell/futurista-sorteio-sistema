@@ -10,6 +10,7 @@ interface UserProfile {
   role: 'super_admin' | 'admin';
   theme_color: string | null;
   logo_url: string | null;
+  default_game_name: string | null;
 }
 
 interface AuthContextType {
