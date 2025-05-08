@@ -13,7 +13,7 @@ export const findNearWinners = (game: Game) => {
   // Debug log to check player counts
   console.log(`Checking near winners among ${game.players.length} players`);
   
-  return game.players
+  const nearWinners = game.players
     .filter(player => player.combinations && Array.isArray(player.combinations) && 
       player.combinations.some(combo => combo.hits === 5))
     .map(player => {
@@ -22,6 +22,9 @@ export const findNearWinners = (game: Game) => {
       return { player, combos: nearWinningCombos };
     })
     .filter(item => item.combos.length > 0);
+
+  console.log(`Total near winners found: ${nearWinners.length}`);
+  return nearWinners;
 };
 
 /**
@@ -53,6 +56,7 @@ export const createNearWinnersTableData = (
         }).join(' ')
       ];
       
+      console.log(`Adding near winner row: ${player.name} with numbers: ${sortedNumbers.join(', ')}`);
       tableData.push(row);
     }
   }

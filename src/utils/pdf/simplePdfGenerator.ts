@@ -36,6 +36,8 @@ export const generateSimplePdf = async (
     }
     
     console.log(`Gerando PDF para ${game.name || 'jogo sem nome'}`);
+    console.log(`Total de jogadores: ${game.players.length}`);
+    console.log(`Total de sorteios: ${game.dailyDraws.length}`);
     
     // Create PDF document
     const pdf = createPDF();
@@ -46,6 +48,7 @@ export const generateSimplePdf = async (
     // Get all drawn numbers from the game
     const allDrawnNumbers = safeGetDrawnNumbers(game);
     console.log(`Total drawn numbers: ${allDrawnNumbers.length}`);
+    console.log(`All drawn numbers: ${allDrawnNumbers.join(', ')}`);
     
     // Check if there are winners
     const hasWinners = Array.isArray(game.winners) && game.winners.length > 0;
@@ -54,6 +57,7 @@ export const generateSimplePdf = async (
     if (options.includeNearWinners === true && !hasWinners) {
       console.log('Including near winners section in PDF');
       yPosition = addNearWinnersSection(pdf, game, allDrawnNumbers, { color: options.themeColor || '#39FF14' });
+      console.log(`Y-position after near winners section: ${yPosition}`);
     } else if (hasWinners) {
       console.log('Game has winners, skipping near winners section');
     } else {

@@ -13,7 +13,7 @@ type HAlignType = 'left' | 'center' | 'right' | 'justify';
  */
 export const generateNearWinnersTable = (
   pdf: jsPDF,
-  tableData: any[],
+  tableData: string[][],
   currentY: number
 ): number => {
   try {
@@ -23,6 +23,11 @@ export const generateNearWinnersTable = (
     }
     
     console.log(`Rendering near winners table with ${tableData.length} rows`);
+    
+    // Debug log to check what data is being passed to the table
+    tableData.forEach((row, index) => {
+      console.log(`Table row ${index}: ${row[0]} - ${row[1]}`);
+    });
     
     const tableStyles = getStandardTableStyles();
     

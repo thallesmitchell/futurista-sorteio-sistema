@@ -19,6 +19,8 @@ export const highlightedCellRenderer = (data: any): void => {
 
   const text = String(data.cell.text[0]);
   
+  console.log(`Processing cell text: ${text}`);
+  
   // Look for asterisk markers and replace with styled text
   if (text.includes('*')) {
     const parts = text.split(/\*+/g);
@@ -47,6 +49,7 @@ export const highlightedCellRenderer = (data: any): void => {
     
     // Only replace if we have valid parts
     if (styledParts.length > 0) {
+      console.log(`Styled parts created: ${styledParts.length}`);
       data.cell.text = styledParts;
     }
   }

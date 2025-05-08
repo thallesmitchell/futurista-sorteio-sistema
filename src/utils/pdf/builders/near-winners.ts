@@ -23,6 +23,7 @@ export const addNearWinnersSection = (
     console.log('Starting near winners section processing');
     const drawnNumbersSet = new Set(allDrawnNumbers);
     console.log(`Total drawn numbers: ${drawnNumbersSet.size}`);
+    console.log(`Drawn numbers: ${[...drawnNumbersSet].join(', ')}`);
     
     // Find players with combinations that have exactly 5 hits
     const nearWinners = findNearWinners(game);
@@ -37,9 +38,14 @@ export const addNearWinnersSection = (
     // Draw section header
     const currentY = drawNearWinnersHeader(pdf, options);
     
-    // Create table data
+    // Create table data from near winners
     const tableData = createNearWinnersTableData(nearWinners, drawnNumbersSet);
     console.log(`Generated ${tableData.length} rows for near winners table`);
+    
+    if (tableData.length === 0) {
+      console.log('No table data generated, skipping section');
+      return PDF_CONFIG.margin + 30;
+    }
     
     // Generate table and return final Y position
     return generateNearWinnersTable(pdf, tableData, currentY);
