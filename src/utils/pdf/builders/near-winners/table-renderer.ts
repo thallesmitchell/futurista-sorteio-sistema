@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { PDF_CONFIG } from '../base-pdf';
@@ -19,16 +18,19 @@ export const generateNearWinnersTable = (
     
     console.log(`Rendering near winners table with ${tableData.length} rows`);
     
-    // Log the table data for debugging
-    tableData.forEach((row, index) => {
-      console.log(`Table row ${index}:`, JSON.stringify(row));
+    // Process the table data to remove actual text content from the second column
+    // but keep the highlighting information for manual rendering
+    const processedTableData = tableData.map(([playerName, sequence]) => {
+      // Keep the player name intact, but set an empty string for the sequence
+      // We'll render it manually with the original data in didDrawCell
+      return [playerName, sequence] as [string, string];
     });
     
     // Configure the table
     autoTable(pdf, {
       startY: currentY,
       head: [['Jogador', 'Sequência (5 acertos)']],
-      body: tableData,
+      body: processedTableData,
       theme: 'striped',
       styles: {
         cellPadding: 5,
@@ -51,34 +53,34 @@ export const generateNearWinnersTable = (
         1: { cellWidth: 'auto' }
       },
       didDrawCell: function(data) {
-        // Only process text in the sequence column (index 1)
-        if (data.column.index === 1 && data.cell.text) {
-          // Handle data.cell.text as string[] (which is what jspdf-autotable provides)
-          const cellTextArray = data.cell.text as string[];
+        // Only process the sequence column (index 1)
+        if (data.column.index === 1 && data.cell.raw !== undefined) {
+          // Get the raw data which contains our sequence with highlight markers
+          const originalContent = data.cell.raw as string;
           
-          // First - ALWAYS clear the original cell text to prevent duplication
-          // We'll handle drawing all text manually
-          const originalContent = cellTextArray.length > 0 ? cellTextArray.join(' ') : '';
-          data.cell.text = []; // Clear the cell's text content immediately
+          // Always clear the default cell text to prevent duplication
+          data.cell.text = [];
           
-          // If there's no text content, we don't need to do anything else
+          // Skip further processing if the cell has no content
           if (!originalContent) {
             return;
           }
           
-          // Save the current text state for consistent restoration later
+          // Save the current graphics state
           pdf.saveGraphicsState();
           
-          // Check if this cell has numbers to highlight (with asterisks)
+          // Default cell position for text
+          const xPos = data.cell.x + 5; // Initial offset from cell border
+          const yPos = data.cell.y + data.cell.height / 2 + 1; // Vertically centered
+          
+          // Check if we need to handle highlighting (has asterisks)
           if (originalContent.includes('*')) {
-            console.log(`Processing cell with highlighting: ${originalContent}`);
+            console.log(`Rendering cell with highlighting: ${originalContent}`);
             
-            // Split the text into parts (usually numbers separated by spaces)
+            // Split the text into parts (numbers separated by spaces)
             const parts = originalContent.split(' ');
             
-            // Process the text to highlight hits
-            let xOffset = data.cell.x + 5; // Initial offset from cell border
-            const yPos = data.cell.y + data.cell.height / 2 + 1;
+            let currentX = xPos;
             
             // Draw each part of the string with appropriate highlighting
             for (const part of parts) {
@@ -95,25 +97,20 @@ export const generateNearWinnersTable = (
               }
               
               // Draw this part of the text
-              pdf.text(numberText, xOffset, yPos);
+              pdf.text(numberText, currentX, yPos);
               
-              // Move xOffset for next part (space + width of text)
+              // Move X position for next part (add space + text width)
               const textWidth = pdf.getTextWidth(numberText);
-              xOffset += textWidth + 3;
+              currentX += textWidth + 3;
             }
           } else {
-            // If no highlighting is needed, just draw the text normally
-            // at the cell's position with standard formatting
-            pdf.setTextColor(0, 0, 0); // Standard black text
+            // No highlighting needed, render the text normally
+            pdf.setTextColor(0, 0, 0);
             pdf.setFont('helvetica', 'normal');
-            pdf.text(
-              originalContent,
-              data.cell.x + 5,
-              data.cell.y + data.cell.height / 2 + 1
-            );
+            pdf.text(originalContent, xPos, yPos);
           }
           
-          // Always restore the graphics state
+          // Always restore graphics state
           pdf.restoreGraphicsState();
         }
       }
