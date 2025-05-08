@@ -31,10 +31,16 @@ export const generateNearWinnersTable = (
     
     const tableStyles = getStandardTableStyles();
     
+    // Using simple strings instead of complex objects for cell content
+    const processedData = tableData.map(row => [
+      row[0],                // Player name (keep as is) 
+      row[1]                 // Number sequence (keep as is)
+    ]);
+    
     autoTable(pdf, {
       startY: currentY,
       head: [['Jogador', 'Sequência (5 acertos)']],
-      body: tableData,
+      body: processedData,
       theme: 'striped',
       ...tableStyles,
       columnStyles: {

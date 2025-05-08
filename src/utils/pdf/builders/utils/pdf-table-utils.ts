@@ -15,8 +15,9 @@ export const formatNumber = (num: number): string => {
  */
 export const highlightedCellRenderer = (data: any): void => {
   // Skip if no text content or wrong type
-  if (!data?.cell?.text || typeof data.cell.text[0] !== 'string') return;
+  if (!data?.cell?.text || !data.cell.text[0]) return;
 
+  // Convert to string to ensure we can work with it
   const text = String(data.cell.text[0]);
   
   console.log(`Processing cell text: ${text}`);
