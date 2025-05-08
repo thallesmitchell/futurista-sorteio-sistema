@@ -5,20 +5,19 @@ import { formatDate } from '@/lib/date';
 
 // PDF generation configuration
 export const PDF_CONFIG = {
-  pageWidth: 210, // A4 width in mm
-  pageHeight: 297, // A4 height in mm
-  margin: 15,
-  titleFontSize: 18,
-  subtitleFontSize: 14,
-  headerFontSize: 12,
-  textFontSize: 10,
-  smallTextFontSize: 8,
-  lineHeight: 7,
-  innerMargin: 5,
-  ballSize: 9, // Base ball size
+  pageWidth: 210,       // A4 width in mm
+  pageHeight: 297,      // A4 height in mm
+  margin: 15,           // Page margins
+  titleFontSize: 18,    // Main title size
+  subtitleFontSize: 14, // Section titles
+  headerFontSize: 12,   // Headers
+  textFontSize: 10,     // Regular text
+  smallTextFontSize: 8, // Small text
+  lineHeight: 7,        // Line height
+  innerMargin: 5,       // Inner spacing
 }
 
-// Initialize PDF document
+// Initialize PDF document with white background
 export const createPDF = async (): Promise<jsPDF> => {
   // Create new document
   const pdf = new jsPDF({
@@ -42,9 +41,7 @@ export const addHeader = (
   options = { color: '#000000' }
 ): void => {
   const formattedDate = typeof date === 'string' ? date : formatDate(date);
-  const textWidth = pdf.getStringUnitWidth(`${gameTitle}`) * PDF_CONFIG.titleFontSize / pdf.internal.scaleFactor;
-  const centerX = (PDF_CONFIG.pageWidth - textWidth) / 2;
-
+  
   // Add title
   pdf.setFont('helvetica', 'bold');
   pdf.setFontSize(PDF_CONFIG.titleFontSize);
@@ -69,45 +66,4 @@ export const addHeader = (
     PDF_CONFIG.pageWidth - PDF_CONFIG.margin, 
     PDF_CONFIG.margin + 25
   );
-}
-
-// Create a ball with number
-export const drawBall = (
-  pdf: jsPDF, 
-  x: number, 
-  y: number, 
-  number: number, 
-  options = { 
-    size: PDF_CONFIG.ballSize, 
-    colorFill: '#39FF14',
-    colorBorder: '#39FF14',
-    colorText: '#FFFFFF',
-    isHit: true
-  }
-): void => {
-  const radius = options.size;
-  const formattedNumber = String(number).padStart(2, '0');
-  
-  // If hit, fill with color, otherwise just border
-  if (options.isHit) {
-    pdf.setFillColor(options.colorFill);
-    pdf.circle(x, y, radius, 'F');
-    pdf.setTextColor(options.colorText);
-    pdf.setFont('helvetica', 'bold'); // Bold for hit numbers
-  } else {
-    pdf.setDrawColor(options.colorBorder);
-    pdf.circle(x, y, radius, 'D');
-    pdf.setTextColor(options.colorBorder);
-    pdf.setFont('helvetica', 'normal'); // Normal weight for non-hits
-  }
-  
-  // Add number to ball
-  pdf.setFontSize(PDF_CONFIG.smallTextFontSize);
-  
-  // Calculate text width to center within ball
-  const textWidth = pdf.getStringUnitWidth(formattedNumber) * PDF_CONFIG.smallTextFontSize / pdf.internal.scaleFactor;
-  const textX = x - (textWidth / 2);
-  
-  // Center text vertically and horizontally in ball
-  pdf.text(formattedNumber, textX, y + 1.5);
 }

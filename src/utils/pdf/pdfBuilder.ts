@@ -9,6 +9,7 @@ import {
   addPlayersSection,
   PDF_CONFIG
 } from './builders';
+import autoTable from 'jspdf-autotable';
 
 // Generate and download complete PDF report
 export const generateGameReport = async (
@@ -25,7 +26,7 @@ export const generateGameReport = async (
     // Get all drawn numbers from the game
     const allDrawnNumbers = game.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
     
-    // Initialize PDF
+    // Initialize PDF with white background
     const pdf = await createPDF();
     
     // Add header
@@ -34,7 +35,7 @@ export const generateGameReport = async (
     // Track current Y position
     let currentY = PDF_CONFIG.margin + 30;
     
-    // If there are winners, don't add near winners section (as requested)
+    // If there are winners, don't add near winners section
     const hasWinners = game.winners && game.winners.length > 0;
     
     // Add near winners section only if no winners and if requested
@@ -51,7 +52,7 @@ export const generateGameReport = async (
       currentY = PDF_CONFIG.margin;
     }
     
-    // Add players section - showing ALL sequences
+    // Add players section in a tabular format
     addPlayersSection(pdf, game, allDrawnNumbers, currentY, { 
       color: options.themeColor,
       maxCombosPerPlayer: 1000 // Show all sequences as requested

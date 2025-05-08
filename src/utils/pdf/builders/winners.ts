@@ -1,15 +1,10 @@
 
 import jsPDF from 'jspdf';
-import { Game, Player } from '@/contexts/game/types';
-import { PDF_CONFIG, drawBall } from './base-pdf';
+import { Game } from '@/contexts/game/types';
+import { PDF_CONFIG } from './base-pdf';
+import autoTable from 'jspdf-autotable';
 
-// Type definition for player combination
-type PlayerCombination = {
-  numbers: number[];
-  hits: number;
-};
-
-// Add winners section to PDF - updated as requested
+// Add winners section to PDF with simplified styling
 export const addWinnersSection = (
   pdf: jsPDF, 
   game: Game, 
@@ -24,91 +19,110 @@ export const addWinnersSection = (
   
   const drawnNumbersSet = new Set(allDrawnNumbers);
   
-  // Section title - using "SAIU GANHADOR!" format
+  // Section title
   let currentY = startY;
   pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(PDF_CONFIG.subtitleFontSize);
-  pdf.setTextColor('#009e1a'); // Darker green for emphasis
+  pdf.setFontSize(16);
+  pdf.setTextColor('#009e1a'); // Green for emphasis
   pdf.text('SAIU GANHADOR!', PDF_CONFIG.pageWidth / 2, currentY, { align: 'center' });
   
-  currentY += 15; // Improved spacing
+  currentY += 15;
   
-  // Winners block
-  const winners = game.winners.map(winner => {
+  // Create winners table data
+  const tableData = [];
+  
+  // Process each winner
+  game.winners.forEach((winner, index) => {
     const playerData = game.players.find(p => p.id === winner.id);
-    if (!playerData) return null;
+    if (!playerData) return;
     
     const winningCombos = playerData.combinations.filter(c => c.hits === 6);
-    return { player: playerData, winningCombos };
-  }).filter(Boolean) as { player: Player, winningCombos: PlayerCombination[] }[];
-  
-  // Improved design for winners - based on visual reference
-  winners.forEach((winner) => {
-    // Winner box with improved design, more rounded and green
-    pdf.setDrawColor('#009e1a');
-    pdf.setFillColor('#e4f9e8'); // Light green background
-    pdf.roundedRect(
-      PDF_CONFIG.margin, 
-      currentY, 
-      PDF_CONFIG.pageWidth - (PDF_CONFIG.margin * 2), 
-      25 + (winner.winningCombos.length * 20), // Height adjusted to contain all elements
-      10, // More rounded borders as shown in image
-      10, 
-      'FD'
-    );
     
-    // Adding trophy icons on sides (simulated with emoji)
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(20);
-    pdf.setTextColor('#009e1a');
+    // Add winner name as header row with highlight
+    tableData.push([{
+      content: playerData.name.toUpperCase(), 
+      styles: { 
+        fontStyle: 'bold', 
+        fontSize: 12,
+        fillColor: [229, 249, 232], // Light green background
+        textColor: [0, 158, 26]     // Green text
+      }
+    }]);
     
-    // Left trophy
-    pdf.text('🏆', PDF_CONFIG.margin + 15, currentY + 12);
-    
-    // Centered player name
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(PDF_CONFIG.subtitleFontSize);
-    pdf.setTextColor('#009e1a');
-    pdf.text(winner.player.name.toUpperCase(), PDF_CONFIG.pageWidth / 2, currentY + 12, { align: 'center' });
-    
-    // Right trophy
-    const trophyWidth = pdf.getStringUnitWidth('🏆') * 20 / pdf.internal.scaleFactor;
-    pdf.text('🏆', PDF_CONFIG.pageWidth - PDF_CONFIG.margin - 15 - trophyWidth, currentY + 12);
-    
-    // Winning combinations
-    let comboY = currentY + 25;
-    
-    winner.winningCombos.forEach(combo => {
+    // Add each winning combination
+    winningCombos.forEach(combo => {
+      // Sort numbers for consistency
       const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
       
-      // Calculate starting position to center numbers
-      const ballSize = PDF_CONFIG.ballSize + 3; // Larger size for emphasis
-      const spacing = 20; // Spacing between balls
-      const totalWidth = sortedNumbers.length * spacing; 
-      let startX = (PDF_CONFIG.pageWidth - totalWidth) / 2 + ballSize / 2;
+      // Format the winning numbers (all are hits by definition)
+      const numbersStr = sortedNumbers.map(num => {
+        return `[${String(num).padStart(2, '0')}]`;
+      }).join(' ');
       
-      // Draw each number
-      sortedNumbers.forEach((number, i) => {
-        drawBall(pdf, 
-          startX + (i * spacing), // Spacing between balls
-          comboY, 
-          number, 
-          {
-            size: ballSize, // Larger size for emphasis
-            colorFill: '#009e1a', // More vibrant green
-            colorBorder: '#009e1a',
-            colorText: '#FFFFFF',
-            isHit: true
-          }
-        );
-      });
-      
-      comboY += 20;
+      tableData.push([{ 
+        content: numbersStr, 
+        styles: { 
+          fillColor: [229, 249, 232], // Light green background
+          alignment: 'center'
+        } 
+      }]);
     });
     
-    // Update Y position for next winner
-    currentY = comboY + 15;
+    // Add spacer between winners if needed
+    if (index < game.winners.length - 1) {
+      tableData.push([{ content: '', styles: {} }]);
+    }
   });
   
-  return currentY + 5;
+  // Create winners table
+  autoTable(pdf, {
+    startY: currentY,
+    body: tableData,
+    theme: 'grid',
+    styles: {
+      overflow: 'linebreak',
+      cellPadding: 5
+    },
+    columnStyles: {
+      0: { cellWidth: 'auto' }
+    },
+    didParseCell: function(data) {
+      // Style for winning numbers (all marked with brackets)
+      if (data.section === 'body' && data.cell.text && data.cell.text.toString().includes('[')) {
+        const cellText = data.cell.text.toString();
+        const parts = cellText.split(/\[|\]/g);
+        const styledParts = [];
+        
+        for (let i = 0; i < parts.length; i++) {
+          if (parts[i].trim() !== '') {
+            const isHighlighted = i % 2 === 1;
+            
+            if (isHighlighted) {
+              // Style the winning numbers in bold green
+              styledParts.push({
+                text: parts[i],
+                style: { 
+                  textColor: [0, 158, 26],
+                  fontStyle: 'bold',
+                  fontSize: 12
+                }
+              });
+            } else {
+              styledParts.push(parts[i]);
+            }
+          }
+        }
+        
+        // Replace cell content with rich text
+        data.cell.text = styledParts;
+      }
+    },
+    margin: { left: PDF_CONFIG.margin, right: PDF_CONFIG.margin },
+    tableLineWidth: 0.2,
+    tableLineColor: [200, 200, 200]
+  });
+  
+  // Get final Y position
+  const finalY = (pdf as any).lastAutoTable.finalY + 15;
+  return finalY;
 }

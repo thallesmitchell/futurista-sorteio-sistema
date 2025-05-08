@@ -4,13 +4,13 @@ import { Game } from '@/contexts/game/types';
 import { PDF_CONFIG } from './base-pdf';
 import autoTable from 'jspdf-autotable';
 
-// Add players section to PDF
+// Add players section to PDF with simple tabular format
 export const addPlayersSection = (
   pdf: jsPDF, 
   game: Game, 
   allDrawnNumbers: number[],
   startY: number,
-  options = { color: '#39FF14', maxCombosPerPlayer: 1000 } // Show ALL sequences as requested
+  options = { color: '#39FF14', maxCombosPerPlayer: 1000 }
 ): void => {
   const drawnNumbersSet = new Set(allDrawnNumbers);
   
@@ -36,9 +36,6 @@ export const addPlayersSection = (
     // Get max hits for player
     const maxHits = Math.max(...player.combinations.map(c => c.hits), 0);
     
-    // Sort combinations by hits (highest first)
-    const sortedCombos = [...player.combinations].sort((a, b) => b.hits - a.hits);
-    
     // Create player row data
     const playerData = [
       { content: player.name, styles: { fontStyle: 'bold' } }, 
@@ -47,87 +44,110 @@ export const addPlayersSection = (
     
     tableData.push(playerData);
     
-    // Show ALL sequences as requested
+    // Sort combinations by hits (highest first)
+    const sortedCombos = [...player.combinations].sort((a, b) => b.hits - a.hits);
+    
+    // Show combinations for each player
     sortedCombos.forEach((combo, idx) => {
-      // Sort the numbers
+      // Sort numbers for consistency
       const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
       
-      // Create formatted string for number sequence with highlight for hits
-      let numbersText = '';
-      sortedNumbers.forEach(num => {
-        const formatted = String(num).padStart(2, '0');
-        const hit = drawnNumbersSet.has(num);
-        
-        if (hit) {
-          // Only hit numbers are bold and green
-          numbersText += `[${formatted}] `; // Highlight hit numbers
-        } else {
-          numbersText += `${formatted} `;
-        }
-      });
+      // Format numbers with hit highlighting (ONLY the hit numbers are green)
+      let numbersStr = sortedNumbers.map(num => {
+        const isHit = drawnNumbersSet.has(num);
+        const formattedNum = String(num).padStart(2, '0');
+        return isHit 
+          ? `[${formattedNum}]` // Mark hit numbers for later styling
+          : formattedNum;
+      }).join(' ');
       
-      // Add sequence row with hit count
+      // Add sequence row
       tableData.push([
-        { content: '', styles: {} }, // Empty space for indentation, name will repeat on page break
+        { content: '', styles: {} }, // Empty cell for indentation
         { content: `${combo.hits} acerto${combo.hits !== 1 ? 's' : ''}:`, styles: {} }, 
-        { content: numbersText, styles: {} }
+        { content: numbersStr, styles: {} }
       ]);
     });
     
-    // Add spacer row between players with dashed line
+    // Add spacer row with dashed line between players (except last)
     if (i < sortedPlayers.length - 1) {
       tableData.push([
-        { content: '', styles: { borderTop: '3px dashed #172842' } },
-        { content: '', styles: { borderTop: '3px dashed #172842' } },
-        { content: '', styles: { borderTop: '3px dashed #172842' } }
+        { content: '', styles: { borderBottom: '1px dashed #ccc' } },
+        { content: '', styles: { borderBottom: '1px dashed #ccc' } },
+        { content: '', styles: { borderBottom: '1px dashed #ccc' } }
       ]);
     }
   }
   
-  // Configure and create table with header repetition
+  // Configure and create a simple table with alternating rows
   autoTable(pdf, {
     startY: currentY,
     head: [['Jogador', 'Detalhes', 'Sequências']],
     body: tableData,
-    theme: 'striped',
+    theme: 'grid', // Use grid theme for cleaner look
     headStyles: {
-      fillColor: [50, 50, 50],
-      textColor: [255, 255, 255],
+      fillColor: [240, 240, 240], // Light gray header
+      textColor: [0, 0, 0],       // Black text
       fontStyle: 'bold',
     },
     columnStyles: {
-      0: { cellWidth: 50, fontStyle: 'normal' },
+      0: { cellWidth: 50 },
       1: { cellWidth: 40 },
       2: { cellWidth: 'auto' },
     },
     alternateRowStyles: {
-      fillColor: [245, 245, 245],
+      fillColor: [245, 245, 245], // Very light gray for alternate rows
+    },
+    bodyStyles: {
+      fillColor: [255, 255, 255], // White background
     },
     margin: { left: PDF_CONFIG.margin, right: PDF_CONFIG.margin },
     didParseCell: function(data) {
-      // Style for numbers with 6 hits in green
-      if (data.section === 'body' && data.column.index === 1 && data.cell.text && data.cell.text.toString().includes('6 acerto')) {
-        data.cell.styles.textColor = [0, 150, 0];
+      // Style for combinations with 6 hits
+      if (data.section === 'body' && data.column.index === 1 && 
+          data.cell.text && data.cell.text.toString().includes('6 acerto')) {
+        data.cell.styles.textColor = [0, 158, 26]; // Green for 6 hits
         data.cell.styles.fontStyle = 'bold';
       }
       
-      // Visual marker for hit numbers in brackets
+      // Style for hit numbers (marked with brackets)
       if (data.section === 'body' && data.column.index === 2) {
-        const text = data.cell.text ? data.cell.text.toString() : '';
-        if (text.includes('[')) {
-          // Only bracketed numbers are green
-          data.cell.styles.textColor = [0, 150, 0];
-          data.cell.styles.fontStyle = 'bold';
+        const cellText = data.cell.text ? data.cell.text.toString() : '';
+        
+        // Process marked numbers if they exist
+        if (cellText.includes('[')) {
+          // Replace markers with styled numbers
+          const parts = cellText.split(/\[|\]/g);
+          const styledParts = [];
+          
+          // Process each part
+          for (let i = 0; i < parts.length; i++) {
+            if (parts[i].trim() !== '') {
+              // Check if this part should be highlighted (was inside brackets)
+              const isHighlighted = i % 2 === 1;
+              
+              if (isHighlighted) {
+                // Style the hit numbers in green
+                styledParts.push({
+                  text: parts[i],
+                  style: { 
+                    textColor: [0, 158, 26],   // Green text
+                    fontStyle: 'bold'          // Bold text
+                  }
+                });
+              } else {
+                // Regular black text for non-hits
+                styledParts.push(parts[i]);
+              }
+            }
+          }
+          
+          // Replace cell content with rich text
+          data.cell.text = styledParts;
         }
       }
     },
-    // Repeat header and player name on page breaks
-    didDrawPage: function(data) {
-      // Headers are repeated automatically
-    },
-    rowPageBreak: 'auto', // Auto row break
-    showFoot: 'everyPage',
     tableLineWidth: 0.2,
-    tableLineColor: [80, 80, 80]
+    tableLineColor: [200, 200, 200]
   });
 }

@@ -1,9 +1,10 @@
 
 import jsPDF from 'jspdf';
 import { Game } from '@/contexts/game/types';
-import { PDF_CONFIG, drawBall } from './base-pdf';
+import { PDF_CONFIG } from './base-pdf';
+import autoTable from 'jspdf-autotable';
 
-// Add "Jogos Amarrados" section (near winners with 5 hits)
+// Add "Jogos Amarrados" section (near winners with 5 hits) with simpler styling
 export const addNearWinnersSection = (
   pdf: jsPDF, 
   game: Game, 
@@ -23,7 +24,7 @@ export const addNearWinnersSection = (
     
   // If no near winners, return current position
   if (nearWinners.length === 0) {
-    return PDF_CONFIG.margin + 30; // Return position after header
+    return PDF_CONFIG.margin + 30;
   }
   
   // Section title
@@ -46,69 +47,104 @@ export const addNearWinnersSection = (
     { align: 'center' }
   );
   
-  currentY += 15; // Space between title and boxes
+  currentY += 15;
   
-  // Boxes for each near winner - each taking 100% width
-  const boxWidth = PDF_CONFIG.pageWidth - (PDF_CONFIG.margin * 2);
+  // Create table data for near winners
+  const tableData = [];
   
+  // Process each near winner for the table
   nearWinners.forEach((item, index) => {
-    // Draw player box
-    pdf.setDrawColor(options.color);
-    pdf.setFillColor('#f8f8f8');
-    pdf.roundedRect(PDF_CONFIG.margin, currentY, boxWidth, 50, 3, 3, 'FD'); // Adjusted height
+    // Add player name as header row
+    tableData.push([
+      { content: item.player.name, styles: { fontStyle: 'bold', fillColor: [240, 240, 240] } }
+    ]);
     
-    // Player name
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(PDF_CONFIG.headerFontSize);
-    pdf.setTextColor('#000000');
-    pdf.text(item.player.name, PDF_CONFIG.pageWidth / 2, currentY + 10, { align: 'center' });
+    // Show combinations for this player (limit to 3 to save space)
+    const combosToShow = item.combos.slice(0, 3);
     
-    // For each combination with 5 hits
-    let comboY = currentY + 25; // Adjusted vertical position
-    
-    item.combos.forEach((combo, comboIndex) => {
-      if (comboIndex > 0) {
-        comboY += 15; // Spacing between combinations
-      }
+    combosToShow.forEach(combo => {
+      const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
       
-      // Limited to first few combinations due to space constraints
-      if (comboIndex < 3) {
-        // Numbers
-        const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
-        
-        // Calculate starting position to center numbers
-        const ballSize = PDF_CONFIG.ballSize + 5; // 10px larger as requested
-        const spacing = 20; // 20px distance between circles
-        const totalWidth = sortedNumbers.length * spacing; 
-        let numberX = (PDF_CONFIG.pageWidth - totalWidth) / 2 + ballSize / 2;
-        
-        sortedNumbers.forEach((number, i) => {
-          const isHit = drawnNumbersSet.has(number);
-          drawBall(pdf, 
-            numberX + (i * spacing), 
-            comboY, 
-            number, 
-            {
-              size: ballSize, // Larger balls as requested
-              colorFill: options.color,
-              colorBorder: options.color,
-              colorText: '#FFFFFF',
-              isHit
-            }
-          );
-        });
-      } else if (comboIndex === 3) {
-        // Indicate there are more combinations
-        pdf.setFont('helvetica', 'italic');
-        pdf.setFontSize(PDF_CONFIG.smallTextFontSize);
-        pdf.text(`+ ${item.combos.length - 3} mais sequências com 5 acertos`, PDF_CONFIG.pageWidth / 2, comboY, { align: 'center' });
-      }
+      // Format numbers with hit highlighting (ONLY hit numbers are green)
+      const numbersStr = sortedNumbers.map(num => {
+        const isHit = drawnNumbersSet.has(num);
+        const formattedNum = String(num).padStart(2, '0');
+        return isHit 
+          ? `[${formattedNum}]` // Mark hit numbers for styling
+          : formattedNum;
+      }).join(' ');
+      
+      tableData.push([{ content: numbersStr, styles: {} }]);
     });
     
-    // Update Y position for next player
-    currentY += 60; // Box height + spacing
+    // If there are more combinations than shown
+    if (item.combos.length > 3) {
+      tableData.push([{ 
+        content: `+ ${item.combos.length - 3} mais sequência${item.combos.length - 3 !== 1 ? 's' : ''} com 5 acertos`, 
+        styles: { fontStyle: 'italic', textColor: [100, 100, 100] } 
+      }]);
+    }
+    
+    // Add spacer between players
+    if (index < nearWinners.length - 1) {
+      tableData.push([{ content: '', styles: { borderBottom: '1px dashed #ccc' } }]);
+    }
   });
   
-  // Return final Y position after near winners section
-  return currentY + 10;
+  // Create table for near winners
+  autoTable(pdf, {
+    startY: currentY,
+    body: tableData,
+    theme: 'grid',
+    styles: {
+      overflow: 'linebreak',
+      cellPadding: 5,
+      fontSize: 10,
+      textColor: [0, 0, 0]
+    },
+    bodyStyles: {
+      fillColor: [255, 255, 255]
+    },
+    columnStyles: {
+      0: { cellWidth: 'auto' }
+    },
+    didParseCell: function(data) {
+      // Style for hit numbers (marked with brackets)
+      if (data.cell.text && data.cell.text.toString().includes('[')) {
+        const cellText = data.cell.text.toString();
+        const parts = cellText.split(/\[|\]/g);
+        const styledParts = [];
+        
+        for (let i = 0; i < parts.length; i++) {
+          if (parts[i].trim() !== '') {
+            // Check if this part should be highlighted
+            const isHighlighted = i % 2 === 1;
+            
+            if (isHighlighted) {
+              // Style the hit numbers in green
+              styledParts.push({
+                text: parts[i],
+                style: { 
+                  textColor: [0, 158, 26],
+                  fontStyle: 'bold' 
+                }
+              });
+            } else {
+              styledParts.push(parts[i]);
+            }
+          }
+        }
+        
+        // Replace cell content with rich text
+        data.cell.text = styledParts;
+      }
+    },
+    margin: { left: PDF_CONFIG.margin, right: PDF_CONFIG.margin },
+    tableLineWidth: 0.2,
+    tableLineColor: [200, 200, 200]
+  });
+  
+  // Get final Y position
+  const finalY = (pdf as any).lastAutoTable.finalY + 15;
+  return finalY;
 }

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
@@ -59,7 +58,7 @@ export default function PlayersView() {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
   
-  // Function to generate PDF using the new system
+  // Function to generate PDF using the new simplified system
   const handleGeneratePDF = async () => {
     if (isGenerating) return;
     setIsGenerating(true);
@@ -69,7 +68,7 @@ export default function PlayersView() {
         throw new Error('Game not found');
       }
       
-      // Use the new PDF generator
+      // Use the simplified PDF generator
       await generateGameReport(game, {
         themeColor: profileData.themeColor,
         filename: `players-${game.name.replace(/\s+/g, '-')}.pdf`,
