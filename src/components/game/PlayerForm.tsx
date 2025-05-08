@@ -193,7 +193,6 @@ export const PlayerForm: React.FC<PlayerFormProps> = ({
                 value={playerNumbers}
                 onChange={(e) => setPlayerNumbers(e.target.value)}
                 className="min-h-[120px]"
-                inputMode={isMobile ? "numeric" : "text"}
               />
             </div>
           </div>

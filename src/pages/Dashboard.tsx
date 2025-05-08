@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
@@ -12,12 +13,11 @@ import { useForm } from 'react-hook-form';
 import { DeleteGameButton } from '@/components/game/DeleteGameButton';
 import { GameReport } from '@/components/game/GameReport';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Badge } from '@/components/ui/badge';
 
 // Import icons
-import { CalendarPlus, ChevronRight, FileText, LayoutList, Plus, Settings } from 'lucide-react';
+import { CalendarPlus, ChevronRight, FileText, LayoutList, Plus, Settings, CalendarDays } from 'lucide-react';
 import { Game } from '@/contexts/GameContext';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -102,83 +102,50 @@ export default function Dashboard() {
       );
     }
 
-    if (isMobile) {
-      // Card-based layout for mobile
-      return (
-        <div className="space-y-3">
-          {gamesList.map(game => (
-            <Card key={game.id} className="overflow-hidden">
-              <CardHeader className="p-3">
-                <CardTitle className="text-base truncate">{game.name}</CardTitle>
-                <CardDescription className="text-xs">
-                  {new Date(isHistory ? game.endDate! : game.startDate).toLocaleDateString()}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-3 pt-0">
-                <div className="grid grid-cols-2 gap-1 text-sm">
-                  <div className="text-muted-foreground">Jogadores:</div>
-                  <div>{game.players.length}</div>
-                  <div className="text-muted-foreground">Sorteios:</div>
-                  <div>{game.dailyDraws.length}</div>
-                </div>
-              </CardContent>
-              <CardFooter className="p-3 pt-0 flex justify-end gap-1">
-                <DeleteGameButton gameId={game.id} variant="ghost" size="sm" />
-                <GameReport game={game} variant="ghost" size="sm" />
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => navigate(isHistory ? `/history/${game.id}` : `/admin/${game.id}`)}
-                >
-                  {isHistory ? "Visualizar" : "Administrar"}
-                  <ChevronRight className="ml-1 h-4 w-4" />
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      );
-    }
-
     return (
-      <div className="border rounded-lg overflow-hidden">
-        <ScrollArea className="max-w-full">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[300px]">Nome do Jogo</TableHead>
-                <TableHead className="hidden sm:table-cell">{isHistory ? "Encerrado em" : "Iniciado em"}</TableHead>
-                <TableHead className="hidden md:table-cell">Jogadores</TableHead>
-                <TableHead className="hidden md:table-cell">Sorteios</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {gamesList.map(game => (
-                <TableRow key={game.id} className="hover:bg-muted/50">
-                  <TableCell className="font-medium">{game.name}</TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    {new Date(isHistory ? game.endDate! : game.startDate).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">{game.players.length}</TableCell>
-                  <TableCell className="hidden md:table-cell">{game.dailyDraws.length}</TableCell>
-                  <TableCell className="text-right space-x-1">
-                    <DeleteGameButton gameId={game.id} variant="ghost" size="sm" />
-                    <GameReport game={game} variant="ghost" size="sm" />
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => navigate(isHistory ? `/history/${game.id}` : `/admin/${game.id}`)}
-                    >
-                      {isHistory ? "Visualizar" : "Administrar"}
-                      <ChevronRight className="ml-1 h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </ScrollArea>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {gamesList.map(game => (
+          <Card key={game.id} className="overflow-hidden hover:bg-card/60 transition-colors">
+            <CardHeader className="p-4 pb-2">
+              <div className="flex items-center justify-between">
+                <Badge variant={isHistory ? "secondary" : "default"} className="mb-2">
+                  {isHistory ? "Encerrado" : "Ativo"}
+                </Badge>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(isHistory ? game.endDate! : game.startDate).toLocaleDateString()}
+                </span>
+              </div>
+              <CardTitle className="text-lg md:text-xl truncate">{game.name}</CardTitle>
+              <CardDescription className="text-xs">
+                {isHistory 
+                  ? `Encerrado em ${new Date(game.endDate!).toLocaleDateString()}` 
+                  : `Iniciado em ${new Date(game.startDate).toLocaleDateString()}`
+                }
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div className="text-muted-foreground">Jogadores:</div>
+                <div>{game.players.length}</div>
+                <div className="text-muted-foreground">Sorteios:</div>
+                <div>{game.dailyDraws.length}</div>
+              </div>
+            </CardContent>
+            <CardFooter className="p-4 pt-0 flex justify-center gap-2">
+              <DeleteGameButton gameId={game.id} variant="ghost" size="sm" />
+              <GameReport game={game} variant="ghost" size="sm" />
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="min-w-[90px]"
+                onClick={() => navigate(isHistory ? `/history/${game.id}` : `/admin/${game.id}`)}
+              >
+                {isHistory ? "Visualizar" : "Administrar"}
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
       </div>
     );
   };
@@ -244,7 +211,7 @@ export default function Dashboard() {
             </div>
             <LayoutList className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="overflow-x-hidden">
+          <CardContent className="p-4 pt-0 overflow-x-hidden">
             {renderGameList(activeGames)}
           </CardContent>
           <CardFooter className="border-t pt-4">
@@ -259,17 +226,20 @@ export default function Dashboard() {
         <Card className="futuristic-card">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Jogos Recentemente Encerrados</CardTitle>
+              <CardTitle className="flex items-center">
+                <CalendarDays className="mr-2 h-5 w-5" /> 
+                Jogos Recentemente Encerrados
+              </CardTitle>
               <CardDescription>
                 Os últimos jogos encerrados
               </CardDescription>
             </div>
             <LayoutList className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
-          <CardContent className="overflow-x-hidden">
-            {renderGameList(closedGames.slice(0, 5), true)}
+          <CardContent className="p-4 pt-0 overflow-x-hidden">
+            {renderGameList(closedGames.slice(0, 6), true)}
           </CardContent>
-          {closedGames.length > 5 && (
+          {closedGames.length > 6 && (
             <CardFooter className="border-t pt-4">
               <Button variant="outline" className="ml-auto" onClick={() => navigate('/history')}>
                 Ver todos os {closedGames.length} jogos encerrados
