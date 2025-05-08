@@ -25,11 +25,12 @@ export const generateNearWinnersTable = (
       return [playerName, ""] as [string, string];
     });
     
-    // Configure the table
+    // SOLUÇÃO: Criar uma tabela com cabeçalho separado
+    // Primeiro renderizamos o cabeçalho manualmente para controle total
     autoTable(pdf, {
       startY: currentY,
       head: [['Jogador', 'Sequência (5 acertos)']],
-      body: processedTableData,
+      body: [], // Sem corpo de tabela aqui
       theme: 'striped',
       styles: {
         cellPadding: 5,
@@ -44,6 +45,28 @@ export const generateNearWinnersTable = (
         halign: 'left',
         fontSize: 12,
       },
+      columnStyles: {
+        0: { cellWidth: 80 },
+        1: { cellWidth: 'auto' }
+      },
+      // Não usamos didDrawCell aqui para evitar qualquer renderização extra no cabeçalho
+    });
+    
+    // Obter a posição Y após a primeira tabela (apenas cabeçalho)
+    const headerEndY = (pdf as any).lastAutoTable.finalY;
+    
+    // Agora renderizamos o corpo da tabela separadamente
+    autoTable(pdf, {
+      startY: headerEndY,
+      head: [], // Sem cabeçalho aqui
+      body: processedTableData,
+      theme: 'striped',
+      styles: {
+        cellPadding: 5,
+        fontSize: 11,
+        lineColor: [200, 200, 200],
+        lineWidth: 0.1,
+      },
       alternateRowStyles: {
         fillColor: [248, 248, 248]
       },
@@ -51,28 +74,12 @@ export const generateNearWinnersTable = (
         0: { cellWidth: 80 },
         1: { cellWidth: 'auto' }
       },
-      // We'll completely take over rendering for the header cell to ensure no numbers show
       didDrawPage: function(data) {
-        // Make sure we don't have any unwanted text in the header
-        console.log('Page redrawn in table');
-      },
-      willDrawCell: function(data) {
-        // Para células de cabeçalho na coluna de sequência, garantimos que nenhum conteúdo seja mostrado
-        if (data.row.index < 0 && data.column.index === 1) {
-          // Limpar qualquer conteúdo automático que possa estar sendo definido
-          data.cell.text = [''];  // Forçar texto vazio
-          console.log('Interceptando e limpando conteúdo da célula de cabeçalho da sequência');
-        }
+        console.log('Page redrawn in table body');
       },
       didDrawCell: function(data) {
-        // Handle the sequence column (index 1)
+        // Agora só lidamos com células do corpo, não há cabeçalho para interferir
         if (data.column.index === 1) {
-          // Primeiramente, garantir que não manipulamos células de cabeçalho de forma alguma
-          if (data.row.index < 0) {
-            return; // Sair imediatamente para qualquer célula de cabeçalho
-          }
-          
-          // For data cells, get the row index
           const rowIndex = data.row.index;
           if (rowIndex < tableData.length) {
             const originalSequence = tableData[rowIndex][1];
