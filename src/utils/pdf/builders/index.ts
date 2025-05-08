@@ -13,3 +13,6 @@ export * from './near-winners';
 export * from './players';
 export * from './players-section';
 export * from './winners-section';
+
+// Utility exports
+export * from './utils/pdf-table-utils';
