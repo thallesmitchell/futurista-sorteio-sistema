@@ -126,10 +126,6 @@ export const addPlayersSection = (
                 // Configura o texto (número)
                 pdf.setTextColor(255, 255, 255); // Branco
                 pdf.setFont("helvetica", "bold");
-              // Centraliza o texto no círculo
-              const textWidth = pdf.getStringUnitWidth(number) * pdf.getFontSize() / pdf.internal.scaleFactor;
-              const textX = x - (textWidth / 2);
-              const textY = y + (pdf.getFontSize() / 4); // Ajuste vertical para centralização 
               
             } else {
               // Draw regular number
