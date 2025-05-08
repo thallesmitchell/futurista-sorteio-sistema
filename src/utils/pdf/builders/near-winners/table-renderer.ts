@@ -18,6 +18,12 @@ export const generateNearWinnersTable = (
     
     console.log(`Rendering near winners table with ${tableData.length} rows`);
     
+    // Definir larguras exatas das colunas - IMPORTANTE para manter alinhamento
+    const columnWidths = {
+      0: { cellWidth: 80 },  // Coluna do jogador
+      1: { cellWidth: 'auto' } // Coluna da sequência
+    };
+    
     // Process the table data to replace the content with empty strings
     // We'll manually render the content in didDrawCell
     const processedTableData = tableData.map(([playerName, sequence]) => {
@@ -25,10 +31,15 @@ export const generateNearWinnersTable = (
       return [playerName, ""] as [string, string];
     });
     
-    // SOLUÇÃO: Criar uma tabela com cabeçalho separado
-    // Primeiro renderizamos o cabeçalho manualmente para controle total
+    // Definir margens e largura total da tabela para garantir consistência
+    const tableWidth = pdf.internal.pageSize.width - 40; // 20px de margem em cada lado
+    const marginLeft = 20;
+    
+    // CABEÇALHO: Criar uma tabela apenas para o cabeçalho
     autoTable(pdf, {
       startY: currentY,
+      margin: { left: marginLeft },
+      tableWidth: tableWidth,
       head: [['Jogador', 'Sequência (5 acertos)']],
       body: [], // Sem corpo de tabela aqui
       theme: 'striped',
@@ -45,19 +56,17 @@ export const generateNearWinnersTable = (
         halign: 'left',
         fontSize: 12,
       },
-      columnStyles: {
-        0: { cellWidth: 80 },
-        1: { cellWidth: 'auto' }
-      },
-      // Não usamos didDrawCell aqui para evitar qualquer renderização extra no cabeçalho
+      columnStyles: columnWidths // Usar as mesmas larguras de coluna
     });
     
     // Obter a posição Y após a primeira tabela (apenas cabeçalho)
     const headerEndY = (pdf as any).lastAutoTable.finalY;
     
-    // Agora renderizamos o corpo da tabela separadamente
+    // CORPO: Agora renderizamos o corpo da tabela separadamente
     autoTable(pdf, {
       startY: headerEndY,
+      margin: { left: marginLeft }, // Mesma margem esquerda para alinhamento
+      tableWidth: tableWidth, // Mesma largura total
       head: [], // Sem cabeçalho aqui
       body: processedTableData,
       theme: 'striped',
@@ -70,10 +79,7 @@ export const generateNearWinnersTable = (
       alternateRowStyles: {
         fillColor: [248, 248, 248]
       },
-      columnStyles: {
-        0: { cellWidth: 80 },
-        1: { cellWidth: 'auto' }
-      },
+      columnStyles: columnWidths, // Usar as mesmas larguras de coluna
       didDrawPage: function(data) {
         console.log('Page redrawn in table body');
       },
