@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
@@ -17,21 +16,28 @@ import { HexColorPicker } from 'react-colorful';
 export default function ProfileSettings() {
   const navigate = useNavigate();
   const { user, userProfile, refreshUserProfile } = useAuth();
-  const { primaryColor, setPrimaryColor } = useTheme();
+  const { primaryColor, setPrimaryColor, siteName, setSiteName } = useTheme();
   const [selectedColor, setSelectedColor] = useState<string>(primaryColor || '#39FF14');
   const [isUploading, setIsUploading] = useState(false);
   const [username, setUsername] = useState('');
   const [defaultGameName, setDefaultGameName] = useState('');
+  const [siteNameInput, setSiteNameInput] = useState(siteName || 'SorteioFutura');
+  const [logoWidth, setLogoWidth] = useState<string>('200');
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
+  const isSuperAdmin = userProfile?.role === 'super_admin';
 
   useEffect(() => {
     if (userProfile) {
       setSelectedColor(userProfile.theme_color || '#39FF14');
       setUsername(userProfile.username || '');
       setDefaultGameName(userProfile.default_game_name || '');
+      setSiteNameInput(userProfile.site_name || siteName || 'SorteioFutura');
+      if (userProfile.logo_width) {
+        setLogoWidth(userProfile.logo_width.toString());
+      }
     }
-  }, [userProfile]);
+  }, [userProfile, siteName]);
 
   const handleColorChange = (color: string) => {
     setSelectedColor(color);
@@ -42,19 +48,32 @@ export default function ProfileSettings() {
     
     setIsSaving(true);
     try {
+      const updateData: Record<string, any> = {
+        username,
+        theme_color: selectedColor,
+        default_game_name: defaultGameName
+      };
+      
+      // Apenas super admin pode alterar nome do site
+      if (isSuperAdmin) {
+        updateData.site_name = siteNameInput;
+        updateData.logo_width = logoWidth ? parseInt(logoWidth) : 200;
+      }
+      
       const { error } = await supabase
         .from('profiles')
-        .update({
-          username,
-          theme_color: selectedColor,
-          default_game_name: defaultGameName
-        })
+        .update(updateData)
         .eq('id', user.id);
 
       if (error) throw error;
       
       // Aplica a cor imediatamente
       setPrimaryColor(selectedColor);
+      
+      // Atualiza o nome do site se é super admin
+      if (isSuperAdmin) {
+        setSiteName(siteNameInput);
+      }
       
       // Atualizar perfil no contexto
       await refreshUserProfile();
@@ -182,26 +201,60 @@ export default function ProfileSettings() {
                   </div>
                 </div>
                 
+                {isSuperAdmin && (
+                  <div className="space-y-4 pt-4 border-t">
+                    <Label>Nome do Site</Label>
+                    <Input
+                      value={siteNameInput}
+                      onChange={(e) => setSiteNameInput(e.target.value)}
+                      placeholder="Nome do site"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Este é o nome que aparecerá no cabeçalho do site.
+                    </p>
+                  </div>
+                )}
+                
                 <div className="space-y-4 pt-4 border-t">
                   <Label>Logo Personalizado</Label>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
+                    <div className="space-y-4">
                       <Input
                         type="file"
                         accept="image/*"
                         onChange={handleLogoUpload}
                         disabled={isUploading}
                       />
-                      <p className="text-sm text-muted-foreground mt-2">
+                      <p className="text-sm text-muted-foreground">
                         Tamanho recomendado: 200x60 pixels
                       </p>
+                      
+                      {isSuperAdmin && (
+                        <div className="pt-2">
+                          <Label htmlFor="logo-width">Largura do Logo (px)</Label>
+                          <Input
+                            id="logo-width"
+                            type="number"
+                            value={logoWidth}
+                            onChange={(e) => setLogoWidth(e.target.value)}
+                            min="50"
+                            max="300"
+                          />
+                          <p className="text-sm text-muted-foreground mt-1">
+                            A altura será ajustada proporcionalmente
+                          </p>
+                        </div>
+                      )}
                     </div>
                     <div className="border rounded-lg p-4 flex items-center justify-center bg-background">
                       {userProfile?.logo_url ? (
                         <img 
                           src={userProfile.logo_url} 
                           alt="Logo" 
-                          className="max-h-24 max-w-full" 
+                          style={{
+                            maxWidth: isSuperAdmin && logoWidth ? `${logoWidth}px` : '200px',
+                            height: 'auto'
+                          }}
                         />
                       ) : (
                         <p className="text-muted-foreground">Nenhum logo enviado</p>

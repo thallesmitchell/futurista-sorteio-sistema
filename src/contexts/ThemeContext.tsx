@@ -7,7 +7,9 @@ interface ThemeContextType {
   secondaryColor: string;
   accentColor: string;
   logoUrl: string | null;
+  siteName: string;
   setPrimaryColor: (color: string) => void;
+  setSiteName: (name: string) => void;
   setLogoUrl: (url: string | null) => void;
   generatePalette: (baseColor: string) => void;
 }
@@ -77,6 +79,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [secondaryColor, setSecondaryColor] = useState<string>('#1FCC0C');
   const [accentColor, setAccentColor] = useState<string>('#FF39EA');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [siteName, setSiteName] = useState<string>('SorteioFutura');
 
   // Aplicar CSS customizado para garantir a fonte correta
   useEffect(() => {
@@ -113,6 +116,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (userProfile?.logo_url) {
       setLogoUrl(userProfile.logo_url);
     }
+    if (userProfile?.site_name) {
+      setSiteName(userProfile.site_name);
+    }
   }, [userProfile]);
 
   // Gerar paleta de cores a partir de uma cor base
@@ -138,7 +144,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       secondaryColor, 
       accentColor, 
       logoUrl,
+      siteName,
       setPrimaryColor: (color) => generatePalette(color),
+      setSiteName,
       setLogoUrl,
       generatePalette
     }}>

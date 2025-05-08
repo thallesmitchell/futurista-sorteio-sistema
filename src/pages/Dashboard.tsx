@@ -105,7 +105,7 @@ export default function Dashboard() {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {gamesList.map(game => (
-          <Card key={game.id} className="overflow-hidden hover:bg-card/60 transition-colors">
+          <Card key={game.id} className="overflow-hidden hover:bg-card/60 transition-colors min-w-[250px] flex-grow flex flex-col">
             <CardHeader className="p-4 pb-2">
               <div className="flex items-center justify-between">
                 <Badge variant={isHistory ? "secondary" : "default"} className="mb-2">
@@ -123,7 +123,7 @@ export default function Dashboard() {
                 }
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-4 pt-0">
+            <CardContent className="p-4 pt-0 flex-grow">
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div className="text-muted-foreground">Jogadores:</div>
                 <div>{game.players.length}</div>
