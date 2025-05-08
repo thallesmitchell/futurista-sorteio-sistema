@@ -12,7 +12,7 @@ const renderNumberCircle = (
   number: number,
   x: number,
   y: number,
-  size = 6 // Reduzido de 5 para 3mm
+  size = 8 // Reduzido de 5 para 3mm
 ): void => {
   // Salvar estado atual
   pdf.saveGraphicsState();
