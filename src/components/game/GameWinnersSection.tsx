@@ -17,13 +17,18 @@ export const GameWinnersSection: React.FC<GameWinnersSectionProps> = ({
   isWinnersModalOpen,
   setIsWinnersModalOpen
 }) => {
-  const hasWinners = winners.length > 0;
+  console.log('GameWinnersSection rendered with:', {
+    winnersLength: winners?.length,
+  });
 
-  if (!hasWinners) return null;
+  // Only render if we have winners
+  if (!winners || winners.length === 0) {
+    return null;
+  }
   
   return (
     <>
-      {/* Winner Banner */}
+      {/* Winner Banner - show this directly from database query */}
       <div className="permanent-winner-banner">
         <WinnerBanner 
           winners={winners} 

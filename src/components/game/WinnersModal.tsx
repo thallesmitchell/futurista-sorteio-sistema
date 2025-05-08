@@ -29,7 +29,7 @@ export const WinnersModal: React.FC<WinnersModalProps> = ({
   const renderContent = () => (
     <>
       {isOpen && <Confetti />}
-      <div className="py-2 md:py-4 max-h-[60vh] overflow-y-auto">
+      <div className="py-2 md:py-4 overflow-y-auto" style={{ maxHeight: '60vh' }}>
         <div className="space-y-3 md:space-y-4">
           {winners.map(winner => (
             // Para cada vencedor, encontrar combinações com exatamente 6 acertos
@@ -84,7 +84,7 @@ export const WinnersModal: React.FC<WinnersModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="glass-panel max-w-md mx-auto border-2 border-green-500/70 shadow-[0_0_20px_rgba(34,197,94,0.6)] bg-background/95 backdrop-blur-xl">
+      <DialogContent className="glass-panel border-2 border-green-500/70 shadow-[0_0_20px_rgba(34,197,94,0.6)] bg-background/95 backdrop-blur-xl">
         <DialogHeader>
           <DialogTitle className="text-xl md:text-2xl text-center bg-gradient-to-r from-green-400 to-green-600 bg-clip-text text-transparent flex items-center justify-center">
             <Trophy className="h-5 w-5 md:h-6 md:w-6 mr-2 text-green-500" />
@@ -101,4 +101,4 @@ export const WinnersModal: React.FC<WinnersModalProps> = ({
       </DialogContent>
     </Dialog>
   );
-};
+}

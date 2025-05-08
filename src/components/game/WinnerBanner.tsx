@@ -19,25 +19,30 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
   useEffect(() => {
     console.log('WinnerBanner: Processing winners:', winners?.length);
     
-    // Se não houver winners, limpe o estado de winningEntries
+    // If there are no winners, clear the winningEntries state
     if (!winners || winners.length === 0) {
       setWinningEntries([]);
       return;
     }
 
     // Get winning combinations (6 hits)
-    const entries = winners.flatMap(winner =>
-      winner.combinations
+    const entries = winners.flatMap(winner => {
+      if (!winner.combinations) {
+        console.log(`Winner ${winner.name} has no combinations`);
+        return [];
+      }
+      
+      return winner.combinations
         .filter(combo => combo.hits === 6)
         .map(combo => ({
           playerName: winner.name,
           numbers: combo.numbers
-        }))
-    );
+        }));
+    });
     
     console.log('WinnerBanner: Found winning entries:', entries.length);
     
-    // Sempre atualize o estado, mesmo se não houver entries
+    // Always update the state, even if there are no entries
     setWinningEntries(entries);
   }, [winners]);
 
@@ -49,7 +54,7 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
     });
   }, [winners, winningEntries]);
 
-  // Se não houver winners ou entries, não renderize nada
+  // If there are no winners or entries, don't render anything
   if (!winners?.length || winningEntries.length === 0) {
     console.log('WinnerBanner: Not rendering - no winners or entries');
     return null;

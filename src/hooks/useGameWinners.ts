@@ -2,9 +2,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Player } from '@/contexts/game/types';
+import { useToast } from '@/hooks/use-toast';
 
 /**
- * Custom hook to fetch game winners from the database
+ * Custom hook to fetch game winners directly from the database
+ * This hook is the single source of truth for winner data
+ * 
  * @param gameId The game ID to fetch winners for
  * @param players The game's players (needed to map winner IDs to player objects)
  * @returns An array of winner players
@@ -13,6 +16,7 @@ export const useGameWinners = (gameId: string | undefined, players: Player[] | u
   const [winners, setWinners] = useState<Player[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!gameId || !players || !Array.isArray(players)) {
@@ -33,7 +37,9 @@ export const useGameWinners = (gameId: string | undefined, players: Player[] | u
           .select('player_id')
           .eq('game_id', gameId);
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
 
         if (winnersData && winnersData.length > 0) {
           console.log('Found winners in database:', winnersData.length);
@@ -47,6 +53,13 @@ export const useGameWinners = (gameId: string | undefined, players: Player[] | u
           );
           
           console.log('Mapped winners to player data:', winnerPlayers.length);
+          
+          if (winnerPlayers.length > 0) {
+            console.log('Winner players found:', winnerPlayers.map(p => p.name).join(', '));
+          } else {
+            console.log('No winner player objects found in the players array');
+          }
+          
           setWinners(winnerPlayers);
         } else {
           console.log('No winners found for game:', gameId);
@@ -55,6 +68,14 @@ export const useGameWinners = (gameId: string | undefined, players: Player[] | u
       } catch (err) {
         console.error('Error fetching winners:', err);
         setError(err instanceof Error ? err : new Error('Unknown error fetching winners'));
+        
+        // Show toast for database error but don't break the UI
+        toast({
+          title: "Erro ao buscar ganhadores",
+          description: err instanceof Error ? err.message : "Erro desconhecido",
+          variant: "destructive"
+        });
+        
         setWinners([]);
       } finally {
         setIsLoading(false);
@@ -62,7 +83,7 @@ export const useGameWinners = (gameId: string | undefined, players: Player[] | u
     };
 
     fetchWinners();
-  }, [gameId, players]);
+  }, [gameId, players, toast]);
 
   return { winners, isLoading, error };
 };

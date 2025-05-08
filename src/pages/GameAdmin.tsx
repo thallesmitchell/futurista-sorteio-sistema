@@ -26,8 +26,15 @@ export default function GameAdmin() {
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
   
-  // Use our new hook to fetch winners directly from the database
-  const { winners } = useGameWinners(gameId, game?.players);
+  // Use our hook to fetch winners directly from the database
+  const { winners, isLoading: isLoadingWinners } = useGameWinners(gameId, game?.players);
+
+  // Log to understand what's happening
+  console.log('GameAdmin: Rendered with winners:', {
+    winnersCount: winners?.length,
+    isLoadingWinners,
+    gameId
+  });
 
   // Set current game for context and check for winners when game data changes
   useEffect(() => {
@@ -52,14 +59,6 @@ export default function GameAdmin() {
   if (!game) {
     return null; // Will redirect in useEffect
   }
-
-  // Log for debugging
-  console.log('GameAdmin rendering:', { 
-    gameId, 
-    gameStatus: game.status, 
-    hasWinners: winners.length > 0,
-    winnersCount: winners.length
-  });
 
   const handleEditPlayer = (player: Player) => {
     setPlayerToEdit(player);
@@ -104,13 +103,15 @@ export default function GameAdmin() {
           game={game}
         />
 
-        {/* Winners Section */}
-        <GameWinnersSection 
-          winners={winners}
-          allDrawnNumbers={allDrawnNumbers}
-          isWinnersModalOpen={isWinnersModalOpen}
-          setIsWinnersModalOpen={setIsWinnersModalOpen}
-        />
+        {/* Winners Section - Using database winners */}
+        {winners && winners.length > 0 && (
+          <GameWinnersSection 
+            winners={winners}
+            allDrawnNumbers={allDrawnNumbers}
+            isWinnersModalOpen={isWinnersModalOpen}
+            setIsWinnersModalOpen={setIsWinnersModalOpen}
+          />
+        )}
 
         {/* Game Forms */}
         <GameAdminForms 
