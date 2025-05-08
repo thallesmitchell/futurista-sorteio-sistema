@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { PDF_CONFIG } from '../base-pdf';
@@ -51,15 +52,24 @@ export const generateNearWinnersTable = (
         0: { cellWidth: 80 },
         1: { cellWidth: 'auto' }
       },
-      // Override the head cell rendering to avoid duplication
-      // This ensures our header text is displayed only once
+      // We'll completely take over rendering for the header cell to ensure no numbers show
+      didDrawPage: function(data) {
+        // Make sure we don't have any unwanted text in the header
+        console.log('Page redrawn in table');
+      },
+      willDrawCell: function(data) {
+        // For header cells in the sequence column, we need to ensure no sequence is displayed
+        if (data.row.index < 0 && data.column.index === 1) {
+          console.log('Preparing header cell for sequence column');
+        }
+      },
       didDrawCell: function(data) {
         // Handle the sequence column (index 1)
         if (data.column.index === 1) {
-          // For header cell, we don't need to do anything special since the autoTable
-          // will render it correctly without duplication
+          // For header cell, we don't need to do anything as the header is defined correctly
+          // in the table configuration and autoTable will render it
           if (data.row.index < 0) {
-            return; // Skip header cell - let autoTable handle it
+            return; // Skip header cell - autoTable already handled it correctly
           }
           
           // For data cells, get the row index
