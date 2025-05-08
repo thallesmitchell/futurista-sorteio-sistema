@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
@@ -8,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { NumberBadge } from '@/components/game/NumberBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { generateSimplePdf } from '@/utils/pdf/simplePdfGenerator';
+import { generateSimplePdf } from '@/utils/pdf';
 import { WinnerBanner } from '@/components/game/WinnerBanner';
 
 export default function PlayersView() {
@@ -83,10 +82,11 @@ export default function PlayersView() {
         throw new Error('Dados do jogo inválidos');
       }
       
-      // Use the new simplified PDF generator
+      // Use the updated PDF generator
       await generateSimplePdf(game, {
         themeColor: profileData.themeColor,
-        filename: `players-${game.name.replace(/\s+/g, '-')}.pdf`
+        filename: `players-${game.name.replace(/\s+/g, '-')}.pdf`,
+        includeNearWinners: true
       });
       
       toast({
@@ -154,7 +154,7 @@ export default function PlayersView() {
           </div>
         )}
 
-        {/* Players List - styled similarly to PlayerList component but without edit buttons */}
+        {/* Players List */}
         <div id="players-view-content" className="space-y-4 pb-8 px-4 md:px-0">
           <div className="columns-1 xs:columns-3 gap-3 space-y-0 w-full">
             {sortedPlayers.map((player) => (

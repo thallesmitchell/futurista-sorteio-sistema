@@ -46,6 +46,7 @@ export const createPDF = (): jsPDF => {
  * @param gameTitle Title of the game to display
  * @param date Date to display (defaults to current date)
  * @param options Additional options including text color
+ * @returns The Y position after adding the header
  */
 export const addHeader = (
   pdf: jsPDF, 

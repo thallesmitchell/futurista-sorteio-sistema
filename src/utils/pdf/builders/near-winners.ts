@@ -111,60 +111,71 @@ export const addNearWinnersSection = (
       0: { cellWidth: 'auto' }
     },
     didParseCell: function(data) {
-      // Complete rewrite of the cell parsing logic to handle all possible cases
       try {
-        // First ensure data.cell.text exists
+        // Guard for undefined or null data.cell
+        if (!data || !data.cell) {
+          console.warn('Invalid cell data in didParseCell');
+          return;
+        }
+
+        // Initialize text as empty array if it doesn't exist
         if (!data.cell.text) {
-          data.cell.text = [''];
+          data.cell.text = [''] as unknown as string[];
           return;
         }
-        
-        // Ensure cell.text is always an array
+
+        // Handle string cell text - convert to array
+        if (typeof data.cell.text === 'string') {
+          data.cell.text = [data.cell.text] as unknown as string[];
+          return;
+        }
+
+        // Handle non-array, non-string data - convert to array of strings
         if (!Array.isArray(data.cell.text)) {
-          data.cell.text = [String(data.cell.text || '')];
+          data.cell.text = [String(data.cell.text)] as unknown as string[];
           return;
         }
-        
-        // If the array is empty, set a default value
+
+        // Handle empty array
         if (data.cell.text.length === 0) {
-          data.cell.text = [''];
+          data.cell.text = [''] as unknown as string[];
           return;
         }
+
+        // Now we can be sure data.cell.text is an array with at least one element
+        const cellText = String(data.cell.text[0] || '');
         
-        // Get the first element and ensure it's a string
-        let cellText = String(data.cell.text[0] || '');
-        
-        // Only process if it contains our markers
+        // Only process formatting if our markers are present
         if (cellText.includes('[') && cellText.includes(']')) {
-          // Split by our markers
-          const parts = cellText.split(/\[|\]/g).filter(part => part !== '');
-          const styledParts = [];
+          const parts = cellText.split(/\[|\]/g).filter(Boolean);
+          const styledParts: Array<string | {text: string, style: any}> = [];
           
           for (let i = 0; i < parts.length; i++) {
-            // Check if this part should be highlighted (odd indices were inside brackets)
-            const isHighlighted = i % 2 === 1;
+            const part = parts[i];
+            if (!part) continue; // Skip empty parts
             
-            if (isHighlighted) {
-              // Style the hit numbers in green
+            // Even indices are regular text, odd are highlighted
+            if (i % 2 === 1) {
+              // Text was inside brackets, highlight it
               styledParts.push({
-                text: parts[i],
-                style: { 
-                  textColor: [0, 158, 26],
-                  fontStyle: 'bold' 
+                text: part,
+                style: {
+                  textColor: [0, 158, 26], // Green color
+                  fontStyle: 'bold'
                 }
               });
             } else {
-              styledParts.push(parts[i]);
+              styledParts.push(part);
             }
           }
           
-          // Replace cell content with rich text
-          data.cell.text = styledParts;
+          // Replace cell text with styled parts
+          data.cell.text = styledParts as unknown as string[];
         }
       } catch (error) {
-        console.error("Error processing cell text:", error);
-        // Ensure cell text is a safe string array if parsing fails
-        data.cell.text = ['Error processing text'];
+        console.error("Error in didParseCell:", error);
+        // Fallback to safe value on error
+        data.cell.text = ['Error processing text'] as unknown as string[];
       }
     },
     margin: { left: PDF_CONFIG.margin, right: PDF_CONFIG.margin },

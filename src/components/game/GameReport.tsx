@@ -104,10 +104,11 @@ export const GameReport: React.FC<GameReportProps> = ({
         .replace(/[^a-zA-Z0-9]/g, '-')
         .toLowerCase()}.pdf`;
       
-      // Use the new simple PDF generator
+      // Use the updated PDF generator
       await generateSimplePdf(game, {
         themeColor: profileData.themeColor,
-        filename: safeFilename
+        filename: safeFilename,
+        includeNearWinners: true
       });
       
       toast({

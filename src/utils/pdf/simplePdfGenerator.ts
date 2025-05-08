@@ -1,49 +1,8 @@
 
 import jsPDF from 'jspdf';
 import { Game } from '@/contexts/game/types';
+import { createPDF, PDF_CONFIG, addHeader } from './builders/base-pdf';
 import { addNearWinnersSection } from './builders/near-winners';
-
-// Simple PDF configuration with standard dimensions
-export const PDF_CONFIG = {
-  pageWidth: 210,        // A4 width in mm
-  pageHeight: 297,       // A4 height in mm
-  margin: 15,            // Page margins
-  lineHeight: 7,         // Standard line height
-  fontSizes: {
-    title: 19,           // Reduced from 21 to 19
-    subtitle: 17,        // Reduced from 19 to 17
-    normal: 13,          // Reduced from 15 to 13
-    small: 11            // Reduced from 13 to 11
-  }
-};
-
-/**
- * Safely formats a date into a readable string
- * @param date Any date input
- * @returns A formatted date string
- */
-export const safeFormatDate = (date: any): string => {
-  try {
-    if (!date) return "Data não especificada";
-    
-    const dateObj = date instanceof Date ? date : new Date(date);
-    
-    // Check if date is valid
-    if (isNaN(dateObj.getTime())) {
-      return "Data inválida";
-    }
-    
-    // Return simple date format
-    return dateObj.toLocaleDateString('pt-BR', { 
-      day: '2-digit', 
-      month: 'long', 
-      year: 'numeric' 
-    });
-  } catch (error) {
-    console.error('Error formatting date:', error);
-    return "Data indisponível";
-  }
-};
 
 /**
  * Safely get drawn numbers from a game
@@ -66,144 +25,6 @@ const safeGetDrawnNumbers = (game: Game): number[] => {
   }
   
   return numbers;
-};
-
-/**
- * Create a new PDF document
- * @returns A new jsPDF instance
- */
-export const createPDF = (): jsPDF => {
-  // Create new document with portrait orientation
-  const pdf = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4',
-    putOnlyUsedFonts: true,
-  });
-  
-  // Set white background
-  pdf.setFillColor(255, 255, 255);
-  pdf.rect(0, 0, PDF_CONFIG.pageWidth, PDF_CONFIG.pageHeight, 'F');
-  
-  return pdf;
-};
-
-/**
- * Add a header to the PDF
- * @param pdf The PDF document
- * @param title The title to display
- * @param date The date to display
- * @param color The color for the header text (hex)
- * @returns The Y position after the header
- */
-const addHeader = (
-  pdf: jsPDF, 
-  title: string = "Resultado", 
-  date: any = new Date(),
-  color: string = "#000000"
-): number => {
-  let yPosition = PDF_CONFIG.margin;
-  
-  // Add title in bold
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(PDF_CONFIG.fontSizes.title);
-  pdf.setTextColor(color);
-  pdf.text("Resultado", PDF_CONFIG.pageWidth / 2, yPosition, { align: "center" });
-  
-  yPosition += PDF_CONFIG.lineHeight;
-  
-  // Format and add date
-  const dateStr = safeFormatDate(date);
-  pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(PDF_CONFIG.fontSizes.subtitle);
-  pdf.text(dateStr, PDF_CONFIG.pageWidth / 2, yPosition, { align: "center" });
-  
-  yPosition += PDF_CONFIG.lineHeight;
-  
-  // Add game name
-  const gameName = typeof title === "string" ? title : "Jogo sem nome";
-  pdf.setFontSize(PDF_CONFIG.fontSizes.normal);
-  pdf.text(gameName, PDF_CONFIG.pageWidth / 2, yPosition, { align: "center" });
-  
-  yPosition += PDF_CONFIG.lineHeight;
-  
-  // Add separator line
-  pdf.setDrawColor(color);
-  pdf.line(
-    PDF_CONFIG.margin, 
-    yPosition, 
-    PDF_CONFIG.pageWidth - PDF_CONFIG.margin, 
-    yPosition
-  );
-  
-  return yPosition + 10;
-};
-
-/**
- * Add game winners to the PDF
- * @param pdf The PDF document
- * @param game The game data
- * @param yPosition The current Y position
- * @returns The new Y position
- */
-const addWinners = (
-  pdf: jsPDF, 
-  game: Game,
-  yPosition: number
-): number => {
-  if (!game.winners || !Array.isArray(game.winners) || game.winners.length === 0) {
-    return yPosition;
-  }
-  
-  // Winners title
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(PDF_CONFIG.fontSizes.subtitle);
-  pdf.setTextColor(0, 158, 26); // Green
-  pdf.text("GANHADORES", PDF_CONFIG.pageWidth / 2, yPosition, { align: "center" });
-  
-  yPosition += PDF_CONFIG.lineHeight * 1.5;
-  
-  // Add each winner
-  for (const winner of game.winners) {
-    try {
-      const playerData = game.players.find(p => p.id === winner.id);
-      if (!playerData) continue;
-      
-      // Add winner name
-      pdf.setFont("helvetica", "bold");
-      pdf.setTextColor(0, 0, 0);
-      pdf.text(playerData.name, PDF_CONFIG.margin, yPosition);
-      
-      yPosition += PDF_CONFIG.lineHeight;
-      
-      // Find winning combinations
-      const winningCombos = playerData.combinations.filter(c => c.hits === 6);
-      
-      pdf.setFont("helvetica", "normal");
-      
-      // Add each combination
-      for (const combo of winningCombos) {
-        if (!combo.numbers || !Array.isArray(combo.numbers)) continue;
-        
-        const numbersText = combo.numbers
-          .filter(n => typeof n === 'number')
-          .sort((a, b) => a - b)
-          .map(n => String(n).padStart(2, '0'))
-          .join(' - ');
-          
-        pdf.text(`Números: ${numbersText}`, PDF_CONFIG.margin + 5, yPosition);
-        
-        yPosition += PDF_CONFIG.lineHeight;
-      }
-      
-      yPosition += 5;
-    } catch (error) {
-      console.error("Error processing winner:", error);
-      continue;
-    }
-  }
-  
-  return yPosition + 10;
 };
 
 /**
@@ -306,8 +127,6 @@ const addPlayers = (
               return { num: numStr, isHit };
             });
           
-          // Removed "X acertos:" text - start directly with the numbers
-          
           // Draw numbers with hits highlighted
           let xPos = PDF_CONFIG.margin + 10; // Adjusted starting position
           pdf.setFont("helvetica", "normal");
@@ -355,6 +174,73 @@ const addPlayers = (
 };
 
 /**
+ * Add game winners to the PDF
+ * @param pdf The PDF document
+ * @param game The game data
+ * @param yPosition The current Y position
+ * @returns The new Y position
+ */
+const addWinners = (
+  pdf: jsPDF, 
+  game: Game,
+  yPosition: number
+): number => {
+  if (!game.winners || !Array.isArray(game.winners) || game.winners.length === 0) {
+    return yPosition;
+  }
+  
+  // Winners title
+  pdf.setFont("helvetica", "bold");
+  pdf.setFontSize(PDF_CONFIG.fontSizes.subtitle);
+  pdf.setTextColor(0, 158, 26); // Green
+  pdf.text("GANHADORES", PDF_CONFIG.pageWidth / 2, yPosition, { align: "center" });
+  
+  yPosition += PDF_CONFIG.lineHeight * 1.5;
+  
+  // Add each winner
+  for (const winner of game.winners) {
+    try {
+      const playerData = game.players.find(p => p.id === winner.id);
+      if (!playerData) continue;
+      
+      // Add winner name
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(playerData.name, PDF_CONFIG.margin, yPosition);
+      
+      yPosition += PDF_CONFIG.lineHeight;
+      
+      // Find winning combinations
+      const winningCombos = playerData.combinations.filter(c => c.hits === 6);
+      
+      pdf.setFont("helvetica", "normal");
+      
+      // Add each combination
+      for (const combo of winningCombos) {
+        if (!combo.numbers || !Array.isArray(combo.numbers)) continue;
+        
+        const numbersText = combo.numbers
+          .filter(n => typeof n === 'number')
+          .sort((a, b) => a - b)
+          .map(n => String(n).padStart(2, '0'))
+          .join(' - ');
+          
+        pdf.text(`Números: ${numbersText}`, PDF_CONFIG.margin + 5, yPosition);
+        
+        yPosition += PDF_CONFIG.lineHeight;
+      }
+      
+      yPosition += 5;
+    } catch (error) {
+      console.error("Error processing winner:", error);
+      continue;
+    }
+  }
+  
+  return yPosition + 10;
+};
+
+/**
  * Generate a complete game report PDF
  * @param game The game data
  * @param options Options for PDF generation
@@ -364,7 +250,8 @@ export const generateSimplePdf = async (
   game: Game,
   options = {
     themeColor: "#39FF14",
-    filename: "resultado.pdf"
+    filename: "resultado.pdf",
+    includeNearWinners: true
   }
 ): Promise<void> => {
   try {
@@ -386,15 +273,15 @@ export const generateSimplePdf = async (
     // Create PDF document
     const pdf = createPDF();
     
-    // Add header section
-    let yPosition = addHeader(pdf, game.name, game.startDate, options.themeColor);
+    // Add header section using the standardized builder
+    let yPosition = addHeader(pdf, game.name, game.startDate, { color: options.themeColor });
     
     // Get all drawn numbers from the game
     const allDrawnNumbers = safeGetDrawnNumbers(game);
     
-    // NEW: Add near winners section (jogos amarrados) - only if no winners
+    // Add near winners section (jogos amarrados) - only if no winners and if requested
     const hasWinners = Array.isArray(game.winners) && game.winners.length > 0;
-    if (!hasWinners) {
+    if (options.includeNearWinners && !hasWinners) {
       yPosition = addNearWinnersSection(pdf, game, allDrawnNumbers, { color: options.themeColor });
     }
     
