@@ -105,7 +105,8 @@ export const generateGameReport = async (
     }
     
     // Add players section in a tabular format
-    addPlayersListSection(pdf, game, currentY, sectionOptions);
+    // Fix: Call addPlayersListSection with only 3 arguments
+    addPlayersListSection(pdf, game, currentY);
     
     // Use provided filename or generate one with sanitizing
     const safeFilename = options.filename 
