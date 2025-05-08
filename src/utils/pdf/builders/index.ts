@@ -11,3 +11,5 @@ export * from './base-pdf';
 export * from './winners';
 export * from './near-winners';
 export * from './players';
+export * from './players-section';
+export * from './winners-section';

@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
@@ -67,7 +68,7 @@ export default function PlayersView() {
     return true;
   };
   
-  // Function to generate PDF using the standardized system
+  // Function to generate PDF using the refactored system
   const handleGeneratePDF = async () => {
     if (isGenerating) return;
     setIsGenerating(true);

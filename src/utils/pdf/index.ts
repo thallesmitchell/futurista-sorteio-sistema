@@ -14,5 +14,11 @@ export { generateSimplePdf } from './simplePdfGenerator';
 // Export PDF configuration
 export { PDF_CONFIG, createPDF } from './builders/base-pdf';
 
+// Export utility functions for direct use if needed
+export { safeGetDrawnNumbers } from './builders/players-section';
+export { addNearWinnersSection } from './builders/near-winners';
+export { addWinnersSection } from './builders/winners-section';
+export { addPlayersListSection } from './builders/players-section';
+
 // Re-export types
 export * from './types';
