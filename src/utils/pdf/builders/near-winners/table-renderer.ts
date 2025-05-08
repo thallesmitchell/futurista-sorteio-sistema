@@ -4,6 +4,9 @@ import autoTable from 'jspdf-autotable';
 import { PDF_CONFIG } from '../base-pdf';
 import { highlightedCellRenderer, getStandardTableStyles } from '../utils/pdf-table-utils';
 
+// Define FontStyle type to match jsPDF-autotable's accepted values
+type FontStyle = 'normal' | 'bold' | 'italic' | 'bolditalic';
+
 /**
  * Generate the table for near winners
  */
@@ -29,7 +32,7 @@ export const generateNearWinnersTable = (
       theme: 'striped',
       ...tableStyles,
       columnStyles: {
-        0: { cellWidth: 80, fontStyle: 'bold' }, // Fixed width for player names
+        0: { cellWidth: 80, fontStyle: 'bold' as FontStyle }, // Explicitly typed as FontStyle
         1: { cellWidth: 'auto', halign: 'left' }  // Auto width for sequences
       },
       didParseCell: highlightedCellRenderer,

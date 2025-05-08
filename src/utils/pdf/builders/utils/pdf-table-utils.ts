@@ -52,30 +52,33 @@ export const highlightedCellRenderer = (data: any): void => {
   }
 };
 
+// Define FontStyle type to match jsPDF-autotable's accepted values
+type FontStyle = 'normal' | 'bold' | 'italic' | 'bolditalic';
+
 /**
  * Standard table styles that can be reused across PDF tables
  */
 export const getStandardTableStyles = () => {
   return {
     styles: {
-      overflow: 'linebreak' as 'linebreak', // Fixed: Properly typed as literal type
+      overflow: 'linebreak' as 'linebreak', // Properly typed as literal type
       cellPadding: 5,
       fontSize: 11,
-      textColor: [0, 0, 0] as [number, number, number], // Fixed: Properly typed as RGB tuple
+      textColor: [0, 0, 0] as [number, number, number], // Properly typed as RGB tuple
       lineWidth: 0.1,
     },
     headStyles: {
-      fillColor: [240, 240, 240] as [number, number, number], // Fixed: Properly typed as RGB tuple
-      textColor: [0, 0, 0] as [number, number, number], // Fixed: Properly typed as RGB tuple
-      fontStyle: 'bold',
+      fillColor: [240, 240, 240] as [number, number, number], // Properly typed as RGB tuple
+      textColor: [0, 0, 0] as [number, number, number], // Properly typed as RGB tuple
+      fontStyle: 'bold' as FontStyle, // Explicitly typed as FontStyle
       halign: 'left',
       fontSize: 12,
     },
     margin: { left: PDF_CONFIG.margin, right: PDF_CONFIG.margin },
     tableLineWidth: 0.2,
-    tableLineColor: [200, 200, 200] as [number, number, number], // Fixed: Explicitly typed as RGB tuple
+    tableLineColor: [200, 200, 200] as [number, number, number], // Properly typed as RGB tuple
     alternateRowStyles: {
-      fillColor: [248, 248, 248] as [number, number, number] // Fixed: Properly typed as RGB tuple
+      fillColor: [248, 248, 248] as [number, number, number] // Properly typed as RGB tuple
     },
   };
 };
