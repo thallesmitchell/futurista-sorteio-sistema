@@ -54,10 +54,17 @@ export const createPDF = async (): Promise<jsPDF> => {
 export const addHeader = (
   pdf: jsPDF, 
   gameTitle: string, 
-  date: Date | string = new Date(), 
+  date: Date | string | null | undefined = new Date(), 
   options = { color: '#000000' }
 ): void => {
-  const formattedDate = typeof date === 'string' ? date : formatDate(date);
+  let formattedDate: string;
+  
+  try {
+    formattedDate = formatDate(date);
+  } catch (error) {
+    console.error('Error formatting date in addHeader:', error);
+    formattedDate = 'Data indisponível';
+  }
   
   // Add title
   pdf.setFont('helvetica', 'bold');
@@ -70,10 +77,11 @@ export const addHeader = (
   pdf.setFontSize(PDF_CONFIG.subtitleFontSize);
   pdf.text(formattedDate, PDF_CONFIG.pageWidth / 2, PDF_CONFIG.margin + 10, { align: 'center' });
   
-  // Add game name
+  // Add game name - ensure gameTitle is a string
+  const safeTitleText = typeof gameTitle === 'string' ? gameTitle : 'Jogo sem nome';
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(PDF_CONFIG.headerFontSize);
-  pdf.text(gameTitle, PDF_CONFIG.pageWidth / 2, PDF_CONFIG.margin + 20, { align: 'center' });
+  pdf.text(safeTitleText, PDF_CONFIG.pageWidth / 2, PDF_CONFIG.margin + 20, { align: 'center' });
   
   // Add separator line
   pdf.setDrawColor(options.color);

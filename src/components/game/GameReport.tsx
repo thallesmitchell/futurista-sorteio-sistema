@@ -57,6 +57,31 @@ export const GameReport: React.FC<GameReportProps> = ({
     fetchProfile();
   }, [user]);
   
+  // Validate game data before generating report
+  const validateGameData = (game: Game): boolean => {
+    if (!game) {
+      console.error('Game data is null or undefined');
+      return false;
+    }
+    
+    if (!game.id || !game.name) {
+      console.error('Game is missing critical data (id or name)');
+      return false;
+    }
+    
+    if (!Array.isArray(game.players)) {
+      console.error('Game players is not an array', game.players);
+      return false;
+    }
+    
+    if (!Array.isArray(game.dailyDraws)) {
+      console.error('Game dailyDraws is not an array', game.dailyDraws);
+      return false;
+    }
+    
+    return true;
+  };
+  
   const handleGenerateReport = async () => {
     // Prevent multiple clicks
     if (isGenerating) return;
@@ -64,9 +89,9 @@ export const GameReport: React.FC<GameReportProps> = ({
     setIsGenerating(true);
     
     try {
-      // Ensure we have a complete game object with players and draws
-      if (!game || !game.players || !game.dailyDraws) {
-        throw new Error('Game data is incomplete');
+      // Validate game data
+      if (!validateGameData(game)) {
+        throw new Error('Dados do jogo inválidos ou incompletos');
       }
       
       console.log('Generating report for game:', game.id);
@@ -74,10 +99,14 @@ export const GameReport: React.FC<GameReportProps> = ({
       console.log('Draws count:', game.dailyDraws.length);
       console.log('Winners count:', game.winners?.length || 0);
       
-      // Generate the PDF report
+      // Generate the PDF report with safe filename
+      const safeFilename = `resultado-${(game.name || 'jogo')
+        .replace(/[^a-zA-Z0-9]/g, '-')
+        .toLowerCase()}.pdf`;
+      
       await generateGameReport(game, {
         themeColor: profileData.themeColor,
-        filename: `resultado-${game.name.replace(/\s+/g, '-')}.pdf`,
+        filename: safeFilename,
         includeNearWinners: true
       });
       

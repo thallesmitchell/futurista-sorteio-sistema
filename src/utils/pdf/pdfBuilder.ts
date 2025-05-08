@@ -28,20 +28,34 @@ export const generateGameReport = async (
   try {
     console.log('Generating PDF report for game:', game.name);
     
+    // Validate input parameters
+    if (!game) {
+      throw new Error('Game data is missing');
+    }
+    
+    if (!game.name) {
+      console.warn('Game name is missing, using default');
+    }
+    
     // Get all drawn numbers from the game
-    const allDrawnNumbers = game.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
+    const allDrawnNumbers = Array.isArray(game.dailyDraws) 
+      ? game.dailyDraws.flatMap(draw => Array.isArray(draw.numbers) ? draw.numbers : [])
+      : [];
+    
+    console.log(`Total drawn numbers: ${allDrawnNumbers.length}`);
     
     // Initialize PDF with white background
     const pdf = await createPDF();
     
-    // Add header
-    addHeader(pdf, game.name, new Date(), { color: options.themeColor });
+    // Add header with better error handling for dates
+    const gameName = typeof game.name === 'string' ? game.name : 'Resultado';
+    addHeader(pdf, gameName, game.startDate || new Date(), { color: options.themeColor });
     
     // Track current Y position
     let currentY = PDF_CONFIG.margin + 30;
     
     // If there are winners, don't add near winners section
-    const hasWinners = game.winners && game.winners.length > 0;
+    const hasWinners = Array.isArray(game.winners) && game.winners.length > 0;
     
     // Add near winners section only if no winners and if requested
     if (options.includeNearWinners && !hasWinners) {
@@ -63,17 +77,19 @@ export const generateGameReport = async (
       maxCombosPerPlayer: 1000 // Show all sequences for completeness
     });
     
-    // Use provided filename or generate one
-    const filename = options.filename || `resultado-${game.name.replace(/\s+/g, '-')}.pdf`;
+    // Use provided filename or generate one with sanitizing
+    const safeFilename = options.filename 
+      ? options.filename.replace(/[^\w.-]/g, '-')
+      : `resultado-${(game.name || 'jogo').replace(/[^\w.-]/g, '-')}.pdf`;
     
     // Save PDF
-    pdf.save(filename);
+    pdf.save(safeFilename);
     
     console.log('PDF generation completed successfully');
     return Promise.resolve();
   } catch (error) {
     console.error('Error generating PDF:', error);
-    return Promise.reject(error);
+    return Promise.reject(error instanceof Error ? error : new Error('Unknown error in PDF generation'));
   }
 }
 
