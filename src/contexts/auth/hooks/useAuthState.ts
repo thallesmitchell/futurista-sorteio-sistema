@@ -16,6 +16,7 @@ export const useAuthState = () => {
 
   // Função para buscar o perfil do usuário
   const fetchUserProfile = async (userId: string) => {
+    console.log('Fetching user profile for userId:', userId);
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -23,9 +24,13 @@ export const useAuthState = () => {
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
       
       if (data) {
+        console.log('User profile data received:', data);
         // Ensure we cast the data as UserProfile with all the required properties
         const profile: UserProfile = {
           id: data.id,
@@ -40,6 +45,7 @@ export const useAuthState = () => {
         
         setUserProfile(profile);
         setIsSuperAdmin(profile.role === 'super_admin');
+        console.log('Is super admin:', profile.role === 'super_admin');
       }
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);
@@ -48,6 +54,7 @@ export const useAuthState = () => {
 
   // Função para atualizar o perfil do usuário
   const refreshUserProfile = async () => {
+    console.log('Refreshing user profile, current user:', user);
     if (user) {
       await fetchUserProfile(user.id);
     }
@@ -55,17 +62,21 @@ export const useAuthState = () => {
 
   // Verificar se o usuário já está autenticado ao carregar a página
   useEffect(() => {
+    console.log('Setting up auth state change listener');
     // Primeiro configurar o listener de mudança de estado de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, currentSession) => {
+      console.log('Auth state changed:', event, currentSession?.user?.email);
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setIsAuthenticated(!!currentSession?.user);
       
       if (currentSession?.user) {
+        console.log('User authenticated, fetching profile');
         setTimeout(() => {
           fetchUserProfile(currentSession.user.id);
         }, 0);
       } else {
+        console.log('No user session, clearing profile');
         setUserProfile(null);
         setIsSuperAdmin(false);
       }
@@ -73,16 +84,19 @@ export const useAuthState = () => {
 
     // Depois verificar a sessão atual
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      console.log('Current session check:', currentSession?.user?.email);
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setIsAuthenticated(!!currentSession?.user);
       
       if (currentSession?.user) {
+        console.log('Existing user session found, fetching profile');
         fetchUserProfile(currentSession.user.id);
       }
     });
 
     return () => {
+      console.log('Cleaning up auth state listener');
       subscription.unsubscribe();
     };
   }, []);
