@@ -17,10 +17,12 @@ export const useWinnerActions = (
   const { toast } = useToast();
 
   /**
-   * Check for winners in a game
+   * Check for winners in a game and update database and local state
+   * WITHOUT automatically changing game status
    */
   const checkWinners = async (gameId: string): Promise<Player[]> => {
     try {
+      console.log('Checking for winners in game:', gameId);
       const gameIndex = games.findIndex(g => g.id === gameId);
       if (gameIndex === -1) return [];
       
@@ -32,9 +34,10 @@ export const useWinnerActions = (
         player.combinations.some(combo => combo.hits === 6)
       );
       
-      // Important: Only update game status if there are winners AND the game is active
+      console.log('Found winners:', winners.length);
+      
+      // Register winners in Supabase regardless of game status
       if (winners.length > 0) {
-        // Register winners in Supabase regardless of game status
         for (const winner of winners) {
           // Find winning combinations
           const winningCombinations = winner.combinations.filter(combo => combo.hits === 6);
@@ -60,6 +63,7 @@ export const useWinnerActions = (
                 
               // Register the winner only if not already registered
               if (!existingWinner) {
+                console.log('Registering new winner in database:', winner.name);
                 await supabase
                   .from('winners')
                   .insert({
@@ -72,46 +76,27 @@ export const useWinnerActions = (
           }
         }
         
-        // Only change the game status if it's currently active
-        if (game.status === 'active') {
-          await supabase
-            .from('games')
-            .update({
-              status: 'closed',
-              end_date: new Date().toISOString()
-            })
-            .eq('id', gameId);
-        }
-        
-        // Update the local list - always set winners regardless of status
+        // IMPORTANT: Never change game status automatically anymore
+        // Only update the winners in the local state
+        console.log('Updating local game state with winners');
         const updatedGames = [...games];
         updatedGames[gameIndex] = {
           ...game,
-          winners: winners,
-          // Only update status and endDate if game was active
-          ...(game.status === 'active' ? {
-            status: 'closed',
-            endDate: new Date().toISOString()
-          } : {})
+          winners: winners
         };
         
         setGames(updatedGames);
         
         // Update current game if being verified - always update winners
         if (currentGame && currentGame.id === gameId) {
+          console.log('Updating current game with winners');
           setCurrentGame({
             ...currentGame,
-            winners: winners,
-            // Only update status and endDate if game was active
-            ...(currentGame.status === 'active' ? {
-              status: 'closed',
-              endDate: new Date().toISOString()
-            } : {})
+            winners: winners
           });
         }
         
         // Only notify if we haven't already shown this notification
-        // (check if winners were already there)
         const existingGame = games[gameIndex];
         const existingWinnersCount = existingGame.winners?.length || 0;
         

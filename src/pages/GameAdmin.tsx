@@ -15,6 +15,7 @@ import { GameHeader } from '@/components/game/GameHeader';
 import { GameAdminForms } from '@/components/game/GameAdminForms';
 import { useToast } from '@/hooks/use-toast';
 import PlayerEditHandler from '@/components/game/PlayerEditHandler';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function GameAdmin() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -23,29 +24,65 @@ export default function GameAdmin() {
   const [isWinnersModalOpen, setIsWinnersModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
+  const [winners, setWinners] = useState<Player[]>([]);
   const { toast } = useToast();
   const playerEditHandlerRef = useRef<any>(null);
 
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
-  const winners = game?.winners || [];
   const hasWinners = winners.length > 0;
+
+  // Fetch winners directly from database
+  useEffect(() => {
+    const fetchWinners = async () => {
+      if (!gameId) return;
+
+      try {
+        console.log('Fetching winners from database for game:', gameId);
+        // Get unique player ids of winners for this game
+        const { data: winnersData, error } = await supabase
+          .from('winners')
+          .select('player_id')
+          .eq('game_id', gameId)
+          .order('created_at');
+
+        if (error) throw error;
+
+        if (winnersData && winnersData.length > 0) {
+          console.log('Found winner entries in database:', winnersData.length);
+          const uniquePlayerIds = [...new Set(winnersData.map(w => w.player_id))];
+          
+          if (game && game.players) {
+            // Find the actual player objects from game state
+            const winnerPlayers = game.players.filter(p => 
+              uniquePlayerIds.includes(p.id)
+            );
+            console.log('Matched winners with player data:', winnerPlayers.length);
+            setWinners(winnerPlayers);
+          }
+        } else {
+          console.log('No winners found in database for game:', gameId);
+          setWinners([]);
+        }
+      } catch (error) {
+        console.error('Error fetching winners:', error);
+      }
+    };
+
+    if (gameId) {
+      fetchWinners();
+    }
+  }, [gameId, game]);
 
   // Set current game for context and check for winners when game data changes
   useEffect(() => {
     if (game) {
-      // IMPORTANT: Only redirect to history if game is closed AND has no winners
-      // This ensures games with winners stay on the admin page regardless of status
-      if (game.status === 'closed' && !hasWinners) {
-        console.log('Game is closed and has no winners, redirecting to history view');
-        navigate(`/history/${game.id}`);
-        return;
-      }
-      
+      // IMPORTANT: Never redirect to history based on game status
+      // Stay on admin page regardless of game status if there are winners
       setCurrentGame(game);
       
-      // Check for winners when game data changes
-      if (game.id && !game.winners?.length) {
+      // Still check for new winners when game data changes
+      if (game.id) {
         console.log('Checking for winners in game:', game.id);
         checkWinners(game.id);
       }
@@ -59,7 +96,7 @@ export default function GameAdmin() {
     return () => {
       setCurrentGame(null);
     };
-  }, [game, gameId, navigate, setCurrentGame, checkWinners, hasWinners]);
+  }, [game, gameId, navigate, setCurrentGame, checkWinners]);
 
   // Show 404 if game not found
   if (!game) {
@@ -88,8 +125,8 @@ export default function GameAdmin() {
       endDate: new Date().toISOString()
     });
     setIsCloseModalOpen(false);
-    // Redirect to history view
-    navigate(`/history/${game.id}`);
+    // Do not redirect to history view anymore
+    // The user can stay on this page
   };
 
   const handleNewWinnerFound = (hasWinners: boolean) => {
@@ -120,7 +157,7 @@ export default function GameAdmin() {
           game={game}
         />
 
-        {/* Sempre mostrar o banner de vencedor quando houver ganhadores */}
+        {/* Always show the winner banner when there are winners - based on database query */}
         {hasWinners && (
           <div className="permanent-winner-banner">
             <WinnerBanner 

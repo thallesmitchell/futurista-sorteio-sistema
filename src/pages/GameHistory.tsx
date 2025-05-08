@@ -11,9 +11,11 @@ import PlayersList from '@/components/game/PlayersList';
 import { WinnersModal } from '@/components/game/WinnersModal';
 import { WinnerBanner } from '@/components/game/WinnerBanner';
 import { ArrowLeft, Trophy } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { DeleteGameButton } from '@/components/game/DeleteGameButton';
 import { GameReport } from '@/components/game/GameReport';
+import { supabase } from '@/integrations/supabase/client';
+import { Player } from '@/contexts/game/types';
 
 export default function GameHistory() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -21,9 +23,50 @@ export default function GameHistory() {
   const { games, setCurrentGame } = useGame();
   const { toast } = useToast();
   const [isWinnersModalOpen, setIsWinnersModalOpen] = useState(false);
+  const [winners, setWinners] = useState<Player[]>([]);
 
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
+  
+  // Fetch winners directly from database
+  useEffect(() => {
+    const fetchWinners = async () => {
+      if (!gameId) return;
+
+      try {
+        console.log('GameHistory: Fetching winners from database for game:', gameId);
+        // Get unique player ids of winners for this game
+        const { data: winnersData, error } = await supabase
+          .from('winners')
+          .select('player_id')
+          .eq('game_id', gameId)
+          .order('created_at');
+
+        if (error) throw error;
+
+        if (winnersData && winnersData.length > 0 && game && game.players) {
+          console.log('GameHistory: Found winner entries in database:', winnersData.length);
+          const uniquePlayerIds = [...new Set(winnersData.map(w => w.player_id))];
+          
+          // Find the actual player objects from game state
+          const winnerPlayers = game.players.filter(p => 
+            uniquePlayerIds.includes(p.id)
+          );
+          console.log('GameHistory: Matched winners with player data:', winnerPlayers.length);
+          setWinners(winnerPlayers);
+        } else {
+          console.log('GameHistory: No winners found in database for game:', gameId);
+          setWinners([]);
+        }
+      } catch (error) {
+        console.error('GameHistory: Error fetching winners:', error);
+      }
+    };
+
+    if (gameId && game) {
+      fetchWinners();
+    }
+  }, [gameId, game]);
   
   // Set current game for context
   useEffect(() => {
@@ -45,7 +88,6 @@ export default function GameHistory() {
     return <div>Game not found</div>;
   }
 
-  const winners = game.winners || [];
   const hasWinners = winners.length > 0;
 
   const handleDeleteSuccess = () => {
@@ -116,7 +158,7 @@ export default function GameHistory() {
           </div>
         </div>
 
-        {/* Always show the winner banner if there are winners */}
+        {/* Always show the winner banner if there are winners - based on database query */}
         {hasWinners && (
           <div className="permanent-winner-banner">
             <WinnerBanner winners={winners} allDrawnNumbers={allDrawnNumbers} />

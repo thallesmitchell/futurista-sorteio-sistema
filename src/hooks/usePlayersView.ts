@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { generateSimplePdf } from '@/utils/pdf';
 import { supabase } from '@/integrations/supabase/client';
+import { Player } from '@/contexts/game/types';
 
 export const usePlayersView = (gameId: string | undefined) => {
   const { games } = useGame();
@@ -18,21 +19,15 @@ export const usePlayersView = (gameId: string | undefined) => {
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
   const drawnNumbersSet = new Set(allDrawnNumbers);
-  
-  // Ensure winners are always retrieved from the game object
-  const winners = game?.winners || [];
-  const hasWinners = winners.length > 0;
 
   // Log for debugging
   useEffect(() => {
     console.log('PlayersView hook:', { 
       gameId, 
       gameFound: !!game,
-      gameStatus: game?.status,
-      winnersCount: winners.length,
-      hasWinners
+      gameStatus: game?.status
     });
-  }, [game, winners, hasWinners, gameId]);
+  }, [game, gameId]);
 
   // Fetch profile data for theme color
   useEffect(() => {
@@ -116,8 +111,6 @@ export const usePlayersView = (gameId: string | undefined) => {
     sortedPlayers,
     allDrawnNumbers,
     drawnNumbersSet,
-    winners,
-    hasWinners,
     isGenerating,
     handleGeneratePDF,
     profileData
