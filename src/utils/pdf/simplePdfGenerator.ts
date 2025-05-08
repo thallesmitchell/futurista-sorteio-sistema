@@ -50,7 +50,7 @@ export const generateSimplePdf = async (
     // Add header section using the standardized builder and the last draw date
     let yPosition = addHeader(pdf, game.name, lastDrawDate, { color: options.themeColor || '#39FF14' });
     
-    // NOVA SEÇÃO: Adicionar seção de sorteios realizados logo após o cabeçalho
+    // Adicionar seção de sorteios realizados logo após o cabeçalho
     yPosition = addDrawsSection(pdf, game.dailyDraws, yPosition);
     console.log(`Y-position after draws section: ${yPosition}`);
     
@@ -75,6 +75,12 @@ export const generateSimplePdf = async (
       console.log(`Y-position after near winners section: ${yPosition}`);
     } else {
       console.log('Near winners section was not requested to be included');
+    }
+    
+    // Check if we need to add a new page before players list
+    if (yPosition > PDF_CONFIG.pageHeight - 70) {
+      pdf.addPage();
+      yPosition = PDF_CONFIG.margin;
     }
     
     // Add players section

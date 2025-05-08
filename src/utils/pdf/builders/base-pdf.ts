@@ -11,13 +11,13 @@ export const PDF_CONFIG = {
   pageHeight: 297,      // A4 height in mm
   margin: 15,           // Page margins
   fontSizes: {
-    title: 19,          // Main title size
-    subtitle: 17,       // Section titles
-    normal: 13,         // Regular text
-    small: 11           // Small text
+    title: 18,          // Main title size (reduzido)
+    subtitle: 15,       // Section titles (reduzido)
+    normal: 12,         // Regular text (reduzido)
+    small: 10           // Small text (reduzido)
   },
-  lineHeight: 7,        // Standard line height
-  innerMargin: 5,       // Inner spacing
+  lineHeight: 6,        // Standard line height (reduzido)
+  innerMargin: 4,       // Inner spacing (reduzido)
 };
 
 /**
@@ -113,5 +113,5 @@ export const addHeader = (
     yPosition
   );
   
-  return yPosition + 10;
+  return yPosition + 7; // Espaçamento reduzido após o cabeçalho
 };
