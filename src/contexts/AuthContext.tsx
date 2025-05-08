@@ -48,8 +48,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       
       if (data) {
-        setUserProfile(data as UserProfile);
-        setIsSuperAdmin(data.role === 'super_admin');
+        // Ensure we cast the data as UserProfile with all the required properties
+        const profile: UserProfile = {
+          id: data.id,
+          username: data.username,
+          role: data.role as 'super_admin' | 'admin',
+          theme_color: data.theme_color,
+          logo_url: data.logo_url,
+          default_game_name: data.default_game_name
+        };
+        
+        setUserProfile(profile);
+        setIsSuperAdmin(profile.role === 'super_admin');
       }
     } catch (error) {
       console.error('Erro ao buscar perfil:', error);

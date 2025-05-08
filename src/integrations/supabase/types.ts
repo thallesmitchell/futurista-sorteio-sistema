@@ -159,6 +159,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          default_game_name: string | null
           id: string
           logo_url: string | null
           role: string
@@ -168,6 +169,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          default_game_name?: string | null
           id: string
           logo_url?: string | null
           role?: string
@@ -177,6 +179,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          default_game_name?: string | null
           id?: string
           logo_url?: string | null
           role?: string
