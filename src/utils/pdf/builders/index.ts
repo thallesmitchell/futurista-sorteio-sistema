@@ -1,6 +1,13 @@
 
-// Export all PDF builder functions
+/**
+ * Main builders for PDF generation
+ * Exports all necessary builder functions
+ */
+
+// Base PDF configuration and creation
 export * from './base-pdf';
-export * from './near-winners';
+
+// Section builders
 export * from './winners';
+export * from './near-winners';
 export * from './players';
