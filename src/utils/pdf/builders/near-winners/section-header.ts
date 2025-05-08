@@ -21,7 +21,8 @@ export const drawNearWinnersHeader = (
     pdf.text("Jogos Amarrados", PDF_CONFIG.pageWidth / 2, currentY, { align: "center" });
     
     currentY += 10;
-    
+
+    /*
     // Description
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(PDF_CONFIG.fontSizes.normal);
@@ -39,5 +40,5 @@ export const drawNearWinnersHeader = (
   } catch (error) {
     console.error("Error drawing near winners header:", error);
     return PDF_CONFIG.margin + 50; // Safe fallback
-  }
+  }*/
 };
