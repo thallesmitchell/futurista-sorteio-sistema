@@ -1,5 +1,7 @@
+
 import jsPDF from 'jspdf';
 import { Game } from '@/contexts/game/types';
+import { addNearWinnersSection } from './builders/near-winners';
 
 // Simple PDF configuration with standard dimensions
 export const PDF_CONFIG = {
@@ -386,6 +388,15 @@ export const generateSimplePdf = async (
     
     // Add header section
     let yPosition = addHeader(pdf, game.name, game.startDate, options.themeColor);
+    
+    // Get all drawn numbers from the game
+    const allDrawnNumbers = safeGetDrawnNumbers(game);
+    
+    // NEW: Add near winners section (jogos amarrados) - only if no winners
+    const hasWinners = Array.isArray(game.winners) && game.winners.length > 0;
+    if (!hasWinners) {
+      yPosition = addNearWinnersSection(pdf, game, allDrawnNumbers, { color: options.themeColor });
+    }
     
     // Add winners section
     yPosition = addWinners(pdf, game, yPosition);
