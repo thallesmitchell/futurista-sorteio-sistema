@@ -15,13 +15,22 @@ export const addNearWinnersSection = (
   options: PdfSectionOptions = { color: '#39FF14' }
 ): number => {
   try {
+    if (!game) {
+      console.error('Invalid game data provided to addNearWinnersSection');
+      return PDF_CONFIG.margin + 30;
+    }
+
+    console.log('Starting near winners section processing');
     const drawnNumbersSet = new Set(allDrawnNumbers);
+    console.log(`Total drawn numbers: ${drawnNumbersSet.size}`);
     
     // Find players with combinations that have exactly 5 hits
     const nearWinners = findNearWinners(game);
+    console.log(`Found ${nearWinners.length} players with near-winning combinations`);
       
     // If no near winners, return current position
     if (nearWinners.length === 0) {
+      console.log('No near winners found, skipping section');
       return PDF_CONFIG.margin + 30;
     }
     
@@ -30,6 +39,7 @@ export const addNearWinnersSection = (
     
     // Create table data
     const tableData = createNearWinnersTableData(nearWinners, drawnNumbersSet);
+    console.log(`Generated ${tableData.length} rows for near winners table`);
     
     // Generate table and return final Y position
     return generateNearWinnersTable(pdf, tableData, currentY);

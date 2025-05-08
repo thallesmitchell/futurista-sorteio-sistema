@@ -45,11 +45,23 @@ export const generateSimplePdf = async (
     
     // Get all drawn numbers from the game
     const allDrawnNumbers = safeGetDrawnNumbers(game);
+    console.log(`Total drawn numbers: ${allDrawnNumbers.length}`);
+    
+    // Always check for nearWinners regardless of winners
+    // We'll only display them if there are no winners AND includeNearWinners is true
+    const hasWinners = Array.isArray(game.winners) && game.winners.length > 0;
     
     // Add near winners section (jogos amarrados) - only if no winners and if requested
-    const hasWinners = Array.isArray(game.winners) && game.winners.length > 0;
-    if (options.includeNearWinners !== false && !hasWinners) {
-      yPosition = addNearWinnersSection(pdf, game, allDrawnNumbers, { color: options.themeColor || '#39FF14' });
+    if (options.includeNearWinners === true) {
+      console.log('Including near winners section in PDF');
+      if (hasWinners) {
+        console.log('Game has winners, skipping near winners section');
+      } else {
+        console.log('No winners found, adding near winners section');
+        yPosition = addNearWinnersSection(pdf, game, allDrawnNumbers, { color: options.themeColor || '#39FF14' });
+      }
+    } else {
+      console.log('Near winners section was not requested to be included');
     }
     
     // Add winners section

@@ -13,9 +13,12 @@ export const generateNearWinnersTable = (
   currentY: number
 ): number => {
   try {
-    if (tableData.length === 0) {
+    if (!tableData || tableData.length === 0) {
+      console.log('No near winners data to display in table');
       return currentY;
     }
+    
+    console.log(`Rendering near winners table with ${tableData.length} rows`);
     
     const tableStyles = getStandardTableStyles();
     

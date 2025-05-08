@@ -37,7 +37,7 @@ export const highlightedCellRenderer = (data: any): void => {
           styledParts.push({
             text: parts[i],
             style: {
-              textColor: [0, 158, 26], // Green color
+              textColor: [0, 158, 26] as [number, number, number], // Properly typed as RGB tuple
               fontStyle: 'bold'
             }
           });
@@ -61,12 +61,12 @@ export const getStandardTableStyles = () => {
       overflow: 'linebreak' as 'linebreak', // Fixed: Properly typed as literal type
       cellPadding: 5,
       fontSize: 11,
-      textColor: [0, 0, 0],
+      textColor: [0, 0, 0] as [number, number, number], // Fixed: Properly typed as RGB tuple
       lineWidth: 0.1,
     },
     headStyles: {
-      fillColor: [240, 240, 240],
-      textColor: [0, 0, 0],
+      fillColor: [240, 240, 240] as [number, number, number], // Fixed: Properly typed as RGB tuple
+      textColor: [0, 0, 0] as [number, number, number], // Fixed: Properly typed as RGB tuple
       fontStyle: 'bold',
       halign: 'left',
       fontSize: 12,
@@ -75,7 +75,7 @@ export const getStandardTableStyles = () => {
     tableLineWidth: 0.2,
     tableLineColor: [200, 200, 200] as [number, number, number], // Fixed: Explicitly typed as RGB tuple
     alternateRowStyles: {
-      fillColor: [248, 248, 248]
+      fillColor: [248, 248, 248] as [number, number, number] // Fixed: Properly typed as RGB tuple
     },
   };
 };
