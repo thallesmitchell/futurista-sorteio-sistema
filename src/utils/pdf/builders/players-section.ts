@@ -74,8 +74,22 @@ export const addPlayerCombinations = (
         const { num, isHit } = formattedNumbers[i];
         if (isHit) {
           // Draw highlighted number
-          pdf.setTextColor(0, 158, 26); // Green
+         // pdf.setTextColor(0, 158, 26); // Green
+         // pdf.setFont("helvetica", "bold");
+
+          // Tamanho do círculo - Thalles
+          const radius = 12;
+          // Desenha o círculo verde
+          pdf.setFillColor(0, 158, 26); // Verde
+          pdf.circle(x, y, radius, 'F');
+          
+          // Configura o texto (número)
+          pdf.setTextColor(255, 255, 255); // Branco
           pdf.setFont("helvetica", "bold");
+        // Centraliza o texto no círculo
+        const textWidth = pdf.getStringUnitWidth(number) * pdf.getFontSize() / pdf.internal.scaleFactor;
+        const textX = x - (textWidth / 2);
+        const textY = y + (pdf.getFontSize() / 4); // Ajuste vertical para centralização 
         } else {
           // Draw regular number
           pdf.setTextColor(0, 0, 0); // Black
