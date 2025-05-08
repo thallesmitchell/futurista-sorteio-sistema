@@ -56,112 +56,62 @@ const formatNumber = (num: number): string => {
 };
 
 /**
- * Process near winner data and create table rows
+ * Create table data structure for near winners
  */
-const createTableRows = (
+const createTableData = (
   nearWinners: Array<{player: any, combos: any[]}>,
-  drawnNumbersSet: Set<number>,
-  options: PdfSectionOptions
+  drawnNumbersSet: Set<number>
 ): any[] => {
-  const tableRows = [];
+  const tableData = [];
   
-  for (let i = 0; i < nearWinners.length; i++) {
-    const item = nearWinners[i];
+  for (const item of nearWinners) {
+    const { player, combos } = item;
     
-    // Add player name as header row
-    tableRows.push([{
-      content: item.player.name,
-      colSpan: 1,
-      styles: { 
-        fontStyle: 'bold', 
-        fillColor: [240, 240, 240],
-        halign: 'center'
-      }
-    }]);
-    
-    // Show combinations for this player (limit to specified max)
-    const maxCombos = options.maxCombosPerPlayer || 3;
-    const combosToShow = item.combos.slice(0, maxCombos);
-    
-    // Process each combo separately
-    combosToShow.forEach(combo => {
+    // For each combination with 5 hits
+    for (const combo of combos) {
       const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
       
-      // Format numbers safely
-      const numbersText = formatNumbersWithHits(sortedNumbers, drawnNumbersSet);
+      // Create a row with player name and formatted numbers
+      const row = [
+        player.name,
+        sortedNumbers.map(num => {
+          const isHit = drawnNumbersSet.has(num);
+          const formattedNum = formatNumber(num);
+          return isHit ? `*${formattedNum}*` : formattedNum;
+        }).join(' ')
+      ];
       
-      // Add the row with plain text
-      tableRows.push([{
-        content: numbersText,
-        colSpan: 1,
-        styles: { halign: 'center' }
-      }]);
-    });
-    
-    // If there are more combinations than shown
-    if (item.combos.length > maxCombos) {
-      const remainingCount = item.combos.length - maxCombos;
-      tableRows.push([{
-        content: `+ ${remainingCount} mais sequência${remainingCount !== 1 ? 's' : ''} com 5 acertos`,
-        colSpan: 1,
-        styles: { fontStyle: 'italic', textColor: [100, 100, 100], halign: 'center' }
-      }]);
-    }
-    
-    // Add spacer between players (except after the last one)
-    if (i < nearWinners.length - 1) {
-      tableRows.push([{
-        content: '',
-        colSpan: 1,
-        styles: { cellPadding: 2 }
-      }]);
+      tableData.push(row);
     }
   }
   
-  return tableRows;
+  return tableData;
 };
 
 /**
- * Format numbers with hit highlighting using asterisks
- */
-const formatNumbersWithHits = (
-  numbers: number[], 
-  drawnNumbersSet: Set<number>
-): string => {
-  return numbers.map((num, idx) => {
-    const isHit = drawnNumbersSet.has(num);
-    const formattedNum = formatNumber(num);
-    
-    // Return formatted number with or without highlighting
-    return isHit ? `*${formattedNum}*` : formattedNum;
-  }).join(' ');
-};
-
-/**
- * Custom cell renderer for handling asterisks highlighting
+ * Custom cell renderer for handling asterisk-based highlighting
  */
 const cellRenderer = (data: any): void => {
-  // Skip if no text content
-  if (!data?.cell?.text || !data.cell.text[0]) return;
+  // Skip if no text content or wrong type
+  if (!data?.cell?.text || typeof data.cell.text[0] !== 'string') return;
+
+  const text = String(data.cell.text[0]);
   
-  try {
-    // Make sure we're working with a string
-    const text = String(data.cell.text[0] || '');
+  // Look for asterisk markers and replace with styled text
+  if (text.includes('*')) {
+    const parts = text.split(/\*+/g);
+    const styledParts: Array<string | {text: string; style: any}> = [];
     
-    // Look for asterisk markers and replace with styled text
-    if (text.includes('*')) {
-      const parts = text.split(/\*+/g);
-      const styledParts: Array<string | {text: string; style: any}> = [];
+    for (let i = 0; i < parts.length; i++) {
+      if (parts[i] === undefined || parts[i] === null) continue;
       
-      for (let i = 0; i < parts.length; i++) {
-        if (!parts[i]) continue;
-        
-        // Alternate between regular and highlighted text
-        if (i % 2 === 0) {
-          // Regular text
-          styledParts.push(parts[i]);
-        } else {
-          // Highlighted text (was between asterisks)
+      // Alternate between regular and highlighted text
+      if (i % 2 === 0) {
+        // Regular text
+        if (parts[i]) styledParts.push(parts[i]);
+      } else {
+        // Highlighted text (was between asterisks)
+        if (parts[i]) {
           styledParts.push({
             text: parts[i],
             style: {
@@ -171,16 +121,12 @@ const cellRenderer = (data: any): void => {
           });
         }
       }
-      
-      // Only replace if we have valid parts
-      if (styledParts.length > 0) {
-        data.cell.text = styledParts;
-      }
     }
-  } catch (error) {
-    console.error("Error in cell renderer:", error);
-    // Ensure text is a simple string in case of errors
-    data.cell.text = ['Error processing cell'];
+    
+    // Only replace if we have valid parts
+    if (styledParts.length > 0) {
+      data.cell.text = styledParts;
+    }
   }
 };
 
@@ -189,26 +135,29 @@ const cellRenderer = (data: any): void => {
  */
 const generateNearWinnersTable = (
   pdf: jsPDF,
-  tableRows: any[],
+  tableData: any[],
   currentY: number
 ): number => {
   try {
+    if (tableData.length === 0) {
+      return currentY;
+    }
+    
     autoTable(pdf, {
       startY: currentY,
-      head: [], // No header row
-      body: tableRows,
-      theme: 'plain',
+      head: [['Jogador', 'Sequência (5 acertos)']],
+      body: tableData,
+      theme: 'striped',
       styles: {
         overflow: 'linebreak',
         cellPadding: 5,
         fontSize: 10,
         textColor: [0, 0, 0],
-        halign: 'center'
       },
       columnStyles: {
-        0: { cellWidth: 'auto' }
+        0: { cellWidth: 'auto', fontStyle: 'bold' },
+        1: { cellWidth: 'auto' }
       },
-      // Cell renderer that handles asterisks for highlighting
       didParseCell: cellRenderer,
       margin: { left: PDF_CONFIG.margin, right: PDF_CONFIG.margin },
       tableLineWidth: 0.2,
@@ -245,11 +194,11 @@ export const addNearWinnersSection = (
     // Draw section header
     const currentY = drawSectionHeader(pdf, options);
     
-    // Create table rows
-    const tableRows = createTableRows(nearWinners, drawnNumbersSet, options);
+    // Create table data
+    const tableData = createTableData(nearWinners, drawnNumbersSet);
     
     // Generate table and return final Y position
-    return generateNearWinnersTable(pdf, tableRows, currentY);
+    return generateNearWinnersTable(pdf, tableData, currentY);
   } catch (error) {
     console.error("Error in addNearWinnersSection:", error);
     return PDF_CONFIG.margin + 30; // Return a safe position in case of error
