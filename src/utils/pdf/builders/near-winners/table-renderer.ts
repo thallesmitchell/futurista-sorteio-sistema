@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { PDF_CONFIG } from '../base-pdf';
@@ -21,7 +22,7 @@ export const generateNearWinnersTable = (
     // Definir larguras exatas das colunas - IMPORTANTE para manter alinhamento
     const columnWidths = {
       0: { cellWidth: 80 },  // Coluna do jogador
-      1: { cellWidth: 'auto' } // Coluna da sequência
+      1: { cellWidth: 100 } // Coluna da sequência - usando número em vez de 'auto'
     };
     
     // Process the table data to replace the content with empty strings
