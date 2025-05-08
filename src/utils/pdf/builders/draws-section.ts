@@ -109,7 +109,7 @@ export const addDrawsSection = (
     const sortedNumbers = [...draw.numbers].sort((a, b) => a - b);
     
     // Definir layout para os números - reduzido
-    const circleRadius = 3; // Reduzido para 3mm
+    const circleRadius = 5; // Reduzido para 3mm
     const circleSpacing = 9; // Reduzido proporcional ao novo tamanho do círculo
     const maxCirclesPerRow = Math.floor((PDF_CONFIG.pageWidth - (PDF_CONFIG.margin * 2)) / circleSpacing);
     
