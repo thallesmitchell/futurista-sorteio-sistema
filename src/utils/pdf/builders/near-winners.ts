@@ -30,15 +30,15 @@ export const addNearWinnersSection = (
   
   // Section title
   let currentY = PDF_CONFIG.margin + 35;
-  pdf.setFont('helvetica', 'bold');
+  pdf.setFont("helvetica", "bold");
   pdf.setFontSize(PDF_CONFIG.fontSizes.subtitle);
   pdf.setTextColor(options.color);
-  pdf.text('Jogos Amarrados', PDF_CONFIG.pageWidth / 2, currentY, { align: 'center' });
+  pdf.text("Jogos Amarrados", PDF_CONFIG.pageWidth / 2, currentY, { align: "center" });
   
   currentY += 8;
   
   // Description
-  pdf.setFont('helvetica', 'normal');
+  pdf.setFont("helvetica", "normal");
   pdf.setFontSize(PDF_CONFIG.fontSizes.normal);
   pdf.setTextColor('#000000');
   pdf.text(
@@ -118,37 +118,41 @@ export const addNearWinnersSection = (
           return;
         }
 
-        // Initialize text as empty array if it doesn't exist
+        // Make sure data.cell.text always exists and is an array of strings
         if (!data.cell.text) {
-          data.cell.text = [''] as unknown as string[];
+          data.cell.text = [''];
           return;
         }
 
         // Handle string cell text - convert to array
         if (typeof data.cell.text === 'string') {
-          data.cell.text = [data.cell.text] as unknown as string[];
+          data.cell.text = [String(data.cell.text)];
           return;
         }
 
-        // Handle non-array, non-string data - convert to array of strings
+        // Handle non-array data - convert to array of strings
         if (!Array.isArray(data.cell.text)) {
-          data.cell.text = [String(data.cell.text)] as unknown as string[];
+          data.cell.text = [String(data.cell.text)];
           return;
         }
-
-        // Handle empty array
-        if (data.cell.text.length === 0) {
-          data.cell.text = [''] as unknown as string[];
-          return;
-        }
-
-        // Now we can be sure data.cell.text is an array with at least one element
-        const cellText = String(data.cell.text[0] || '');
         
-        // Only process formatting if our markers are present
-        if (cellText.includes('[') && cellText.includes(']')) {
+        // Ensure all array elements are strings
+        if (data.cell.text.length === 0) {
+          data.cell.text = [''];
+          return;
+        }
+        
+        // Ensure first element is a string before processing
+        let cellText = '';
+        if (data.cell.text[0] !== null && data.cell.text[0] !== undefined) {
+          cellText = String(data.cell.text[0]);
+        }
+        
+        // Only process formatting if our markers are present and cellText is a string
+        if (cellText && cellText.includes('[') && cellText.includes(']')) {
+          // Split by brackets, but be careful with the split operation
           const parts = cellText.split(/\[|\]/g).filter(Boolean);
-          const styledParts: Array<string | {text: string, style: any}> = [];
+          const styledParts = [];
           
           for (let i = 0; i < parts.length; i++) {
             const part = parts[i];
@@ -158,24 +162,31 @@ export const addNearWinnersSection = (
             if (i % 2 === 1) {
               // Text was inside brackets, highlight it
               styledParts.push({
-                text: part,
+                text: String(part), // Ensure part is stringified
                 style: {
                   textColor: [0, 158, 26], // Green color
                   fontStyle: 'bold'
                 }
               });
             } else {
-              styledParts.push(part);
+              styledParts.push(String(part)); // Ensure regular text is also stringified
             }
           }
           
-          // Replace cell text with styled parts
-          data.cell.text = styledParts as unknown as string[];
+          // Replace cell text with styled parts, ensuring it's an array of the right type
+          if (styledParts.length > 0) {
+            data.cell.text = styledParts;
+          }
+        } else {
+          // If no formatting needed, ensure we have valid strings
+          data.cell.text = data.cell.text.map(item => 
+            item === null || item === undefined ? '' : String(item)
+          );
         }
       } catch (error) {
         console.error("Error in didParseCell:", error);
         // Fallback to safe value on error
-        data.cell.text = ['Error processing text'] as unknown as string[];
+        data.cell.text = ['Error processing text'];
       }
     },
     margin: { left: PDF_CONFIG.margin, right: PDF_CONFIG.margin },
