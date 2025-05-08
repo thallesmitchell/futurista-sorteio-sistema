@@ -18,12 +18,11 @@ export const generateNearWinnersTable = (
     
     console.log(`Rendering near winners table with ${tableData.length} rows`);
     
-    // Process the table data to remove actual text content from the second column
-    // but keep the highlighting information for manual rendering
+    // Process the table data to replace the content with empty strings
+    // We'll manually render the content in didDrawCell
     const processedTableData = tableData.map(([playerName, sequence]) => {
       // Keep the player name intact, but set an empty string for the sequence
-      // We'll render it manually with the original data in didDrawCell
-      return [playerName, sequence] as [string, string];
+      return [playerName, ""] as [string, string];
     });
     
     // Configure the table
@@ -54,64 +53,64 @@ export const generateNearWinnersTable = (
       },
       didDrawCell: function(data) {
         // Only process the sequence column (index 1)
-        if (data.column.index === 1 && data.cell.raw !== undefined) {
-          // Get the raw data which contains our sequence with highlight markers
-          const originalContent = data.cell.raw as string;
-          
-          // Always clear the default cell text to prevent duplication
-          data.cell.text = [];
-          
-          // Skip further processing if the cell has no content
-          if (!originalContent) {
-            return;
-          }
-          
-          // Save the current graphics state
-          pdf.saveGraphicsState();
-          
-          // Default cell position for text
-          const xPos = data.cell.x + 5; // Initial offset from cell border
-          const yPos = data.cell.y + data.cell.height / 2 + 1; // Vertically centered
-          
-          // Check if we need to handle highlighting (has asterisks)
-          if (originalContent.includes('*')) {
-            console.log(`Rendering cell with highlighting: ${originalContent}`);
+        if (data.column.index === 1 && data.row.index >= 0 && data.row.raw) {
+          // Get the original sequence from our table data
+          const rowIndex = data.row.index;
+          if (rowIndex < tableData.length) {
+            const originalSequence = tableData[rowIndex][1];
             
-            // Split the text into parts (numbers separated by spaces)
-            const parts = originalContent.split(' ');
-            
-            let currentX = xPos;
-            
-            // Draw each part of the string with appropriate highlighting
-            for (const part of parts) {
-              const isHit = part.includes('*');
-              const numberText = part.replace(/\*/g, '');
-              
-              // Set text properties based on whether it's a hit
-              if (isHit) {
-                pdf.setTextColor(0, 158, 26); // Green for hits
-                pdf.setFont('helvetica', 'bold');
-              } else {
-                pdf.setTextColor(0, 0, 0); // Black for non-hits
-                pdf.setFont('helvetica', 'normal');
-              }
-              
-              // Draw this part of the text
-              pdf.text(numberText, currentX, yPos);
-              
-              // Move X position for next part (add space + text width)
-              const textWidth = pdf.getTextWidth(numberText);
-              currentX += textWidth + 3;
+            // Skip if no sequence
+            if (!originalSequence) {
+              return;
             }
-          } else {
-            // No highlighting needed, render the text normally
-            pdf.setTextColor(0, 0, 0);
-            pdf.setFont('helvetica', 'normal');
-            pdf.text(originalContent, xPos, yPos);
+            
+            // Save the current graphics state
+            pdf.saveGraphicsState();
+            
+            // Default cell position for text
+            const xPos = data.cell.x + 5; // Initial offset from cell border
+            const yPos = data.cell.y + data.cell.height / 2 + 1; // Vertically centered
+            
+            // Check if we need to handle highlighting (has asterisks)
+            if (originalSequence.includes('*')) {
+              console.log(`Rendering cell with highlighting: ${originalSequence}`);
+              
+              // Split the text into parts (numbers separated by spaces)
+              const parts = originalSequence.split(' ');
+              
+              let currentX = xPos;
+              
+              // Draw each part of the string with appropriate highlighting
+              for (const part of parts) {
+                const isHit = part.includes('*');
+                const numberText = part.replace(/\*/g, '');
+                
+                // Set text properties based on whether it's a hit
+                if (isHit) {
+                  pdf.setTextColor(0, 158, 26); // Green for hits
+                  pdf.setFont('helvetica', 'bold');
+                } else {
+                  pdf.setTextColor(0, 0, 0); // Black for non-hits
+                  pdf.setFont('helvetica', 'normal');
+                }
+                
+                // Draw this part of the text
+                pdf.text(numberText, currentX, yPos);
+                
+                // Move X position for next part (add space + text width)
+                const textWidth = pdf.getTextWidth(numberText);
+                currentX += textWidth + 3;
+              }
+            } else {
+              // No highlighting needed, render the text normally
+              pdf.setTextColor(0, 0, 0);
+              pdf.setFont('helvetica', 'normal');
+              pdf.text(originalSequence, xPos, yPos);
+            }
+            
+            // Always restore graphics state
+            pdf.restoreGraphicsState();
           }
-          
-          // Always restore graphics state
-          pdf.restoreGraphicsState();
         }
       }
     });
