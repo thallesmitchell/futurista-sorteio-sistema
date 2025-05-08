@@ -9,6 +9,7 @@ import {
   addPlayersSection,
   PDF_CONFIG
 } from './builders';
+import { PdfSectionOptions } from './types';
 
 /**
  * Generate and download complete PDF report for a game
@@ -47,6 +48,12 @@ export const generateGameReport = async (
     // Initialize PDF with white background
     const pdf = createPDF();
     
+    // Create section options with proper typing
+    const sectionOptions: PdfSectionOptions = { 
+      color: options.themeColor,
+      maxCombosPerPlayer: 1000 // Show all sequences for completeness
+    };
+    
     // Add header with better error handling for dates
     const gameName = typeof game.name === 'string' ? game.name : 'Resultado';
     let currentY = addHeader(pdf, gameName, game.startDate || new Date(), { color: options.themeColor });
@@ -56,7 +63,7 @@ export const generateGameReport = async (
     
     // Add near winners section only if no winners and if requested
     if (options.includeNearWinners && !hasWinners) {
-      currentY = addNearWinnersSection(pdf, game, allDrawnNumbers, { color: options.themeColor });
+      currentY = addNearWinnersSection(pdf, game, allDrawnNumbers, sectionOptions);
     }
     
     // Add winners section (if any)
@@ -69,10 +76,7 @@ export const generateGameReport = async (
     }
     
     // Add players section in a tabular format
-    addPlayersSection(pdf, game, allDrawnNumbers, currentY, { 
-      color: options.themeColor,
-      maxCombosPerPlayer: 1000 // Show all sequences for completeness
-    });
+    addPlayersSection(pdf, game, allDrawnNumbers, currentY, sectionOptions);
     
     // Use provided filename or generate one with sanitizing
     const safeFilename = options.filename 

@@ -1,15 +1,16 @@
 
 import jsPDF from 'jspdf';
 import { Game } from '@/contexts/game/types';
-import { PDF_CONFIG } from '../simplePdfGenerator';
+import { PDF_CONFIG } from './base-pdf';
 import autoTable from 'jspdf-autotable';
+import { PdfSectionOptions } from '../types';
 
 // Add "Jogos Amarrados" section (near winners with 5 hits) with simpler styling
 export const addNearWinnersSection = (
   pdf: jsPDF, 
   game: Game, 
   allDrawnNumbers: number[], 
-  options = { color: '#39FF14' }
+  options: PdfSectionOptions = { color: '#39FF14' }
 ): number => {
   const drawnNumbersSet = new Set(allDrawnNumbers);
   
@@ -60,7 +61,8 @@ export const addNearWinnersSection = (
     ]);
     
     // Show combinations for this player (limit to 3 to save space)
-    const combosToShow = item.combos.slice(0, 3);
+    const maxCombos = options.maxCombosPerPlayer || 3;
+    const combosToShow = item.combos.slice(0, maxCombos);
     
     combosToShow.forEach(combo => {
       const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
@@ -78,9 +80,9 @@ export const addNearWinnersSection = (
     });
     
     // If there are more combinations than shown
-    if (item.combos.length > 3) {
+    if (item.combos.length > maxCombos) {
       tableData.push([{ 
-        content: `+ ${item.combos.length - 3} mais sequência${item.combos.length - 3 !== 1 ? 's' : ''} com 5 acertos`, 
+        content: `+ ${item.combos.length - maxCombos} mais sequência${item.combos.length - maxCombos !== 1 ? 's' : ''} com 5 acertos`, 
         styles: { fontStyle: 'italic', textColor: [100, 100, 100] } 
       }]);
     }
@@ -109,34 +111,45 @@ export const addNearWinnersSection = (
       0: { cellWidth: 'auto' }
     },
     didParseCell: function(data) {
-      // Style for hit numbers (marked with brackets)
-      if (data.cell.text && data.cell.text.toString().includes('[')) {
-        const cellText = data.cell.text.toString();
-        const parts = cellText.split(/\[|\]/g);
-        const styledParts = [];
-        
-        for (let i = 0; i < parts.length; i++) {
-          if (parts[i].trim() !== '') {
-            // Check if this part should be highlighted
-            const isHighlighted = i % 2 === 1;
+      // Safely check if cell.text exists and is a string or can be converted to string
+      if (data.cell.text) {
+        try {
+          // Convert to string if not already a string
+          const cellText = String(data.cell.text);
+          
+          // Only process if it contains our markers
+          if (cellText.includes('[') && cellText.includes(']')) {
+            const parts = cellText.split(/\[|\]/g);
+            const styledParts = [];
             
-            if (isHighlighted) {
-              // Style the hit numbers in green
-              styledParts.push({
-                text: parts[i],
-                style: { 
-                  textColor: [0, 158, 26],
-                  fontStyle: 'bold' 
+            for (let i = 0; i < parts.length; i++) {
+              if (parts[i].trim() !== '') {
+                // Check if this part should be highlighted
+                const isHighlighted = i % 2 === 1;
+                
+                if (isHighlighted) {
+                  // Style the hit numbers in green
+                  styledParts.push({
+                    text: parts[i],
+                    style: { 
+                      textColor: [0, 158, 26],
+                      fontStyle: 'bold' 
+                    }
+                  });
+                } else {
+                  styledParts.push(parts[i]);
                 }
-              });
-            } else {
-              styledParts.push(parts[i]);
+              }
             }
+            
+            // Replace cell content with rich text
+            data.cell.text = styledParts;
           }
+        } catch (error) {
+          console.error("Error processing cell text:", error);
+          // Ensure cell text is a safe string if parsing fails
+          data.cell.text = String(data.cell.text);
         }
-        
-        // Replace cell content with rich text
-        data.cell.text = styledParts;
       }
     },
     margin: { left: PDF_CONFIG.margin, right: PDF_CONFIG.margin },

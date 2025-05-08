@@ -2,6 +2,7 @@
 import jsPDF from 'jspdf';
 import { Game } from '@/contexts/game/types';
 import { PDF_CONFIG } from './base-pdf';
+import { PdfSectionOptions } from '../types';
 
 /**
  * Add a section with all players and their combinations
@@ -11,7 +12,7 @@ export const addPlayersSection = (
   game: Game,
   allDrawnNumbers: number[],
   startY: number,
-  options = { color: '#39FF14' }
+  options: PdfSectionOptions = { color: '#39FF14' }
 ): number => {
   if (!game.players || !Array.isArray(game.players) || game.players.length === 0) {
     return startY;
@@ -75,14 +76,18 @@ export const addPlayersSection = (
       
       yPosition += PDF_CONFIG.lineHeight;
       
-      // Add ALL combinations
+      // Add combinations with respect to maxCombosPerPlayer option
       if (Array.isArray(player.combinations)) {
         // Sort by hits (highest first)
         const sortedCombos = [...player.combinations]
           .filter(c => c && typeof c === 'object')
           .sort((a, b) => (b.hits || 0) - (a.hits || 0));
         
-        for (const combo of sortedCombos) {
+        // Respect the max combinations setting if provided
+        const maxCombos = options.maxCombosPerPlayer || sortedCombos.length;
+        const combosToShow = sortedCombos.slice(0, maxCombos);
+        
+        for (const combo of combosToShow) {
           if (!combo || !Array.isArray(combo.numbers)) continue;
           
           // Check if we need to add a new page for this combination
@@ -124,6 +129,19 @@ export const addPlayersSection = (
           
           // Reset text color
           pdf.setTextColor(0, 0, 0);
+          yPosition += PDF_CONFIG.lineHeight;
+        }
+        
+        // If there are more combinations than shown
+        if (sortedCombos.length > maxCombos) {
+          pdf.setFont("helvetica", "italic");
+          pdf.setFontSize(PDF_CONFIG.fontSizes.small - 1);
+          pdf.setTextColor(100, 100, 100);
+          pdf.text(
+            `+ ${sortedCombos.length - maxCombos} mais sequência${sortedCombos.length - maxCombos !== 1 ? 's' : ''}`,
+            PDF_CONFIG.margin + 10,
+            yPosition
+          );
           yPosition += PDF_CONFIG.lineHeight;
         }
       }
