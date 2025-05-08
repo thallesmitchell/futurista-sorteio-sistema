@@ -52,8 +52,11 @@ export const highlightedCellRenderer = (data: any): void => {
   }
 };
 
-// Define FontStyle type to match jsPDF-autotable's accepted values
+// Define types to match jsPDF-autotable's accepted values
 type FontStyle = 'normal' | 'bold' | 'italic' | 'bolditalic';
+type HAlignType = 'left' | 'center' | 'right' | 'justify';
+type VAlignType = 'top' | 'middle' | 'bottom';
+type OverflowType = 'linebreak' | 'ellipsize' | 'visible' | 'hidden';
 
 /**
  * Standard table styles that can be reused across PDF tables
@@ -61,7 +64,7 @@ type FontStyle = 'normal' | 'bold' | 'italic' | 'bolditalic';
 export const getStandardTableStyles = () => {
   return {
     styles: {
-      overflow: 'linebreak' as 'linebreak', // Properly typed as literal type
+      overflow: 'linebreak' as OverflowType, // Correctly typed as OverflowType
       cellPadding: 5,
       fontSize: 11,
       textColor: [0, 0, 0] as [number, number, number], // Properly typed as RGB tuple
@@ -71,7 +74,7 @@ export const getStandardTableStyles = () => {
       fillColor: [240, 240, 240] as [number, number, number], // Properly typed as RGB tuple
       textColor: [0, 0, 0] as [number, number, number], // Properly typed as RGB tuple
       fontStyle: 'bold' as FontStyle, // Explicitly typed as FontStyle
-      halign: 'left',
+      halign: 'left' as HAlignType, // Explicitly typed as HAlignType
       fontSize: 12,
     },
     margin: { left: PDF_CONFIG.margin, right: PDF_CONFIG.margin },

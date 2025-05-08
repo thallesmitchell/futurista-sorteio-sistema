@@ -30,8 +30,8 @@ export const findNearWinners = (game: Game) => {
 export const createNearWinnersTableData = (
   nearWinners: Array<{player: any, combos: any[]}>,
   drawnNumbersSet: Set<number>
-): any[] => {
-  const tableData = [];
+): string[][] => { // Explicitly specify return type as string[][]
+  const tableData: string[][] = [];
   
   // Debug log
   console.log(`Creating table data for ${nearWinners.length} near winners`);
