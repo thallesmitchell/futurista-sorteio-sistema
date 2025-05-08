@@ -51,10 +51,18 @@ export const generateNearWinnersTable = (
         0: { cellWidth: 80 },
         1: { cellWidth: 'auto' }
       },
+      // Override the head cell rendering to avoid duplication
+      // This ensures our header text is displayed only once
       didDrawCell: function(data) {
-        // Only process the sequence column (index 1)
-        if (data.column.index === 1 && data.row.index >= 0 && data.row.raw) {
-          // Get the original sequence from our table data
+        // Handle the sequence column (index 1)
+        if (data.column.index === 1) {
+          // For header cell, we don't need to do anything special since the autoTable
+          // will render it correctly without duplication
+          if (data.row.index < 0) {
+            return; // Skip header cell - let autoTable handle it
+          }
+          
+          // For data cells, get the row index
           const rowIndex = data.row.index;
           if (rowIndex < tableData.length) {
             const originalSequence = tableData[rowIndex][1];
