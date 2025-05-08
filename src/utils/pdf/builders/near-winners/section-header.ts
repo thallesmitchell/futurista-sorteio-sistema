@@ -17,7 +17,7 @@ export const drawNearWinnersHeader = (
   pdf.setTextColor(options.color);
   pdf.text("Jogos Amarrados", PDF_CONFIG.pageWidth / 2, currentY, { align: "center" });
   
-  currentY += 8;
+  currentY += 10;
   
   // Description
   pdf.setFont("helvetica", "normal");

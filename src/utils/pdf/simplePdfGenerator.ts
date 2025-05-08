@@ -53,13 +53,11 @@ export const generateSimplePdf = async (
     // Check if there are winners
     const hasWinners = Array.isArray(game.winners) && game.winners.length > 0;
     
-    // Add near winners section (jogos amarrados) - only if no winners and includeNearWinners is true
-    if (options.includeNearWinners === true && !hasWinners) {
+    // Always include near winners section if requested, regardless of winners
+    if (options.includeNearWinners === true) {
       console.log('Including near winners section in PDF');
       yPosition = addNearWinnersSection(pdf, game, allDrawnNumbers, { color: options.themeColor || '#39FF14' });
       console.log(`Y-position after near winners section: ${yPosition}`);
-    } else if (hasWinners) {
-      console.log('Game has winners, skipping near winners section');
     } else {
       console.log('Near winners section was not requested to be included');
     }

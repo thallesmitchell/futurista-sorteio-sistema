@@ -28,15 +28,23 @@ export const findNearWinners = (game: Game) => {
 };
 
 /**
+ * Format a number with a leading zero if needed
+ */
+const formatNumber = (num: number): string => {
+  return num < 10 ? `0${num}` : String(num);
+};
+
+/**
  * Create table data structure for near winners
+ * Returns an array of [playerName, formattedNumbersSequence] entries
  */
 export const createNearWinnersTableData = (
   nearWinners: Array<{player: any, combos: any[]}>,
   drawnNumbersSet: Set<number>
-): string[][] => { // Explicitly specify return type as string[][]
+): string[][] => {
+  // Create an array to hold our table rows
   const tableData: string[][] = [];
   
-  // Debug log
   console.log(`Creating table data for ${nearWinners.length} near winners`);
   
   for (const item of nearWinners) {
@@ -44,30 +52,27 @@ export const createNearWinnersTableData = (
     
     // For each combination with 5 hits
     for (const combo of combos) {
+      // Sort the numbers for better display
       const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
       
-      // Create a row with player name and formatted numbers
-      const row = [
-        player.name,
-        sortedNumbers.map(num => {
-          const isHit = drawnNumbersSet.has(num);
-          const formattedNum = formatNumber(num);
-          return isHit ? `*${formattedNum}*` : formattedNum;
-        }).join(' ')
-      ];
+      // Format each number and mark hits with asterisks for highlighting
+      const formattedSequence = sortedNumbers.map(num => {
+        const isHit = drawnNumbersSet.has(num);
+        const formattedNum = formatNumber(num);
+        // Mark hit numbers with asterisks for later highlighting
+        return isHit ? `*${formattedNum}*` : formattedNum;
+      }).join(' ');
       
-      console.log(`Adding near winner row: ${player.name} with numbers: ${sortedNumbers.join(', ')}`);
-      tableData.push(row);
+      console.log(`Adding near winner row for ${player.name} with sequence: ${formattedSequence}`);
+      
+      // Add this row to our table data
+      tableData.push([
+        player.name,
+        formattedSequence
+      ]);
     }
   }
   
   console.log(`Generated ${tableData.length} rows for near winners table`);
   return tableData;
-};
-
-/**
- * Format a number with a leading zero if needed
- */
-const formatNumber = (num: number): string => {
-  return String(num).padStart(2, '0');
 };

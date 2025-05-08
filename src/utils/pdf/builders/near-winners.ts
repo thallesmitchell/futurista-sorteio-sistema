@@ -21,6 +21,8 @@ export const addNearWinnersSection = (
     }
 
     console.log('Starting near winners section processing');
+    
+    // Create a set of drawn numbers for faster lookup
     const drawnNumbersSet = new Set(allDrawnNumbers);
     console.log(`Total drawn numbers: ${drawnNumbersSet.size}`);
     console.log(`Drawn numbers: ${[...drawnNumbersSet].join(', ')}`);
@@ -44,7 +46,7 @@ export const addNearWinnersSection = (
     
     if (tableData.length === 0) {
       console.log('No table data generated, skipping section');
-      return PDF_CONFIG.margin + 30;
+      return currentY + 10;
     }
     
     // Generate table and return final Y position

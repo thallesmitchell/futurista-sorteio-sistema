@@ -24,28 +24,23 @@ export const generateNearWinnersTable = (
     
     console.log(`Rendering near winners table with ${tableData.length} rows`);
     
-    // Debug log to check what data is being passed to the table
+    // Debug print each row for troubleshooting
     tableData.forEach((row, index) => {
-      console.log(`Table row ${index}: ${row[0]} - ${row[1]}`);
+      console.log(`Table row ${index}:`, JSON.stringify(row));
     });
     
     const tableStyles = getStandardTableStyles();
     
-    // Using simple strings instead of complex objects for cell content
-    const processedData = tableData.map(row => [
-      row[0],                // Player name (keep as is) 
-      row[1]                 // Number sequence (keep as is)
-    ]);
-    
+    // Ensure table data is in the correct format
     autoTable(pdf, {
       startY: currentY,
       head: [['Jogador', 'Sequência (5 acertos)']],
-      body: processedData,
+      body: tableData,
       theme: 'striped',
       ...tableStyles,
       columnStyles: {
-        0: { cellWidth: 80, fontStyle: 'bold' as FontStyle }, // Explicitly typed as FontStyle
-        1: { cellWidth: 'auto', halign: 'left' as HAlignType }  // Explicitly typed as HAlignType
+        0: { cellWidth: 80, fontStyle: 'bold' as FontStyle },
+        1: { cellWidth: 'auto', halign: 'left' as HAlignType }
       },
       didParseCell: highlightedCellRenderer,
     });
