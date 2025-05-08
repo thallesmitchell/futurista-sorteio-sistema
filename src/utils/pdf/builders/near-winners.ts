@@ -111,51 +111,60 @@ export const addNearWinnersSection = (
       0: { cellWidth: 'auto' }
     },
     didParseCell: function(data) {
-      // Safely check if cell.text exists and is a string or can be converted to string
-      if (data.cell.text) {
-        try {
-          // Handle different cell text types - Fix for the TypeScript error
-          // Convert cell text to array if it's a string
-          if (typeof data.cell.text === 'string') {
-            data.cell.text = [data.cell.text];
-          }
-          
-          // Now we can safely get the first element as a string
-          const cellText = String(data.cell.text[0] || '');
-          
-          // Only process if it contains our markers
-          if (cellText.includes('[') && cellText.includes(']')) {
-            const parts = cellText.split(/\[|\]/g);
-            const styledParts = [];
-            
-            for (let i = 0; i < parts.length; i++) {
-              if (parts[i].trim() !== '') {
-                // Check if this part should be highlighted
-                const isHighlighted = i % 2 === 1;
-                
-                if (isHighlighted) {
-                  // Style the hit numbers in green
-                  styledParts.push({
-                    text: parts[i],
-                    style: { 
-                      textColor: [0, 158, 26],
-                      fontStyle: 'bold' 
-                    }
-                  });
-                } else {
-                  styledParts.push(parts[i]);
-                }
-              }
-            }
-            
-            // Replace cell content with rich text
-            data.cell.text = styledParts;
-          }
-        } catch (error) {
-          console.error("Error processing cell text:", error);
-          // Ensure cell text is a safe string array if parsing fails
-          data.cell.text = [String(data.cell.text)];
+      // Complete rewrite of the cell parsing logic to handle all possible cases
+      try {
+        // First ensure data.cell.text exists
+        if (!data.cell.text) {
+          data.cell.text = [''];
+          return;
         }
+        
+        // Ensure cell.text is always an array
+        if (!Array.isArray(data.cell.text)) {
+          data.cell.text = [String(data.cell.text || '')];
+          return;
+        }
+        
+        // If the array is empty, set a default value
+        if (data.cell.text.length === 0) {
+          data.cell.text = [''];
+          return;
+        }
+        
+        // Get the first element and ensure it's a string
+        let cellText = String(data.cell.text[0] || '');
+        
+        // Only process if it contains our markers
+        if (cellText.includes('[') && cellText.includes(']')) {
+          // Split by our markers
+          const parts = cellText.split(/\[|\]/g).filter(part => part !== '');
+          const styledParts = [];
+          
+          for (let i = 0; i < parts.length; i++) {
+            // Check if this part should be highlighted (odd indices were inside brackets)
+            const isHighlighted = i % 2 === 1;
+            
+            if (isHighlighted) {
+              // Style the hit numbers in green
+              styledParts.push({
+                text: parts[i],
+                style: { 
+                  textColor: [0, 158, 26],
+                  fontStyle: 'bold' 
+                }
+              });
+            } else {
+              styledParts.push(parts[i]);
+            }
+          }
+          
+          // Replace cell content with rich text
+          data.cell.text = styledParts;
+        }
+      } catch (error) {
+        console.error("Error processing cell text:", error);
+        // Ensure cell text is a safe string array if parsing fails
+        data.cell.text = ['Error processing text'];
       }
     },
     margin: { left: PDF_CONFIG.margin, right: PDF_CONFIG.margin },
