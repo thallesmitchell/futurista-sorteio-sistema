@@ -51,24 +51,25 @@ export const generateNearWinnersTable = (
         0: { cellWidth: 80 },
         1: { cellWidth: 'auto' }
       },
-      // Completely prevent any content in header cells from being auto-rendered
-      // by setting custom cell renderers
+      // We'll completely take over rendering for the header cell to ensure no numbers show
+      didDrawPage: function(data) {
+        // Make sure we don't have any unwanted text in the header
+        console.log('Page redrawn in table');
+      },
       willDrawCell: function(data) {
-        // Identify the header cell in the sequence column specifically
+        // Para células de cabeçalho na coluna de sequência, garantimos que nenhum conteúdo seja mostrado
         if (data.row.index < 0 && data.column.index === 1) {
-          // Log that we're handling this specific header cell
-          console.log('Preventing auto-content in sequence column header');
-          
-          // The content will be rendered by autoTable based on the head configuration
-          // We don't need to do anything special here except identify the cell
+          // Limpar qualquer conteúdo automático que possa estar sendo definido
+          data.cell.text = [''];  // Forçar texto vazio
+          console.log('Interceptando e limpando conteúdo da célula de cabeçalho da sequência');
         }
       },
       didDrawCell: function(data) {
         // Handle the sequence column (index 1)
         if (data.column.index === 1) {
-          // For header cell, we don't touch it - let autoTable render just the title
+          // Primeiramente, garantir que não manipulamos células de cabeçalho de forma alguma
           if (data.row.index < 0) {
-            return; // Skip header cell completely - only show what autoTable renders
+            return; // Sair imediatamente para qualquer célula de cabeçalho
           }
           
           // For data cells, get the row index
