@@ -5,14 +5,12 @@ import { usePlayersView } from '@/hooks/usePlayersView';
 import { PlayerViewHeader } from '@/components/game/PlayerViewHeader';
 import { PlayerViewList } from '@/components/game/PlayerViewList';
 import { WinnerBanner } from '@/components/game/WinnerBanner';
-import { supabase } from '@/integrations/supabase/client';
-import { Player } from '@/contexts/game/types';
 import { MobileNavBar } from '@/components/mobile/MobileNavBar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useGameWinners } from '@/hooks/useGameWinners';
 
 export default function PlayersView() {
   const { gameId } = useParams<{ gameId: string }>();
-  const [winners, setWinners] = useState<Player[]>([]);
   const isMobile = useIsMobile();
   const {
     game,
@@ -23,46 +21,9 @@ export default function PlayersView() {
     handleGeneratePDF,
     profileData
   } = usePlayersView(gameId);
-
-  // Fetch winners directly from database
-  useEffect(() => {
-    const fetchWinners = async () => {
-      if (!gameId) return;
-
-      try {
-        console.log('PlayersView: Fetching winners from database for game:', gameId);
-        // Get unique player ids of winners for this game
-        const { data: winnersData, error } = await supabase
-          .from('winners')
-          .select('player_id')
-          .eq('game_id', gameId)
-          .order('created_at');
-
-        if (error) throw error;
-
-        if (winnersData && winnersData.length > 0 && game && game.players) {
-          console.log('PlayersView: Found winner entries in database:', winnersData.length);
-          const uniquePlayerIds = [...new Set(winnersData.map(w => w.player_id))];
-          
-          // Find the actual player objects from game state
-          const winnerPlayers = game.players.filter(p => 
-            uniquePlayerIds.includes(p.id)
-          );
-          console.log('PlayersView: Matched winners with player data:', winnerPlayers.length);
-          setWinners(winnerPlayers);
-        } else {
-          console.log('PlayersView: No winners found in database for game:', gameId);
-          setWinners([]);
-        }
-      } catch (error) {
-        console.error('PlayersView: Error fetching winners:', error);
-      }
-    };
-
-    if (gameId && game) {
-      fetchWinners();
-    }
-  }, [gameId, game]);
+  
+  // Use our new hook to fetch winners directly from the database
+  const { winners } = useGameWinners(gameId, game?.players);
 
   // If game not found, show loading
   if (!game) {
@@ -84,7 +45,7 @@ export default function PlayersView() {
           gameId={game.id}
         />
 
-        {/* Always show banner de vencedores if there are winners - based on database query */}
+        {/* Always show banner de vencedores if there are winners */}
         {hasWinners && (
           <div className={`${isMobile ? 'px-3' : 'px-4 md:px-0'} mb-4`}>
             <WinnerBanner 

@@ -23,6 +23,7 @@ const Index = () => {
     }
   }, [isAuthenticated, isSuperAdmin, navigate]);
 
+  // Show login page if not authenticated
   return <LoginPage />;
 };
 

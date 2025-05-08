@@ -8,10 +8,10 @@ import { GameHeader } from '@/components/game/GameHeader';
 import { GameAdminForms } from '@/components/game/GameAdminForms';
 import { useToast } from '@/hooks/use-toast';
 import PlayerEditHandler from '@/components/game/PlayerEditHandler';
-import { supabase } from '@/integrations/supabase/client';
 import { GameWinnersSection } from '@/components/game/GameWinnersSection';
 import { GameContentTabs } from '@/components/game/GameContentTabs';
 import { GameModals } from '@/components/game/GameModals';
+import { useGameWinners } from '@/hooks/useGameWinners';
 
 export default function GameAdmin() {
   const { gameId } = useParams<{ gameId: string }>();
@@ -20,54 +20,14 @@ export default function GameAdmin() {
   const [isWinnersModalOpen, setIsWinnersModalOpen] = useState(false);
   const [isCloseModalOpen, setIsCloseModalOpen] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
-  const [winners, setWinners] = useState<Player[]>([]);
   const { toast } = useToast();
   const playerEditHandlerRef = useRef<any>(null);
 
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
-
-  // Fetch winners directly from database
-  useEffect(() => {
-    const fetchWinners = async () => {
-      if (!gameId) return;
-
-      try {
-        console.log('Fetching winners from database for game:', gameId);
-        // Get unique player ids of winners for this game
-        const { data: winnersData, error } = await supabase
-          .from('winners')
-          .select('player_id')
-          .eq('game_id', gameId)
-          .order('created_at');
-
-        if (error) throw error;
-
-        if (winnersData && winnersData.length > 0) {
-          console.log('Found winner entries in database:', winnersData.length);
-          const uniquePlayerIds = [...new Set(winnersData.map(w => w.player_id))];
-          
-          if (game && game.players) {
-            // Find the actual player objects from game state
-            const winnerPlayers = game.players.filter(p => 
-              uniquePlayerIds.includes(p.id)
-            );
-            console.log('Matched winners with player data:', winnerPlayers.length);
-            setWinners(winnerPlayers);
-          }
-        } else {
-          console.log('No winners found in database for game:', gameId);
-          setWinners([]);
-        }
-      } catch (error) {
-        console.error('Error fetching winners:', error);
-      }
-    };
-
-    if (gameId) {
-      fetchWinners();
-    }
-  }, [gameId, game]);
+  
+  // Use our new hook to fetch winners directly from the database
+  const { winners } = useGameWinners(gameId, game?.players);
 
   // Set current game for context and check for winners when game data changes
   useEffect(() => {
