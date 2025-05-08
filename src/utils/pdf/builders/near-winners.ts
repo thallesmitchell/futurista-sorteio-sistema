@@ -50,143 +50,131 @@ export const addNearWinnersSection = (
   
   currentY += 15;
   
-  // Create table data for near winners
-  const tableData = [];
+  // Completely redesigned table approach that avoids complex styling in cells
+  const tableRows = [];
   
-  // Process each near winner for the table
-  nearWinners.forEach((item, index) => {
+  // Process each near winner for the table - with safer implementation
+  for (let i = 0; i < nearWinners.length; i++) {
+    const item = nearWinners[i];
+    
     // Add player name as header row
-    tableData.push([
-      { content: item.player.name, styles: { fontStyle: 'bold', fillColor: [240, 240, 240] } }
-    ]);
+    tableRows.push([{
+      content: item.player.name,
+      colSpan: 1,
+      styles: { 
+        fontStyle: 'bold', 
+        fillColor: [240, 240, 240],
+        halign: 'center'
+      }
+    }]);
     
     // Show combinations for this player (limit to 3 to save space)
     const maxCombos = options.maxCombosPerPlayer || 3;
     const combosToShow = item.combos.slice(0, maxCombos);
     
+    // Process each combo separately
     combosToShow.forEach(combo => {
       const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
       
-      // Format numbers with hit highlighting (ONLY hit numbers are green)
-      const numbersStr = sortedNumbers.map(num => {
+      // Create a safe string representation of the numbers
+      let numbersText = '';
+      
+      // Format each number individually with hit highlighting
+      sortedNumbers.forEach((num, idx) => {
         const isHit = drawnNumbersSet.has(num);
         const formattedNum = String(num).padStart(2, '0');
-        return isHit 
-          ? `[${formattedNum}]` // Mark hit numbers for styling
-          : formattedNum;
-      }).join(' ');
+        
+        // Add space between numbers except for the first one
+        if (idx > 0) numbersText += ' ';
+        
+        // Add the formatted number (no special formatting here - we'll use basic text)
+        numbersText += isHit ? `*${formattedNum}*` : formattedNum;
+      });
       
-      tableData.push([{ content: numbersStr, styles: {} }]);
+      // Add the row with plain text (no complex styling)
+      tableRows.push([{
+        content: numbersText,
+        colSpan: 1,
+        styles: { halign: 'center' }
+      }]);
     });
     
     // If there are more combinations than shown
     if (item.combos.length > maxCombos) {
-      tableData.push([{ 
-        content: `+ ${item.combos.length - maxCombos} mais sequência${item.combos.length - maxCombos !== 1 ? 's' : ''} com 5 acertos`, 
-        styles: { fontStyle: 'italic', textColor: [100, 100, 100] } 
+      tableRows.push([{
+        content: `+ ${item.combos.length - maxCombos} mais sequência${item.combos.length - maxCombos !== 1 ? 's' : ''} com 5 acertos`,
+        colSpan: 1,
+        styles: { fontStyle: 'italic', textColor: [100, 100, 100], halign: 'center' }
       }]);
     }
     
-    // Add spacer between players
-    if (index < nearWinners.length - 1) {
-      tableData.push([{ content: '', styles: { borderBottom: '1px dashed #ccc' } }]);
+    // Add spacer between players (except after the last one)
+    if (i < nearWinners.length - 1) {
+      tableRows.push([{
+        content: '',
+        colSpan: 1,
+        styles: { cellPadding: 2 }
+      }]);
     }
-  });
+  }
   
-  // Create table for near winners
+  // Create table for near winners with much simpler styling
   autoTable(pdf, {
     startY: currentY,
-    body: tableData,
-    theme: 'grid',
+    head: [], // No header row
+    body: tableRows,
+    theme: 'plain',
     styles: {
       overflow: 'linebreak',
       cellPadding: 5,
       fontSize: 10,
-      textColor: [0, 0, 0]
-    },
-    bodyStyles: {
-      fillColor: [255, 255, 255]
+      textColor: [0, 0, 0],
+      halign: 'center'
     },
     columnStyles: {
       0: { cellWidth: 'auto' }
     },
+    // New simpler cell renderer that handles asterisks for highlighting
     didParseCell: function(data) {
+      // Skip if no text content
+      if (!data?.cell?.text || !data.cell.text[0]) return;
+      
       try {
-        // Guard for undefined or null data.cell
-        if (!data || !data.cell) {
-          console.warn('Invalid cell data in didParseCell');
-          return;
-        }
-
-        // Make sure data.cell.text always exists and is an array of strings
-        if (!data.cell.text) {
-          data.cell.text = [''];
-          return;
-        }
-
-        // Handle string cell text - convert to array
-        if (typeof data.cell.text === 'string') {
-          data.cell.text = [String(data.cell.text)];
-          return;
-        }
-
-        // Handle non-array data - convert to array of strings
-        if (!Array.isArray(data.cell.text)) {
-          data.cell.text = [String(data.cell.text)];
-          return;
-        }
+        // Make sure we're working with a string
+        let text = String(data.cell.text[0] || '');
         
-        // Ensure all array elements are strings
-        if (data.cell.text.length === 0) {
-          data.cell.text = [''];
-          return;
-        }
-        
-        // Ensure first element is a string before processing
-        let cellText = '';
-        if (data.cell.text[0] !== null && data.cell.text[0] !== undefined) {
-          cellText = String(data.cell.text[0]);
-        }
-        
-        // Only process formatting if our markers are present and cellText is a string
-        if (cellText && cellText.includes('[') && cellText.includes(']')) {
-          // Split by brackets, but be careful with the split operation
-          const parts = cellText.split(/\[|\]/g).filter(Boolean);
+        // Look for asterisk markers and replace with styled text
+        if (text.includes('*')) {
+          const parts = text.split(/\*+/g);
           const styledParts = [];
           
           for (let i = 0; i < parts.length; i++) {
-            const part = parts[i];
-            if (!part) continue; // Skip empty parts
+            if (!parts[i]) continue;
             
-            // Even indices are regular text, odd are highlighted
-            if (i % 2 === 1) {
-              // Text was inside brackets, highlight it
+            // Alternate between regular and highlighted text
+            if (i % 2 === 0) {
+              // Regular text
+              styledParts.push(parts[i]);
+            } else {
+              // Highlighted text (was between asterisks)
               styledParts.push({
-                text: String(part), // Ensure part is stringified
+                text: parts[i],
                 style: {
                   textColor: [0, 158, 26], // Green color
                   fontStyle: 'bold'
                 }
               });
-            } else {
-              styledParts.push(String(part)); // Ensure regular text is also stringified
             }
           }
           
-          // Replace cell text with styled parts, ensuring it's an array of the right type
+          // Only replace if we have valid parts
           if (styledParts.length > 0) {
             data.cell.text = styledParts;
           }
-        } else {
-          // If no formatting needed, ensure we have valid strings
-          data.cell.text = data.cell.text.map(item => 
-            item === null || item === undefined ? '' : String(item)
-          );
         }
       } catch (error) {
         console.error("Error in didParseCell:", error);
-        // Fallback to safe value on error
-        data.cell.text = ['Error processing text'];
+        data.cell.text = ['Error'];
       }
     },
     margin: { left: PDF_CONFIG.margin, right: PDF_CONFIG.margin },
