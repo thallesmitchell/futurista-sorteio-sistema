@@ -50,11 +50,8 @@ export const generateSimplePdf = async (
     console.log(`Total drawn numbers: ${allDrawnNumbers.length}`);
     console.log(`All drawn numbers: ${allDrawnNumbers.join(', ')}`);
     
-    // Check if there are winners
-    const hasWinners = Array.isArray(game.winners) && game.winners.length > 0;
-    
-    // Always include near winners section if requested, regardless of winners
-    if (options.includeNearWinners === true) {
+    // ALWAYS include near winners section if requested, regardless of winners
+    if (options.includeNearWinners !== false) {
       console.log('Including near winners section in PDF');
       yPosition = addNearWinnersSection(pdf, game, allDrawnNumbers, { color: options.themeColor || '#39FF14' });
       console.log(`Y-position after near winners section: ${yPosition}`);

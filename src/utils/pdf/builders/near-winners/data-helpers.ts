@@ -41,9 +41,9 @@ const formatNumber = (num: number): string => {
 export const createNearWinnersTableData = (
   nearWinners: Array<{player: any, combos: any[]}>,
   drawnNumbersSet: Set<number>
-): string[][] => {
+): Array<[string, string]> => {
   // Create an array to hold our table rows
-  const tableData: string[][] = [];
+  const tableData: Array<[string, string]> = [];
   
   console.log(`Creating table data for ${nearWinners.length} near winners`);
   

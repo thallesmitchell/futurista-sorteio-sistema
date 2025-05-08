@@ -50,7 +50,9 @@ export const addNearWinnersSection = (
     }
     
     // Generate table and return final Y position
-    return generateNearWinnersTable(pdf, tableData, currentY);
+    const finalY = generateNearWinnersTable(pdf, tableData, currentY);
+    console.log(`Table rendered successfully, new Y position: ${finalY}`);
+    return finalY;
   } catch (error) {
     console.error("Error in addNearWinnersSection:", error);
     return PDF_CONFIG.margin + 30; // Return a safe position in case of error
