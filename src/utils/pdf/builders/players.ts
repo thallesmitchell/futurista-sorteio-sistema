@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import { Game } from '@/contexts/game/types';
 import { PDF_CONFIG } from './base-pdf';
@@ -112,29 +111,30 @@ export const addPlayersSection = (
           
           for (let i = 0; i < formattedNumbers.length; i++) {
             const { num, isHit } = formattedNumbers[i];
+            
             if (isHit) {
-              // Draw highlighted number
-              // pdf.setTextColor(0, 158, 26); // Green
-              // pdf.setFont("helvetica", "bold");
-
-               // Tamanho do círculo - Thalles
-                const radius = 12;
-                // Desenha o círculo verde
-                pdf.setFillColor(0, 158, 26); // Verde
-                pdf.circle(x, y, radius, 'F');
-                
-                // Configura o texto (número)
-                pdf.setTextColor(255, 255, 255); // Branco
-                pdf.setFont("helvetica", "bold");
+              // Draw green circle with white number
+              const circleX = xPos + 5; // Centro do círculo (metade da largura do número)
+              const circleY = yPosition - 3.5; // Ajustado para ficar acima da linha base do texto
+              const radius = 6; // Raio do círculo
               
+              // Desenha o círculo verde
+              pdf.setFillColor(0, 158, 26); // Verde
+              pdf.circle(circleX, circleY, radius, 'F');
+              
+              // Configura o texto branco e negrito
+              pdf.setTextColor(255, 255, 255); // Branco
+              pdf.setFont("helvetica", "bold");
+              
+              // Centraliza o número no círculo
+              pdf.text(num, xPos, yPosition);
             } else {
               // Draw regular number
               pdf.setTextColor(0, 0, 0); // Black
               pdf.setFont("helvetica", "normal");
+              pdf.text(num, xPos, yPosition);
             }
             
-            // Adjust spacing based on font size
-            pdf.text(num, xPos, yPosition);
             xPos += 10; // Adjusted spacing for smaller font
           }
           
