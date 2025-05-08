@@ -114,8 +114,14 @@ export const addNearWinnersSection = (
       // Safely check if cell.text exists and is a string or can be converted to string
       if (data.cell.text) {
         try {
-          // Convert to string if not already a string
-          const cellText = String(data.cell.text);
+          // Handle different cell text types - Fix for the TypeScript error
+          // Convert cell text to array if it's a string
+          if (typeof data.cell.text === 'string') {
+            data.cell.text = [data.cell.text];
+          }
+          
+          // Now we can safely get the first element as a string
+          const cellText = String(data.cell.text[0] || '');
           
           // Only process if it contains our markers
           if (cellText.includes('[') && cellText.includes(']')) {
@@ -147,8 +153,8 @@ export const addNearWinnersSection = (
           }
         } catch (error) {
           console.error("Error processing cell text:", error);
-          // Ensure cell text is a safe string if parsing fails
-          data.cell.text = String(data.cell.text);
+          // Ensure cell text is a safe string array if parsing fails
+          data.cell.text = [String(data.cell.text)];
         }
       }
     },
