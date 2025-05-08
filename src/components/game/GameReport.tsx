@@ -7,7 +7,7 @@ import { Game } from '@/contexts/game/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { generateGameReport } from '@/utils/pdf';
+import { generateSimplePdf } from '@/utils/pdf/simplePdfGenerator';
 
 interface GameReportProps {
   game: Game;
@@ -104,10 +104,10 @@ export const GameReport: React.FC<GameReportProps> = ({
         .replace(/[^a-zA-Z0-9]/g, '-')
         .toLowerCase()}.pdf`;
       
-      await generateGameReport(game, {
+      // Use the new simple PDF generator
+      await generateSimplePdf(game, {
         themeColor: profileData.themeColor,
-        filename: safeFilename,
-        includeNearWinners: true
+        filename: safeFilename
       });
       
       toast({

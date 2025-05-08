@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
@@ -7,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { NumberBadge } from '@/components/game/NumberBadge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { generateGameReport } from '@/utils/pdf';
+import { generateSimplePdf } from '@/utils/pdf/simplePdfGenerator';
 import { WinnerBanner } from '@/components/game/WinnerBanner';
 
 export default function PlayersView() {
@@ -58,6 +59,15 @@ export default function PlayersView() {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
   
+  // Function to validate game data
+  const validateGameData = (game: any): boolean => {
+    if (!game) return false;
+    if (!game.id || !game.name) return false;
+    if (!Array.isArray(game.players)) return false;
+    if (!Array.isArray(game.dailyDraws)) return false;
+    return true;
+  };
+  
   // Function to generate PDF using the standardized system
   const handleGeneratePDF = async () => {
     if (isGenerating) return;
@@ -68,11 +78,15 @@ export default function PlayersView() {
         throw new Error('Game not found');
       }
       
-      // Use the standardized PDF generator
-      await generateGameReport(game, {
+      // Validate game data
+      if (!validateGameData(game)) {
+        throw new Error('Dados do jogo inválidos');
+      }
+      
+      // Use the new simplified PDF generator
+      await generateSimplePdf(game, {
         themeColor: profileData.themeColor,
-        filename: `players-${game.name.replace(/\s+/g, '-')}.pdf`,
-        includeNearWinners: true
+        filename: `players-${game.name.replace(/\s+/g, '-')}.pdf`
       });
       
       toast({

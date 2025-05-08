@@ -5,11 +5,8 @@
  * Provides functions to generate game reports as PDFs
  */
 
-// Export our standard PDF generation function
-export { generateGameReport } from './pdfBuilder';
+// Export our simplified PDF generator
+export { generateSimplePdf, PDF_CONFIG } from './simplePdfGenerator';
 
 // Re-export types
 export * from './types';
-
-// Export PDF configuration
-export { PDF_CONFIG } from './builders/base-pdf';
