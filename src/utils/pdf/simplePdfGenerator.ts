@@ -50,7 +50,17 @@ export const generateSimplePdf = async (
     console.log(`Total drawn numbers: ${allDrawnNumbers.length}`);
     console.log(`All drawn numbers: ${allDrawnNumbers.join(', ')}`);
     
-    // ALWAYS include near winners section if requested, regardless of winners
+    // Check if we have winners
+    const hasWinners = Array.isArray(game.winners) && game.winners.length > 0;
+    
+    // ALWAYS add winners section if winners exist - do this before near winners
+    if (hasWinners) {
+      console.log('Adding winners section in PDF (winners found)');
+      yPosition = addWinnersSection(pdf, game, yPosition);
+      console.log(`Y-position after winners section: ${yPosition}`);
+    }
+    
+    // Add near winners section if requested - even when winners exist
     if (options.includeNearWinners !== false) {
       console.log('Including near winners section in PDF');
       yPosition = addNearWinnersSection(pdf, game, allDrawnNumbers, { color: options.themeColor || '#39FF14' });
@@ -58,9 +68,6 @@ export const generateSimplePdf = async (
     } else {
       console.log('Near winners section was not requested to be included');
     }
-    
-    // Add winners section
-    yPosition = addWinnersSection(pdf, game, yPosition);
     
     // Add players section
     yPosition = addPlayersListSection(pdf, game, yPosition);

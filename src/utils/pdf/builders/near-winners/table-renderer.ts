@@ -51,34 +51,36 @@ export const generateNearWinnersTable = (
         1: { cellWidth: 'auto' }
       },
       didDrawCell: function(data) {
-        // Apply highlighting for cells with specific content
+        // Only process text in the sequence column (index 1)
         if (data.column.index === 1 && data.cell.text) {
           // Handle data.cell.text as string[] (which is what jspdf-autotable provides)
           const cellTextArray = data.cell.text as string[];
           
-          // If there's no text or it's empty, return early
-          if (!cellTextArray || cellTextArray.length === 0) {
+          // First - ALWAYS clear the original cell text to prevent duplication
+          // We'll handle drawing all text manually
+          const originalContent = cellTextArray.length > 0 ? cellTextArray.join(' ') : '';
+          data.cell.text = []; // Clear the cell's text content immediately
+          
+          // If there's no text content, we don't need to do anything else
+          if (!originalContent) {
             return;
           }
           
-          // Get the text content from the array - clear autotable text content
-          // to avoid duplication - we'll manually draw it instead
-          const cellText = cellTextArray.join(' ');
-          data.cell.text = []; // Clear the cell's original text 
+          // Save the current text state for consistent restoration later
+          pdf.saveGraphicsState();
           
-          // Check if this cell has numbers to highlight
-          if (cellText.includes('*')) {
-            // Get the text content
-            const parts = cellText.split(' ');
+          // Check if this cell has numbers to highlight (with asterisks)
+          if (originalContent.includes('*')) {
+            console.log(`Processing cell with highlighting: ${originalContent}`);
+            
+            // Split the text into parts (usually numbers separated by spaces)
+            const parts = originalContent.split(' ');
             
             // Process the text to highlight hits
             let xOffset = data.cell.x + 5; // Initial offset from cell border
             const yPos = data.cell.y + data.cell.height / 2 + 1;
             
-            // Save the current text state
-            pdf.saveGraphicsState();
-            
-            // Draw each part of the string
+            // Draw each part of the string with appropriate highlighting
             for (const part of parts) {
               const isHit = part.includes('*');
               const numberText = part.replace(/\*/g, '');
@@ -95,14 +97,24 @@ export const generateNearWinnersTable = (
               // Draw this part of the text
               pdf.text(numberText, xOffset, yPos);
               
-              // Move xOffset for next part (space + average width of text)
+              // Move xOffset for next part (space + width of text)
               const textWidth = pdf.getTextWidth(numberText);
               xOffset += textWidth + 3;
             }
-            
-            // Restore the graphics state
-            pdf.restoreGraphicsState();
+          } else {
+            // If no highlighting is needed, just draw the text normally
+            // at the cell's position with standard formatting
+            pdf.setTextColor(0, 0, 0); // Standard black text
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(
+              originalContent,
+              data.cell.x + 5,
+              data.cell.y + data.cell.height / 2 + 1
+            );
           }
+          
+          // Always restore the graphics state
+          pdf.restoreGraphicsState();
         }
       }
     });
