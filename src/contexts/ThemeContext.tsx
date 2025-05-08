@@ -117,7 +117,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       setLogoUrl(userProfile.logo_url);
     }
     if (userProfile?.site_name) {
-      setSiteName(userProfile.site_name);
+      setSiteName(userProfile.site_name || 'SorteioFutura');
     }
   }, [userProfile]);
 

@@ -11,6 +11,8 @@ interface UserProfile {
   theme_color: string | null;
   logo_url: string | null;
   default_game_name: string | null;
+  site_name: string | null;
+  logo_width: number | null;
 }
 
 interface AuthContextType {
@@ -55,7 +57,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: data.role as 'super_admin' | 'admin',
           theme_color: data.theme_color,
           logo_url: data.logo_url,
-          default_game_name: data.default_game_name
+          default_game_name: data.default_game_name,
+          site_name: data.site_name,
+          logo_width: data.logo_width
         };
         
         setUserProfile(profile);
