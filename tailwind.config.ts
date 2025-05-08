@@ -9,7 +9,7 @@ export default {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
-	],
+  ],
   theme: {
     container: {
       center: true,
@@ -75,13 +75,23 @@ export default {
           from: { opacity: "0" },
           to: { opacity: "1" },
         },
+        "slide-up": {
+          from: { transform: "translateY(10%)" },
+          to: { transform: "translateY(0)" },
+        },
+        "slide-down": {
+          from: { transform: "translateY(0)" },
+          to: { transform: "translateY(10%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
         "pulse-slow": "pulse-slow 3s infinite",
-        "glow-green": "glow 2s infinite"
+        "glow-green": "glow 2s infinite",
+        "slide-up": "slide-up 0.3s ease-out",
+        "slide-down": "slide-down 0.3s ease-out",
       },
       screens: {
         'xs': '475px',

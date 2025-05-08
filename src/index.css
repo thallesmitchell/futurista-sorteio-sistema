@@ -269,3 +269,37 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   visibility: visible !important;
   opacity: 1 !important;
 }
+
+/* Glass morphism effect */
+.glass-panel {
+  @apply backdrop-blur-xl bg-background/80 border border-white/10 shadow-lg !important;
+}
+
+/* Safe area bottom padding for mobile */
+.pb-safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+.h-safe-bottom {
+  height: env(safe-area-inset-bottom, 0);
+}
+
+/* Mobile swipe area */
+.swipe-area {
+  @apply touch-pan-y overflow-y-auto overscroll-y-contain;
+}
+
+/* Mobile friendly button size */
+.mobile-btn {
+  @apply min-h-10 min-w-10;
+}
+
+/* Animation for mobile transitions */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out forwards;
+}

@@ -7,17 +7,21 @@ import { PlayerViewList } from '@/components/game/PlayerViewList';
 import { WinnerBanner } from '@/components/game/WinnerBanner';
 import { supabase } from '@/integrations/supabase/client';
 import { Player } from '@/contexts/game/types';
+import { MobileNavBar } from '@/components/mobile/MobileNavBar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export default function PlayersView() {
   const { gameId } = useParams<{ gameId: string }>();
   const [winners, setWinners] = useState<Player[]>([]);
+  const isMobile = useIsMobile();
   const {
     game,
     sortedPlayers,
     allDrawnNumbers,
     drawnNumbersSet,
     isGenerating,
-    handleGeneratePDF
+    handleGeneratePDF,
+    profileData
   } = usePlayersView(gameId);
 
   // Fetch winners directly from database
@@ -68,7 +72,7 @@ export default function PlayersView() {
   const hasWinners = winners.length > 0;
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-background min-h-screen pb-safe-bottom">
       <div className="mx-auto" style={{ maxWidth: '950px', width: '100%' }}>
         {/* Header */}
         <PlayerViewHeader 
@@ -82,7 +86,7 @@ export default function PlayersView() {
 
         {/* Always show banner de vencedores if there are winners - based on database query */}
         {hasWinners && (
-          <div className="px-4 md:px-0 mb-4">
+          <div className={`${isMobile ? 'px-3' : 'px-4 md:px-0'} mb-4`}>
             <WinnerBanner 
               winners={winners} 
               allDrawnNumbers={allDrawnNumbers}
@@ -91,13 +95,16 @@ export default function PlayersView() {
         )}
 
         {/* Players List */}
-        <div id="players-view-content" className="space-y-4 pb-8 px-4 md:px-0">
+        <div id="players-view-content" className={`space-y-4 pb-8 ${isMobile ? 'px-3 pb-20' : 'px-4 md:px-0'}`}>
           <PlayerViewList
             sortedPlayers={sortedPlayers}
             drawnNumbersSet={drawnNumbersSet}
           />
         </div>
       </div>
+      
+      {/* Mobile Navigation Bar */}
+      <MobileNavBar />
     </div>
   );
 }

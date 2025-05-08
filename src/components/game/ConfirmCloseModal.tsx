@@ -2,8 +2,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ConfirmCloseModalProps {
   isOpen: boolean;
@@ -16,31 +18,62 @@ export const ConfirmCloseModal: React.FC<ConfirmCloseModalProps> = ({
   setIsOpen,
   onConfirm
 }) => {
+  const isMobile = useIsMobile();
+
+  const renderContent = () => (
+    <div className="py-4">
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertTitle>Atenção</AlertTitle>
+        <AlertDescription>
+          Ao encerrar o jogo, não será possível adicionar novos jogadores ou registrar sorteios.
+        </AlertDescription>
+      </Alert>
+    </div>
+  );
+
+  const renderFooter = () => (
+    <>
+      <Button variant="outline" onClick={() => setIsOpen(false)}>
+        Cancelar
+      </Button>
+      <Button variant="destructive" onClick={onConfirm}>
+        Encerrar Jogo
+      </Button>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <Drawer open={isOpen} onOpenChange={setIsOpen}>
+        <DrawerContent className="px-4">
+          <DrawerHeader>
+            <DrawerTitle>Encerrar Jogo</DrawerTitle>
+            <DrawerDescription>
+              Tem certeza que deseja encerrar este jogo? Esta ação não pode ser desfeita.
+            </DrawerDescription>
+          </DrawerHeader>
+          {renderContent()}
+          <DrawerFooter>
+            {renderFooter()}
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="glass-panel">
+      <DialogContent className="max-w-md glass-panel">
         <DialogHeader>
           <DialogTitle>Encerrar Jogo</DialogTitle>
           <DialogDescription>
             Tem certeza que deseja encerrar este jogo? Esta ação não pode ser desfeita.
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4">
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Atenção</AlertTitle>
-            <AlertDescription>
-              Ao encerrar o jogo, não será possível adicionar novos jogadores ou registrar sorteios.
-            </AlertDescription>
-          </Alert>
-        </div>
+        {renderContent()}
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsOpen(false)}>
-            Cancelar
-          </Button>
-          <Button variant="destructive" onClick={onConfirm}>
-            Encerrar Jogo
-          </Button>
+          {renderFooter()}
         </DialogFooter>
       </DialogContent>
     </Dialog>
