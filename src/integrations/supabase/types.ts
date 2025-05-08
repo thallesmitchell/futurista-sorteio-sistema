@@ -162,7 +162,9 @@ export type Database = {
           default_game_name: string | null
           id: string
           logo_url: string | null
+          logo_width: number | null
           role: string
+          site_name: string | null
           theme_color: string | null
           updated_at: string
           username: string | null
@@ -172,7 +174,9 @@ export type Database = {
           default_game_name?: string | null
           id: string
           logo_url?: string | null
+          logo_width?: number | null
           role?: string
+          site_name?: string | null
           theme_color?: string | null
           updated_at?: string
           username?: string | null
@@ -182,7 +186,9 @@ export type Database = {
           default_game_name?: string | null
           id?: string
           logo_url?: string | null
+          logo_width?: number | null
           role?: string
+          site_name?: string | null
           theme_color?: string | null
           updated_at?: string
           username?: string | null
