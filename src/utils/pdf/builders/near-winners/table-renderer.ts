@@ -42,7 +42,7 @@ export const generateNearWinnersTable = (
       margin: { left: marginLeft },
       tableWidth: tableWidth,
      // head: [['Jogador', 'Sequência (5 acertos)']],
-      head: [['Jogadores na risca da prêmio!']],
+     // head: [['Jogadores na risca da prêmio!']],
       body: [], // Sem corpo de tabela aqui
       theme: 'striped',
       styles: {

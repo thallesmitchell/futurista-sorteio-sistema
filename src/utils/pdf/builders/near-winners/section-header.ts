@@ -22,7 +22,7 @@ export const drawNearWinnersHeader = (
     
     currentY += 10;
 
-    /*
+    
     // Description
     pdf.setFont("helvetica", "normal");
     pdf.setFontSize(PDF_CONFIG.fontSizes.normal);
@@ -33,12 +33,12 @@ export const drawNearWinnersHeader = (
       currentY,
       { align: 'center' }
     );
-    */
+    
     // Increased space before table starts
     console.log(`Header section completed, next Y position: ${currentY + 20}`);
     return currentY + 20;
   } catch (error) {
     console.error("Error drawing near winners header:", error);
-    return PDF_CONFIG.margin + 50; // Safe fallback
+    return PDF_CONFIG.margin + 10; // Safe fallback
   }
 };
