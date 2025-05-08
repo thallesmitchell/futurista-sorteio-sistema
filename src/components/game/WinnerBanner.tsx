@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Trophy } from 'lucide-react';
 import { Player } from '@/contexts/game/types';
