@@ -18,8 +18,21 @@ export const usePlayersView = (gameId: string | undefined) => {
   const game = games.find(g => g.id === gameId);
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
   const drawnNumbersSet = new Set(allDrawnNumbers);
+  
+  // Ensure winners are always retrieved from the game object
   const winners = game?.winners || [];
   const hasWinners = winners.length > 0;
+
+  // Log for debugging
+  useEffect(() => {
+    console.log('PlayersView hook:', { 
+      gameId, 
+      gameFound: !!game,
+      gameStatus: game?.status,
+      winnersCount: winners.length,
+      hasWinners
+    });
+  }, [game, winners, hasWinners, gameId]);
 
   // Fetch profile data for theme color
   useEffect(() => {

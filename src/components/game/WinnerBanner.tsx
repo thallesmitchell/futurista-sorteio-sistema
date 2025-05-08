@@ -17,6 +17,8 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
   
   // Process winners whenever the winners prop changes
   useEffect(() => {
+    console.log('WinnerBanner: Processing winners:', winners?.length);
+    
     // Se não houver winners, limpe o estado de winningEntries
     if (!winners || winners.length === 0) {
       setWinningEntries([]);
@@ -33,12 +35,23 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
         }))
     );
     
+    console.log('WinnerBanner: Found winning entries:', entries.length);
+    
     // Sempre atualize o estado, mesmo se não houver entries
     setWinningEntries(entries);
   }, [winners]);
 
+  // Log for debugging
+  useEffect(() => {
+    console.log('WinnerBanner rendering:', { 
+      winnersLength: winners?.length, 
+      winningEntriesLength: winningEntries.length 
+    });
+  }, [winners, winningEntries]);
+
   // Se não houver winners ou entries, não renderize nada
   if (!winners?.length || winningEntries.length === 0) {
+    console.log('WinnerBanner: Not rendering - no winners or entries');
     return null;
   }
   

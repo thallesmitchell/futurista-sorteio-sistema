@@ -34,8 +34,10 @@ export default function GameAdmin() {
   // Set current game for context and check for winners when game data changes
   useEffect(() => {
     if (game) {
-      if (game.status === 'closed') {
-        // Redirect to history view if game is closed
+      // IMPORTANT: Only redirect to history if game is closed AND has no winners
+      // This ensures games with winners stay on the admin page regardless of status
+      if (game.status === 'closed' && !hasWinners) {
+        console.log('Game is closed and has no winners, redirecting to history view');
         navigate(`/history/${game.id}`);
         return;
       }
@@ -44,10 +46,12 @@ export default function GameAdmin() {
       
       // Check for winners when game data changes
       if (game.id && !game.winners?.length) {
+        console.log('Checking for winners in game:', game.id);
         checkWinners(game.id);
       }
     } else {
       // If game not found, redirect to dashboard
+      console.log('Game not found, redirecting to dashboard');
       navigate('/dashboard');
     }
     
@@ -55,12 +59,20 @@ export default function GameAdmin() {
     return () => {
       setCurrentGame(null);
     };
-  }, [game, gameId, navigate, setCurrentGame, checkWinners]);
+  }, [game, gameId, navigate, setCurrentGame, checkWinners, hasWinners]);
 
   // Show 404 if game not found
-  if (!game || game.status === 'closed') {
+  if (!game) {
     return null; // Will redirect in useEffect
   }
+
+  // Log for debugging
+  console.log('GameAdmin rendering:', { 
+    gameId, 
+    gameStatus: game.status, 
+    hasWinners,
+    winnersCount: winners.length
+  });
 
   const handleEditPlayer = (player: Player) => {
     setPlayerToEdit(player);

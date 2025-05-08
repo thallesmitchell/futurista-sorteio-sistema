@@ -32,17 +32,9 @@ export const useWinnerActions = (
         player.combinations.some(combo => combo.hits === 6)
       );
       
-      if (winners.length > 0 && game.status === 'active') {
-        // Update game to finalized
-        await supabase
-          .from('games')
-          .update({
-            status: 'closed',
-            end_date: new Date().toISOString()
-          })
-          .eq('id', gameId);
-          
-        // Register winners in Supabase
+      // Important: Only update game status if there are winners AND the game is active
+      if (winners.length > 0) {
+        // Register winners in Supabase regardless of game status
         for (const winner of winners) {
           // Find winning combinations
           const winningCombinations = winner.combinations.filter(combo => combo.hits === 6);
@@ -80,37 +72,61 @@ export const useWinnerActions = (
           }
         }
         
-        // Update the local list
+        // Only change the game status if it's currently active
+        if (game.status === 'active') {
+          await supabase
+            .from('games')
+            .update({
+              status: 'closed',
+              end_date: new Date().toISOString()
+            })
+            .eq('id', gameId);
+        }
+        
+        // Update the local list - always set winners regardless of status
         const updatedGames = [...games];
         updatedGames[gameIndex] = {
           ...game,
-          winners,
-          status: 'closed',
-          endDate: new Date().toISOString()
+          winners: winners,
+          // Only update status and endDate if game was active
+          ...(game.status === 'active' ? {
+            status: 'closed',
+            endDate: new Date().toISOString()
+          } : {})
         };
         
         setGames(updatedGames);
         
-        // Update current game if being verified
+        // Update current game if being verified - always update winners
         if (currentGame && currentGame.id === gameId) {
           setCurrentGame({
             ...currentGame,
-            winners,
-            status: 'closed',
-            endDate: new Date().toISOString()
+            winners: winners,
+            // Only update status and endDate if game was active
+            ...(currentGame.status === 'active' ? {
+              status: 'closed',
+              endDate: new Date().toISOString()
+            } : {})
           });
         }
         
-        // Notify the user about the winner(s)
-        toast({
-          title: "Saiu Ganhador!",
-          description: winners.length > 1 
-            ? `Vários jogadores acertaram todos os 6 números!` 
-            : `O jogador ${winners[0].name} acertou todos os 6 números!`,
-          variant: "default",
-        });
+        // Only notify if we haven't already shown this notification
+        // (check if winners were already there)
+        const existingGame = games[gameIndex];
+        const existingWinnersCount = existingGame.winners?.length || 0;
+        
+        if (existingWinnersCount === 0) {
+          toast({
+            title: "Saiu Ganhador!",
+            description: winners.length > 1 
+              ? `Vários jogadores acertaram todos os 6 números!` 
+              : `O jogador ${winners[0].name} acertou todos os 6 números!`,
+            variant: "default",
+          });
+        }
       }
       
+      // Always return the winners
       return winners;
     } catch (error) {
       console.error('Error checking winners:', error);
