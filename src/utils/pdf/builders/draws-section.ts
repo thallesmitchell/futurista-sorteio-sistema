@@ -24,7 +24,7 @@ const renderNumberCircle = (
   // Adicionar texto do número
   pdf.setTextColor(255, 255, 255); // Texto branco
   pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(12); // Reduzido para combinar com o novo tamanho de círculo
+  pdf.setFontSize(11); // Reduzido para combinar com o novo tamanho de círculo
   
   // Formatar número com zero à esquerda se necessário
   const formattedNumber = String(number).padStart(2, '0');
