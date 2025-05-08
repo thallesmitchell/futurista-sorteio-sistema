@@ -12,7 +12,7 @@ const renderNumberCircle = (
   number: number,
   x: number,
   y: number,
-  size = 3 // Reduzido de 5 para 3mm
+  size = 4 // Reduzido de 5 para 3mm
 ): void => {
   // Salvar estado atual
   pdf.saveGraphicsState();
@@ -24,7 +24,7 @@ const renderNumberCircle = (
   // Adicionar texto do número
   pdf.setTextColor(255, 255, 255); // Texto branco
   pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(7); // Reduzido para combinar com o novo tamanho de círculo
+  pdf.setFontSize(12); // Reduzido para combinar com o novo tamanho de círculo
   
   // Formatar número com zero à esquerda se necessário
   const formattedNumber = String(number).padStart(2, '0');
@@ -32,7 +32,7 @@ const renderNumberCircle = (
   // Calcular posição do texto para centralizar
   const textWidth = pdf.getStringUnitWidth(formattedNumber) * pdf.getFontSize() / pdf.internal.scaleFactor;
   const textX = x - (textWidth / 2);
-  const textY = y + 2; // Ajustado para melhor centralização vertical
+  const textY = y + 1; // Ajustado para melhor centralização vertical
   
   pdf.text(formattedNumber, textX, textY);
   
