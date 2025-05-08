@@ -152,6 +152,7 @@ export const addPlayersListSection = (
       
       // Add player name - ensure consistent font size for all players
       pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(0, 0, 0);
       pdf.setFontSize(PDF_CONFIG.fontSizes.normal); // Set consistent font size
       pdf.text(`${player.name || 'Jogador sem nome'}:`, PDF_CONFIG.margin, yPosition);
       
