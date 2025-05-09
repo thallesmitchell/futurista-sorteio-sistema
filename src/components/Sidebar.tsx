@@ -49,7 +49,7 @@ export default function Sidebar({ className }: SidebarProps) {
             <img 
               src={logoUrl} 
               alt="Logo" 
-              className="h-10 w-auto max-w-[180px]" 
+              className="w-auto" 
             />
           </NavLink>
         ) : (
