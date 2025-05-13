@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { ConfirmCloseModal } from '@/components/game/ConfirmCloseModal';
+import { useNavigate } from 'react-router-dom';
 
 interface GameModalsProps {
   isCloseModalOpen: boolean;
@@ -13,11 +14,19 @@ export const GameModals: React.FC<GameModalsProps> = ({
   setIsCloseModalOpen,
   onCloseGame
 }) => {
+  const navigate = useNavigate();
+
+  const handleCloseGame = () => {
+    onCloseGame();
+    // Redirect to dashboard after closing the game
+    navigate('/dashboard');
+  };
+
   return (
     <ConfirmCloseModal 
       isOpen={isCloseModalOpen}
       setIsOpen={setIsCloseModalOpen}
-      onConfirm={onCloseGame}
+      onConfirm={handleCloseGame}
     />
   );
 };

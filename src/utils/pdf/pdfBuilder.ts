@@ -30,6 +30,7 @@ export const generateGameReport = async (
 ): Promise<void> => {
   try {
     console.log('Generating PDF report for game:', game.name);
+    console.log('Game has winners:', game.winners?.length || 0);
     
     // Validate input parameters
     if (!game) {
@@ -71,11 +72,18 @@ export const generateGameReport = async (
     const hasWinners = Array.isArray(game.winners) && game.winners.length > 0;
     console.log(`Has winners: ${hasWinners}, count: ${hasWinners ? game.winners.length : 0}`);
     
-    // FIRST: always add winners section if winners exist
     if (hasWinners) {
-      // Add winners section
-      console.log('Adding winners section to PDF');
-      currentY = addWinnersSection(pdf, game, currentY);
+      console.log('Winners found, adding winners section to PDF');
+      // FIRST: always add winners section if winners exist
+      try {
+        // Add winners section with detailed logging
+        console.log('Adding winners section with:', game.winners);
+        currentY = addWinnersSection(pdf, game, currentY);
+        console.log('Winners section added successfully, currentY:', currentY);
+      } catch (error) {
+        console.error('Error adding winners section:', error);
+        // Continue with the rest of the PDF even if this section fails
+      }
       
       // Check if we need to add a new page before the draws section
       if (currentY > PDF_CONFIG.pageHeight - 60) {

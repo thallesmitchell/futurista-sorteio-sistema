@@ -31,8 +31,9 @@ export const GameReport: React.FC<GameReportProps> = ({
     themeColor: '#39FF14' // Default color
   });
   
-  // Use our hook to fetch winners directly from the database
-  const { winners } = useGameWinners(game.id, game.players);
+  // IMPORTANT: Use our hook to fetch winners directly from the database
+  // This ensures consistency between dashboard and game page PDF generation
+  const { winners, isLoading: isLoadingWinners } = useGameWinners(game.id, game.players);
   
   // Fetch current admin profile for theme color
   useEffect(() => {
@@ -101,18 +102,27 @@ export const GameReport: React.FC<GameReportProps> = ({
       console.log('Generating report for game:', game.id);
       console.log('Players count:', game.players.length);
       console.log('Draws count:', game.dailyDraws.length);
-      console.log('Winners count:', winners?.length || 0);
+      console.log('Database Winners count:', winners?.length || 0);
+      
+      // Wait for winners to load if they're still loading
+      if (isLoadingWinners) {
+        console.log('Waiting for winners to load...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
       
       // Generate the PDF report with safe filename
       const safeFilename = `resultado-${(game.name || 'jogo')
         .replace(/[^a-zA-Z0-9]/g, '-')
         .toLowerCase()}.pdf`;
       
-      // Create a game object that includes the winners from the database
+      // IMPORTANT: Create a game object that includes the winners from the database
+      // Using the database winners ensures consistency between dashboard and game page
       const gameWithWinners = {
         ...game,
         winners: winners || []
       };
+      
+      console.log('Generating PDF with winners:', gameWithWinners.winners?.length || 0);
       
       // Use the updated PDF generator with the updated game object
       await generateGameReport(gameWithWinners, {

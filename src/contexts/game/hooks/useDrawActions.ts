@@ -1,10 +1,10 @@
-
-import { Game, DailyDraw, Player } from '../types';
+import { useState } from 'react';
+import { Game, Player, DailyDraw } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
 /**
- * Custom hook for draw-related actions
+ * Custom hook for daily draw operations
  */
 export const useDrawActions = (
   games: Game[], 
@@ -15,17 +15,14 @@ export const useDrawActions = (
   checkWinners: (gameId: string) => Promise<Player[]>
 ) => {
   const { toast } = useToast();
-
+  
   /**
-   * Add a daily draw to a game
+   * Add a new daily draw to a game
    */
   const addDailyDraw = async (gameId: string, draw: Omit<DailyDraw, 'id'>): Promise<DailyDraw | undefined> => {
     try {
-      const game = games.find(g => g.id === gameId);
-      if (!game) throw new Error('Game not found');
-
-      // Insert the draw into Supabase
-      const { data: drawData, error: drawError } = await supabase
+      // Insert daily draw into Supabase
+      const { data, error } = await supabase
         .from('daily_draws')
         .insert({
           game_id: gameId,
@@ -34,62 +31,64 @@ export const useDrawActions = (
         })
         .select()
         .single();
+        
+      if (error) throw error;
+      
+      if (!data) throw new Error('No data returned from insert');
 
-      if (drawError) throw drawError;
-      if (!drawData) throw new Error('Error adding draw');
-
+      // Map to DailyDraw type
       const newDraw: DailyDraw = {
-        id: drawData.id,
-        date: drawData.date,
-        numbers: drawData.numbers
+        id: data.id,
+        date: data.date,
+        numbers: data.numbers
       };
       
-      // Update all game players with new hits
-      const updatedGame = { ...game, dailyDraws: [...game.dailyDraws, newDraw] };
-      const gameWithUpdatedHits = recalculatePlayerHits(updatedGame);
-      
-      // Update the hits in the database
-      for (const player of gameWithUpdatedHits.players) {
-        for (const combo of player.combinations) {
-          await supabase
-            .from('player_combinations')
-            .update({ 
-              hits: combo.hits 
-            })
-            .eq('player_id', player.id)
-            .eq('numbers', combo.numbers);
-        }
-      }
-
-      // Update the local list
-      const updatedGames = games.map(g => {
-        if (g.id === gameId) {
-          return gameWithUpdatedHits;
-        }
-        return g;
-      });
-      
-      setGames(updatedGames);
-      
-      // Update current game if being edited
-      if (currentGame && currentGame.id === gameId) {
-        setCurrentGame(gameWithUpdatedHits);
-      }
-      
-      // Check winners
+      // Check for winners
+      console.log('Checking for winners after new draw');
       await checkWinners(gameId);
+
+      // Update games list with new draw
+      setGames(games.map(game => {
+        if (game.id === gameId) {
+          // Create a new list of draws with the new one
+          const updatedDraws = [...(game.dailyDraws || []), newDraw];
+          
+          // Update the game with recalculated hits
+          const updatedGame = {
+            ...game,
+            dailyDraws: updatedDraws
+          };
+          
+          return recalculatePlayerHits(updatedGame);
+        }
+        return game;
+      }));
+      
+      // Update current game if it's the same
+      if (currentGame && currentGame.id === gameId) {
+        // Create a new list of draws with the new one
+        const updatedDraws = [...(currentGame.dailyDraws || []), newDraw];
+        
+        // Update with recalculated hits
+        const updatedCurrentGame = {
+          ...currentGame,
+          dailyDraws: updatedDraws
+        };
+        
+        setCurrentGame(recalculatePlayerHits(updatedCurrentGame));
+      }
       
       return newDraw;
     } catch (error) {
-      console.error('Error adding draw:', error);
+      console.error('Error adding daily draw:', error);
       toast({
-        title: "Error adding draw",
+        title: "Error adding daily draw",
         description: error instanceof Error ? error.message : "An unknown error occurred",
         variant: "destructive"
       });
-      throw error;
+      return undefined;
     }
   };
-
+  
   return { addDailyDraw };
 };

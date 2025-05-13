@@ -19,40 +19,35 @@ export const WinnerBanner: React.FC<WinnerBannerProps> = ({ winners, allDrawnNum
   useEffect(() => {
     console.log('WinnerBanner: Processing winners:', winners?.length);
     
-    // If there are no winners, clear the winningEntries state
     if (!winners || winners.length === 0) {
+      console.log('WinnerBanner: No winners to process');
       setWinningEntries([]);
       return;
     }
 
-    // Get winning combinations (6 hits)
-    const entries = winners.flatMap(winner => {
-      if (!winner.combinations) {
-        console.log(`Winner ${winner.name} has no combinations`);
-        return [];
-      }
+    try {
+      // Get winning combinations (6 hits)
+      const entries = winners.flatMap(winner => {
+        if (!winner.combinations) {
+          console.log(`Winner ${winner.name} has no combinations`);
+          return [];
+        }
+        
+        return winner.combinations
+          .filter(combo => combo.hits === 6)
+          .map(combo => ({
+            playerName: winner.name,
+            numbers: combo.numbers
+          }));
+      });
       
-      return winner.combinations
-        .filter(combo => combo.hits === 6)
-        .map(combo => ({
-          playerName: winner.name,
-          numbers: combo.numbers
-        }));
-    });
-    
-    console.log('WinnerBanner: Found winning entries:', entries.length);
-    
-    // Always update the state, even if there are no entries
-    setWinningEntries(entries);
+      console.log('WinnerBanner: Found winning entries:', entries.length);
+      setWinningEntries(entries);
+    } catch (error) {
+      console.error('Error processing winners:', error);
+      setWinningEntries([]);
+    }
   }, [winners]);
-
-  // Log for debugging
-  useEffect(() => {
-    console.log('WinnerBanner rendering:', { 
-      winnersLength: winners?.length, 
-      winningEntriesLength: winningEntries.length 
-    });
-  }, [winners, winningEntries]);
 
   // If there are no winners or entries, don't render anything
   if (!winners?.length || winningEntries.length === 0) {

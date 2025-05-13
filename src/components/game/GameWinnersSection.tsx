@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { WinnerBanner } from '@/components/game/WinnerBanner';
 import { WinnersModal } from '@/components/game/WinnersModal';
 import { Player } from '@/contexts/game/types';
@@ -17,12 +17,21 @@ export const GameWinnersSection: React.FC<GameWinnersSectionProps> = ({
   isWinnersModalOpen,
   setIsWinnersModalOpen
 }) => {
-  console.log('GameWinnersSection rendered with:', {
+  console.log('GameWinnersSection rendered with winners:', {
     winnersLength: winners?.length,
+    winnersData: winners
   });
+
+  // Effect to log when winners change
+  useEffect(() => {
+    if (winners && winners.length > 0) {
+      console.log('Winners detected in GameWinnersSection:', winners.length);
+    }
+  }, [winners]);
 
   // Only render if we have winners
   if (!winners || winners.length === 0) {
+    console.log('No winners to display in GameWinnersSection');
     return null;
   }
   

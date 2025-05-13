@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import MainLayout from '@/layouts/MainLayout';
@@ -252,3 +251,6 @@ export default function Dashboard() {
     </MainLayout>
   );
 }
+
+// Import cn function
+import { cn } from '@/lib/utils';

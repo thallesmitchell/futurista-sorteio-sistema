@@ -73,6 +73,8 @@ export default function GameAdmin() {
       endDate: new Date().toISOString()
     });
     setIsCloseModalOpen(false);
+    // Redirect to dashboard after closing the game
+    navigate('/dashboard');
   };
 
   const handleNewWinnerFound = (hasWinners: boolean) => {
