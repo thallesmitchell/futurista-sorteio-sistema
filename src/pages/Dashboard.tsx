@@ -72,7 +72,7 @@ export default function Dashboard() {
         description: `O jogo "${data.name}" foi criado com sucesso.`,
       });
       
-      // Redirect to game page
+      // Immediately navigate to the new game's admin page
       navigate(`/admin/${newGame.id}`);
     } catch (error) {
       console.error("Erro ao criar jogo:", error);

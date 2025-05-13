@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from '@/components/ui/button';
@@ -126,8 +125,8 @@ export const DrawForm: React.FC<DrawFormProps> = ({
         }
       }
       
-      // Important: We're no longer clearing the drawNumbers field
-      // setDrawNumbers('');
+      // Clear the drawNumbers field after successful submission
+      setDrawNumbers('');
       
       toast({
         title: "Sorteio registrado",

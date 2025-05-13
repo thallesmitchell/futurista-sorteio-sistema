@@ -46,6 +46,7 @@ export const generateGameReport = async (
       : [];
     
     console.log(`Total drawn numbers: ${allDrawnNumbers.length}`);
+    console.log(`Game winners: ${game.winners?.length || 0}`);
     
     // Initialize PDF with white background
     const pdf = createPDF();
@@ -68,10 +69,12 @@ export const generateGameReport = async (
     
     // Check if we have winners
     const hasWinners = Array.isArray(game.winners) && game.winners.length > 0;
+    console.log(`Has winners: ${hasWinners}, count: ${hasWinners ? game.winners.length : 0}`);
     
     // FIRST: always add winners section if winners exist
     if (hasWinners) {
       // Add winners section
+      console.log('Adding winners section to PDF');
       currentY = addWinnersSection(pdf, game, currentY);
       
       // Check if we need to add a new page before the draws section
@@ -80,11 +83,12 @@ export const generateGameReport = async (
         currentY = PDF_CONFIG.margin + 10;
       } else {
         // Add extra spacing between sections
-        currentY += 15;
+        currentY += 20;
       }
     } 
     // SECOND: If no winners, add near winners section (if requested)
     else if (options.includeNearWinners) {
+      console.log('No winners, adding near winners section');
       currentY = addNearWinnersSection(pdf, game, allDrawnNumbers, sectionOptions);
       
       // Check if we need to add a new page before the draws section
@@ -93,11 +97,12 @@ export const generateGameReport = async (
         currentY = PDF_CONFIG.margin + 10;
       } else {
         // Add extra spacing between sections
-        currentY += 15;
+        currentY += 20;
       }
     }
     
     // THIRD: Add draws section
+    console.log('Adding draws section to PDF');
     currentY = addDrawsSection(pdf, game.dailyDraws, currentY);
     
     // Check if we need a new page before players section
@@ -106,10 +111,11 @@ export const generateGameReport = async (
       currentY = PDF_CONFIG.margin + 10;
     } else {
       // Add extra spacing between sections
-      currentY += 15;
+      currentY += 20;
     }
     
     // FOURTH: Add players section in a tabular format
+    console.log('Adding players section to PDF');
     addPlayersListSection(pdf, game, currentY);
     
     // Use provided filename or generate one with sanitizing

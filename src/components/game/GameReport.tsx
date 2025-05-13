@@ -7,7 +7,8 @@ import { Game } from '@/contexts/game/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { generateSimplePdf } from '@/utils/pdf';
+import { generateGameReport } from '@/utils/pdf';
+import { useGameWinners } from '@/hooks/useGameWinners';
 
 interface GameReportProps {
   game: Game;
@@ -29,6 +30,9 @@ export const GameReport: React.FC<GameReportProps> = ({
   const [profileData, setProfileData] = useState({
     themeColor: '#39FF14' // Default color
   });
+  
+  // Use our hook to fetch winners directly from the database
+  const { winners } = useGameWinners(game.id, game.players);
   
   // Fetch current admin profile for theme color
   useEffect(() => {
@@ -97,18 +101,24 @@ export const GameReport: React.FC<GameReportProps> = ({
       console.log('Generating report for game:', game.id);
       console.log('Players count:', game.players.length);
       console.log('Draws count:', game.dailyDraws.length);
-      console.log('Winners count:', game.winners?.length || 0);
+      console.log('Winners count:', winners?.length || 0);
       
       // Generate the PDF report with safe filename
       const safeFilename = `resultado-${(game.name || 'jogo')
         .replace(/[^a-zA-Z0-9]/g, '-')
         .toLowerCase()}.pdf`;
       
-      // Use the updated PDF generator
-      await generateSimplePdf(game, {
+      // Create a game object that includes the winners from the database
+      const gameWithWinners = {
+        ...game,
+        winners: winners || []
+      };
+      
+      // Use the updated PDF generator with the updated game object
+      await generateGameReport(gameWithWinners, {
         themeColor: profileData.themeColor,
         filename: safeFilename,
-        includeNearWinners: true
+        includeNearWinners: !(winners?.length > 0) // Only include near winners if there are no winners
       });
       
       toast({
