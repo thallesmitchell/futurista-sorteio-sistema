@@ -6,23 +6,38 @@ enabled = true
 port = 54321
 schemas = ["public", "storage", "graphql_public"]
 
-[functions.create-admin-user]
-verify_jwt = true
-
 [db]
 port = 54322
+shadow_port = 54320
+major_version = 15
 
 [studio]
+enabled = true
 port = 54323
+api_url = "http://localhost"
 
 [inbucket]
+enabled = true
 port = 54324
 
 [auth]
+enabled = true
 port = 54325
 
-[realtime]
+[storage]
+enabled = true
 port = 54326
 
-[storage]
+[realtime]
+enabled = true
 port = 54327
+
+[edge_functions]
+port = 54329
+enabled = true
+
+[functions.create-admin-user]
+verify_jwt = false
+
+[functions.get-admin-emails]
+verify_jwt = true

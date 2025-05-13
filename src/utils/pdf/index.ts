@@ -1,25 +1,51 @@
 
+// Re-export everything from the pdf directory
+export * from './pdfBuilder';
+export * from './simplePdfGenerator';
+
+// Main export for game report generation
+import { generatePdf } from './pdfBuilder';
+import { PDFOptions } from './types';
+import { Game } from '@/contexts/game/types';
+
 /**
- * PDF Generation Module
- * 
- * Provides functions to generate game reports as PDFs
+ * Generate a PDF report for a game
  */
+export const generateGameReport = async (game: Game, options: PDFOptions) => {
+  console.log('Starting PDF generation for game:', game.id);
+  console.log('Game has winners:', game.winners?.length || 0);
+  
+  // Ensure we pass hasWinners flag correctly
+  const hasWinners = game.winners && game.winners.length > 0;
+  console.log('hasWinners flag set to:', hasWinners);
+  
+  try {
+    await generatePdf(game, {
+      ...options,
+      hasWinners,
+      // If we have winners, we should not include near winners
+      includeNearWinners: options.includeNearWinners && !hasWinners
+    });
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    throw error;
+  }
+};
 
-// Export the standard PDF generator
-export { generateGameReport } from './pdfBuilder';
-
-// Export the simplified PDF generator - primary method for general use
-export { generateSimplePdf } from './simplePdfGenerator';
-
-// Export PDF configuration
-export { PDF_CONFIG, createPDF } from './builders/base-pdf';
-
-// Export utility functions for direct use if needed
-export { safeGetDrawnNumbers } from './builders/players-section';
-export { addNearWinnersSection } from './builders/near-winners';
-export { addWinnersSection } from './builders/winners-section';
-export { addPlayersListSection } from './builders/players-section';
-export { addDrawsSection, getLastDrawDate } from './builders/draws-section';
-
-// Re-export types
-export * from './types';
+/**
+ * Generate a simple player list PDF
+ */
+export const generateSimplePdf = async (game: Game, options: PDFOptions) => {
+  try {
+    await generatePdf(game, {
+      ...options,
+      // Simple PDF is primarily a player list
+      includeWinners: false,
+      includeNearWinners: true,
+      simpleMode: true
+    });
+  } catch (error) {
+    console.error('Error generating simple PDF:', error);
+    throw error;
+  }
+};

@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Game, Player, DailyDraw } from '../types';
+import { Game, Player, DailyDraw, FinancialProjection } from '../types';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -24,7 +24,11 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
         start_date: game.startDate,
         end_date: game.endDate,
         status: game.status,
-        owner_id: game.owner_id
+        owner_id: game.owner_id,
+        numbers_per_sequence: game.numbersPerSequence,
+        required_hits: game.requiredHits,
+        sequence_price: game.sequencePrice,
+        admin_profit_percentage: game.adminProfitPercentage
       });
       
       // Insert the game into Supabase
@@ -36,7 +40,11 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
           end_date: game.endDate,
           status: game.status,
           owner_id: game.owner_id,
-          user_id: game.owner_id // For compatibility
+          user_id: game.owner_id, // For compatibility
+          numbers_per_sequence: game.numbersPerSequence || 6,
+          required_hits: game.requiredHits || 6,
+          sequence_price: game.sequencePrice || 10,
+          admin_profit_percentage: game.adminProfitPercentage || 15
         })
         .select()
         .single();
@@ -63,7 +71,11 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
         players: [],
         dailyDraws: [],
         winners: [],
-        owner_id: game.owner_id
+        owner_id: game.owner_id,
+        numbersPerSequence: data.numbers_per_sequence || 6,
+        requiredHits: data.required_hits || 6,
+        sequencePrice: data.sequence_price || 10,
+        adminProfitPercentage: data.admin_profit_percentage || 15
       };
       
       // Add to local list
@@ -93,7 +105,11 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
           name: gameUpdates.name,
           start_date: gameUpdates.startDate,
           end_date: gameUpdates.endDate,
-          status: gameUpdates.status
+          status: gameUpdates.status,
+          numbers_per_sequence: gameUpdates.numbersPerSequence,
+          required_hits: gameUpdates.requiredHits,
+          sequence_price: gameUpdates.sequencePrice,
+          admin_profit_percentage: gameUpdates.adminProfitPercentage
         })
         .eq('id', id);
 
@@ -106,8 +122,8 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
     } catch (error) {
       console.error('Error updating game:', error);
       toast({
-        title: "Error updating game",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
+        title: "Erro ao atualizar jogo",
+        description: error instanceof Error ? error.message : "Ocorreu um erro inesperado",
         variant: "destructive"
       });
     }
@@ -133,11 +149,143 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
     } catch (error) {
       console.error('Error deleting game:', error);
       toast({
-        title: "Error deleting game",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
+        title: "Erro ao excluir jogo",
+        description: error instanceof Error ? error.message : "Ocorreu um erro inesperado",
         variant: "destructive"
       });
       return false;
+    }
+  };
+
+  /**
+   * Export game to JSON format
+   */
+  const exportGame = async (gameId: string): Promise<string> => {
+    try {
+      const game = games.find(g => g.id === gameId);
+      if (!game) throw new Error('Jogo não encontrado');
+
+      // Prepare export format
+      const exportData = {
+        game: {
+          name: game.name,
+          startDate: game.startDate,
+          endDate: game.endDate,
+          status: game.status,
+          numbersPerSequence: game.numbersPerSequence,
+          requiredHits: game.requiredHits,
+          sequencePrice: game.sequencePrice,
+          adminProfitPercentage: game.adminProfitPercentage
+        },
+        players: game.players.map(player => ({
+          name: player.name,
+          combinations: player.combinations.map(combo => ({
+            numbers: combo.numbers,
+            hits: combo.hits
+          }))
+        })),
+        dailyDraws: game.dailyDraws.map(draw => ({
+          date: draw.date,
+          numbers: draw.numbers
+        }))
+      };
+
+      // Convert to JSON string
+      return JSON.stringify(exportData, null, 2);
+    } catch (error) {
+      console.error('Error exporting game:', error);
+      toast({
+        title: "Erro ao exportar jogo",
+        description: error instanceof Error ? error.message : "Ocorreu um erro inesperado",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
+  /**
+   * Import game from JSON format
+   */
+  const importGame = async (jsonData: string, ownerId: string): Promise<Game> => {
+    try {
+      // Parse JSON data
+      const importData = JSON.parse(jsonData);
+      
+      // Validate the format
+      if (!importData.game || !importData.players) {
+        throw new Error('Formato de arquivo inválido');
+      }
+
+      // Create the new game first
+      const newGame = await addGame({
+        name: `${importData.game.name} (Importado)`,
+        startDate: importData.game.startDate || new Date().toISOString(),
+        endDate: importData.game.endDate,
+        status: 'active', // Always start as active
+        players: [],
+        dailyDraws: [],
+        winners: [],
+        owner_id: ownerId,
+        numbersPerSequence: importData.game.numbersPerSequence || 6,
+        requiredHits: importData.game.requiredHits || 6,
+        sequencePrice: importData.game.sequencePrice || 10,
+        adminProfitPercentage: importData.game.adminProfitPercentage || 15
+      });
+
+      // Process all players and their combinations
+      for (const playerData of importData.players) {
+        // Add player
+        const { data: playerInsert } = await supabase
+          .from('players')
+          .insert({
+            name: playerData.name,
+            game_id: newGame.id
+          })
+          .select()
+          .single();
+
+        if (playerInsert && playerData.combinations) {
+          // Add all combinations for this player
+          for (const combo of playerData.combinations) {
+            await supabase
+              .from('player_combinations')
+              .insert({
+                player_id: playerInsert.id,
+                numbers: combo.numbers
+              });
+          }
+        }
+      }
+
+      // Process all daily draws
+      if (importData.dailyDraws) {
+        for (const drawData of importData.dailyDraws) {
+          await supabase
+            .from('daily_draws')
+            .insert({
+              game_id: newGame.id,
+              date: drawData.date,
+              numbers: drawData.numbers
+            });
+        }
+      }
+
+      // Reload the games to get the updated data
+      await loadGamesFromSupabase();
+
+      // Return the new game
+      const importedGame = games.find(g => g.id === newGame.id);
+      if (!importedGame) throw new Error('Erro ao carregar o jogo importado');
+      
+      return importedGame;
+    } catch (error) {
+      console.error('Error importing game:', error);
+      toast({
+        title: "Erro ao importar jogo",
+        description: error instanceof Error ? error.message : "Ocorreu um erro inesperado",
+        variant: "destructive"
+      });
+      throw error;
     }
   };
 
@@ -161,6 +309,15 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
         setGames([]);
         setIsLoading(false);
         return;
+      }
+
+      // Get financial projections for all games
+      const { data: financialData, error: financialError } = await supabase
+        .from('financial_projections')
+        .select('*');
+
+      if (financialError) {
+        console.error('Error fetching financial projections:', financialError);
       }
 
       // For each game, fetch players, daily draws and winners
@@ -207,7 +364,7 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
           // Fetch winners
           const { data: winnersData } = await supabase
             .from('winners')
-            .select('player_id, combination_id')
+            .select('player_id, combination_id, prize_amount')
             .eq('game_id', game.id);
 
           // Map winners to corresponding players
@@ -219,8 +376,18 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
             // Filter winning players from the players list
             winners = players.filter(player => 
               winnerPlayerIds.includes(player.id)
-            );
+            ).map(player => {
+              // Find prize amount for this player
+              const winnerData = winnersData.find(w => w.player_id === player.id);
+              return {
+                ...player,
+                prize: winnerData?.prize_amount || 0
+              };
+            });
           }
+
+          // Find matching financial projection
+          const financialProjection = financialData?.find(fp => fp.id === game.id);
 
           // Ensure the status is always 'active' or 'closed'
           let gameStatus = game.status === 'active' ? 'active' : 'closed';
@@ -234,7 +401,17 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
             players,
             dailyDraws,
             winners,
-            owner_id: game.owner_id
+            owner_id: game.owner_id,
+            numbersPerSequence: game.numbers_per_sequence || 6,
+            requiredHits: game.required_hits || 6,
+            sequencePrice: game.sequence_price || 10,
+            adminProfitPercentage: game.admin_profit_percentage || 15,
+            financialProjections: financialProjection ? {
+              totalSequences: financialProjection.total_sequences || 0,
+              totalCollected: financialProjection.total_collected || 0,
+              adminProfit: financialProjection.admin_profit || 0,
+              totalPrize: financialProjection.total_prize || 0
+            } : undefined
           } as Game;
         })
       );
@@ -243,8 +420,8 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
     } catch (error) {
       console.error('Error loading games:', error);
       toast({
-        title: "Error loading games",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
+        title: "Erro ao carregar jogos",
+        description: error instanceof Error ? error.message : "Ocorreu um erro inesperado",
         variant: "destructive"
       });
     } finally {
@@ -276,12 +453,50 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
     };
   };
 
+  /**
+   * Load financial projections for a date range
+   */
+  const loadFinancialProjections = async (startDate?: string, endDate?: string) => {
+    try {
+      let query = supabase
+        .from('financial_projections')
+        .select('*');
+
+      if (startDate) {
+        query = query.gte('start_date', startDate);
+      }
+      
+      if (endDate) {
+        query = query.lte('start_date', endDate);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      return data as FinancialProjection[];
+    } catch (error) {
+      console.error('Error loading financial projections:', error);
+      toast({
+        title: "Erro ao carregar projeções financeiras",
+        description: error instanceof Error ? error.message : "Ocorreu um erro inesperado",
+        variant: "destructive"
+      });
+      return [];
+    }
+  };
+
   return { 
     addGame, 
     updateGame, 
     deleteGame, 
     loadGamesFromSupabase,
     recalculatePlayerHits,
+    exportGame,
+    importGame,
+    loadFinancialProjections,
     isLoading 
   };
 };

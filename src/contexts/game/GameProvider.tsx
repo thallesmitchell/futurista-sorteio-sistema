@@ -1,7 +1,7 @@
 
 import { ReactNode, useState, useEffect } from 'react';
 import { GameContext } from './GameContext';
-import { Game } from './types';
+import { Game, FinancialProjection } from './types';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { useGameActions } from './hooks/useGameActions';
@@ -25,7 +25,10 @@ export function GameProvider({ children }: GameProviderProps) {
     updateGame, 
     deleteGame, 
     loadGamesFromSupabase, 
-    recalculatePlayerHits, 
+    recalculatePlayerHits,
+    exportGame,
+    importGame,
+    loadFinancialProjections,
     isLoading 
   } = useGameActions(games, setGames);
 
@@ -65,12 +68,15 @@ export function GameProvider({ children }: GameProviderProps) {
       addGame,
       updateGame,
       deleteGame,
+      exportGame,
+      importGame,
       addPlayer,
       addPlayerCombination,
       updatePlayer,
       updatePlayerSequences,
       addDailyDraw,
-      checkWinners
+      checkWinners,
+      loadFinancialProjections
     }}>
       {children}
     </GameContext.Provider>

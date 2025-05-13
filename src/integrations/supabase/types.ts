@@ -57,6 +57,13 @@ export type Database = {
             foreignKeyName: "daily_draws_game_id_fkey"
             columns: ["game_id"]
             isOneToOne: false
+            referencedRelation: "financial_projections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_draws_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
             referencedRelation: "games"
             referencedColumns: ["id"]
           },
@@ -64,31 +71,43 @@ export type Database = {
       }
       games: {
         Row: {
+          admin_profit_percentage: number
           created_at: string
           end_date: string | null
           id: string
           name: string
+          numbers_per_sequence: number
           owner_id: string
+          required_hits: number
+          sequence_price: number
           start_date: string
           status: string
           user_id: string
         }
         Insert: {
+          admin_profit_percentage?: number
           created_at?: string
           end_date?: string | null
           id?: string
           name: string
+          numbers_per_sequence?: number
           owner_id?: string
+          required_hits?: number
+          sequence_price?: number
           start_date: string
           status: string
           user_id: string
         }
         Update: {
+          admin_profit_percentage?: number
           created_at?: string
           end_date?: string | null
           id?: string
           name?: string
+          numbers_per_sequence?: number
           owner_id?: string
+          required_hits?: number
+          sequence_price?: number
           start_date?: string
           status?: string
           user_id?: string
@@ -151,6 +170,13 @@ export type Database = {
             foreignKeyName: "players_game_id_fkey"
             columns: ["game_id"]
             isOneToOne: false
+            referencedRelation: "financial_projections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "players_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
             referencedRelation: "games"
             referencedColumns: ["id"]
           },
@@ -202,6 +228,7 @@ export type Database = {
           game_id: string
           id: string
           player_id: string
+          prize_amount: number | null
         }
         Insert: {
           combination_id: string
@@ -209,6 +236,7 @@ export type Database = {
           game_id: string
           id?: string
           player_id: string
+          prize_amount?: number | null
         }
         Update: {
           combination_id?: string
@@ -216,6 +244,7 @@ export type Database = {
           game_id?: string
           id?: string
           player_id?: string
+          prize_amount?: number | null
         }
         Relationships: [
           {
@@ -223,6 +252,13 @@ export type Database = {
             columns: ["combination_id"]
             isOneToOne: false
             referencedRelation: "player_combinations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "winners_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "financial_projections"
             referencedColumns: ["id"]
           },
           {
@@ -243,7 +279,23 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      financial_projections: {
+        Row: {
+          admin_profit: number | null
+          admin_profit_percentage: number | null
+          end_date: string | null
+          id: string | null
+          name: string | null
+          owner_id: string | null
+          sequence_price: number | null
+          start_date: string | null
+          status: string | null
+          total_collected: number | null
+          total_prize: number | null
+          total_sequences: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       set_first_user_as_super_admin: {

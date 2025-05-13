@@ -1,53 +1,111 @@
 
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { GameProvider } from "@/contexts/GameContext";
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import { GameProvider } from "./contexts/GameContext";
-import { ThemeProvider } from "./contexts/ThemeContext";
+import MainLayout from "@/layouts/MainLayout";
+import AuthLayout from "@/layouts/AuthLayout";
+import Dashboard from "@/pages/Dashboard";
+import LoginPage from "@/pages/LoginPage";
+import ProfileSettings from "@/pages/ProfileSettings";
+import GameAdmin from "@/pages/GameAdmin";
+import PlayersView from "@/pages/PlayersView";
+import GameHistory from "@/pages/GameHistory";
+import NotFound from "@/pages/NotFound";
+import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
+import FinancialView from "@/pages/FinancialView";
+import './App.css';
 
-import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
-import GameAdmin from "./pages/GameAdmin";
-import GameHistory from "./pages/GameHistory";
-import HistoryPage from "./pages/HistoryPage";
-import NotFound from "./pages/NotFound";
-import SuperAdminDashboard from "./pages/SuperAdminDashboard";
-import ProfileSettings from "./pages/ProfileSettings";
-import AdminView from "./pages/AdminView";
-import PlayersView from "./pages/PlayersView";
+// Auth guard component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const token = localStorage.getItem('supabase.auth.token');
+  return token ? children : <Navigate to="/login" />;
+};
 
-const queryClient = new QueryClient();
+// Super admin guard
+const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const userRole = JSON.parse(localStorage.getItem('user') || '{}')?.role;
+  return userRole === 'super_admin' ? children : <Navigate to="/dashboard" />;
+};
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <BrowserRouter>
-        <AuthProvider>
-          <ThemeProvider>
-            <Toaster />
-            <Sonner />
-            <GameProvider>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/admin/:gameId" element={<GameAdmin />} />
-                <Route path="/admin/view/:adminId" element={<AdminView />} />
-                <Route path="/game/players/:gameId" element={<PlayersView />} />
-                <Route path="/history/:gameId" element={<GameHistory />} />
-                <Route path="/history" element={<HistoryPage />} />
-                <Route path="/super-admin" element={<SuperAdminDashboard />} />
-                <Route path="/settings" element={<ProfileSettings />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </GameProvider>
-          </ThemeProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <ThemeProvider defaultTheme="dark" storageKey="theme">
+      <AuthProvider>
+        <GameProvider>
+          <Router>
+            <Routes>
+              <Route path="/login" element={<AuthLayout><LoginPage /></AuthLayout>} />
+              
+              <Route path="/" element={<ProtectedRoute><Navigate to="/dashboard" /></ProtectedRoute>} />
+              
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Dashboard />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/game/:gameId" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <GameAdmin />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/players" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <PlayersView />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/history" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <GameHistory />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/finance" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <FinancialView />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <ProfileSettings />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin" element={
+                <ProtectedRoute>
+                  <SuperAdminRoute>
+                    <MainLayout>
+                      <SuperAdminDashboard />
+                    </MainLayout>
+                  </SuperAdminRoute>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+          <Toaster />
+        </GameProvider>
+      </AuthProvider>
+    </ThemeProvider>
+  );
+}
 
 export default App;

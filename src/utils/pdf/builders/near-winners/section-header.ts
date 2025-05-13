@@ -1,46 +1,36 @@
 
-import { jsPDF } from 'jspdf';
-import { PDF_CONFIG } from '../base-pdf';
-import { PdfSectionOptions } from '../../types';
+import jsPDF from 'jspdf';
 
 /**
- * Draw section title and description
+ * Add the section header for near winners
  */
-export const drawNearWinnersHeader = (
-  pdf: jsPDF, 
-  options: PdfSectionOptions
-): number => {
-  try {
-    console.log('Drawing near winners header section');
-    
-    // Start with extra spacing
-    let currentY = PDF_CONFIG.margin + 35;
-    
-    // Section title
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(PDF_CONFIG.fontSizes.subtitle);
-    pdf.setTextColor(options.color);
-    pdf.text("Jogos Amarrados", PDF_CONFIG.pageWidth / 2, currentY, { align: "center" });
-    
-    currentY += 10;
-
-    
-    // Description
-    pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(PDF_CONFIG.fontSizes.normal);
-    pdf.setTextColor('#000000');
-    pdf.text(
-      'Jogadores com 5 acertos (falta apenas 1 número para ganhar)',
-      PDF_CONFIG.pageWidth / 2, 
-      currentY,
-      { align: 'center' }
-    );
-    
-    // Increased space before table starts
-    console.log(`Header section completed, next Y position: ${currentY + 20}`);
-    return currentY + 20;
-  } catch (error) {
-    console.error("Error drawing near winners header:", error);
-    return PDF_CONFIG.margin + 10; // Safe fallback
-  }
-};
+export function addNearWinnersSectionHeader(doc: jsPDF, hitCount: number): void {
+  doc.addPage();
+  
+  // Set font styles for the header
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.setTextColor(0, 0, 0);
+  
+  // Add the header text
+  doc.text(
+    `Jogos Amarrados - ${hitCount} Acertos`, 
+    doc.internal.pageSize.width / 2, 
+    20, 
+    { align: 'center' }
+  );
+  
+  // Add explanation text
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(80, 80, 80);
+  doc.text(
+    `Jogadores que estão a 1 acerto de ganhar`, 
+    doc.internal.pageSize.width / 2, 
+    30, 
+    { align: 'center' }
+  );
+  
+  // Reset text color
+  doc.setTextColor(0, 0, 0);
+}

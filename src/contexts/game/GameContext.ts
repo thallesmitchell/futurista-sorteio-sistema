@@ -1,6 +1,6 @@
 
 import { createContext, useContext } from 'react';
-import { Game, Player, DailyDraw } from './types';
+import { Game, Player, DailyDraw, FinancialProjection } from './types';
 
 // Define more granular context types for improved type safety
 interface GameStateContext {
@@ -14,6 +14,8 @@ interface GameActionsContext {
   addGame: (game: Omit<Game, 'id'>) => Promise<Game>;
   updateGame: (id: string, game: Partial<Game>) => Promise<void>;
   deleteGame: (id: string) => Promise<boolean>;
+  exportGame: (id: string) => Promise<string>;
+  importGame: (jsonData: string, ownerId: string) => Promise<Game>;
   
   // Player actions
   addPlayer: (gameId: string, player: Omit<Player, 'id'>) => Promise<Player | undefined>;
@@ -26,6 +28,9 @@ interface GameActionsContext {
   
   // Winner actions
   checkWinners: (gameId: string) => Promise<Player[]>;
+  
+  // Financial actions
+  loadFinancialProjections: (startDate?: string, endDate?: string) => Promise<FinancialProjection[]>;
 }
 
 // Combined interface for the full context
@@ -52,14 +57,14 @@ export const useGameState = (): GameStateContext => {
 
 export const useGameActions = (): GameActionsContext => {
   const { 
-    addGame, updateGame, deleteGame,
+    addGame, updateGame, deleteGame, exportGame, importGame,
     addPlayer, addPlayerCombination, updatePlayer, updatePlayerSequences,
-    addDailyDraw, checkWinners
+    addDailyDraw, checkWinners, loadFinancialProjections
   } = useGame();
   
   return {
-    addGame, updateGame, deleteGame,
+    addGame, updateGame, deleteGame, exportGame, importGame,
     addPlayer, addPlayerCombination, updatePlayer, updatePlayerSequences,
-    addDailyDraw, checkWinners
+    addDailyDraw, checkWinners, loadFinancialProjections
   };
 };
