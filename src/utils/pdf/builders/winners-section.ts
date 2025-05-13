@@ -23,7 +23,7 @@ export const addWinnersSection = (
   console.log(`Adding ${game.winners.length} winners to PDF with improved design`);
   
   // Start with a good amount of space before the section
-  const sectionStartY = yPosition + 5;
+  const sectionStartY = yPosition + 15;
   
   // Winners title with clean design
   pdf.setFont("helvetica", "bold");
@@ -33,62 +33,47 @@ export const addWinnersSection = (
   // Add title
   pdf.text("GANHADORES", PDF_CONFIG.pageWidth / 2, sectionStartY, { align: "center" });
   
-  let currentY = sectionStartY + PDF_CONFIG.lineHeight * 1.5;
+  let currentY = sectionStartY + PDF_CONFIG.lineHeight * 2;
   
-  // Draw SVG trophies next to title using path commands for better quality
-  const drawTrophy = (centerX: number, centerY: number, size: number = 4) => {
-    // Trophy cup - simplified SVG-like path
-    pdf.setLineWidth(0.1);
-    pdf.setDrawColor(180, 150, 0); // Gold outline
-    pdf.setFillColor(220, 180, 0); // Gold fill
-    
+  // Draw SVG trophies next to title
+  const drawTrophy = (x: number, y: number, scale: number = 1) => {
     // Trophy base
-    const baseWidth = size * 1.5;
-    const baseHeight = size * 0.8;
-    pdf.roundedRect(
-      centerX - baseWidth/2, 
-      centerY + size*0.5, 
-      baseWidth, 
-      baseHeight, 
-      1, 1, 'FD'
-    );
+    const baseSize = 7 * scale;
+    
+    // Save the current state
+    pdf.saveGraphicsState();
+    
+    // Set colors
+    pdf.setFillColor(212, 175, 55); // Gold color
+    pdf.setDrawColor(139, 69, 19);  // Dark bronze for outlines
+    pdf.setLineWidth(0.2);
     
     // Trophy cup
-    pdf.ellipse(centerX, centerY - size*0.5, size, size*0.7, 'FD');
+    pdf.ellipse(x, y - baseSize/2, baseSize/2, baseSize/3, 'F');
     
-    // Trophy handles
-    pdf.setLineWidth(size/10);
-    pdf.setDrawColor(220, 180, 0);
+    // Trophy stem
+    pdf.rect(x - baseSize/8, y - baseSize/2, baseSize/4, baseSize/1.5, 'F');
+    
+    // Trophy base
+    pdf.rect(x - baseSize/2, y + baseSize/3, baseSize, baseSize/4, 'F');
+    
+    // Trophy handles (curved lines)
+    pdf.setLineWidth(baseSize/10);
+    pdf.setDrawColor(212, 175, 55);
     
     // Left handle
-    pdf.line(
-      centerX - size*0.8, 
-      centerY - size*0.5, 
-      centerX - size*1.5, 
-      centerY
-    );
+    pdf.line(x - baseSize/2, y - baseSize/2, x - baseSize/1.2, y - baseSize/4);
     
     // Right handle
-    pdf.line(
-      centerX + size*0.8, 
-      centerY - size*0.5, 
-      centerX + size*1.5, 
-      centerY
-    );
+    pdf.line(x + baseSize/2, y - baseSize/2, x + baseSize/1.2, y - baseSize/4);
     
-    // Center line
-    pdf.setLineWidth(size/15);
-    pdf.line(
-      centerX, 
-      centerY + size*0.2, 
-      centerX, 
-      centerY + size*1.2
-    );
+    // Restore the previous state
+    pdf.restoreGraphicsState();
   };
   
-  // Draw trophies next to title
-  drawTrophy(PDF_CONFIG.pageWidth / 2 - 30, sectionStartY - 1);
-  drawTrophy(PDF_CONFIG.pageWidth / 2 + 30, sectionStartY - 1);
+  // Draw trophies on both sides of the title
+  drawTrophy(PDF_CONFIG.pageWidth / 2 - 25, sectionStartY, 1.2);
+  drawTrophy(PDF_CONFIG.pageWidth / 2 + 25, sectionStartY, 1.2);
   
   // Add each winner with improved spacing and centralized content
   let winnerCount = 0;
@@ -104,15 +89,16 @@ export const addWinnersSection = (
       console.log(`Adding winner ${winnerCount}: ${playerData.name}`);
       
       // Ensure adequate spacing before each winner
-      currentY += 8;
+      currentY += 12;
       
-      // Add winner name centered
+      // Add winner name centered with better styling
       pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(PDF_CONFIG.fontSizes.normal);
+      pdf.setFontSize(PDF_CONFIG.fontSizes.normal + 1);
       pdf.setTextColor(0, 100, 0); // Dark Green
       pdf.text(`${winnerCount}. ${playerData.name}`, PDF_CONFIG.pageWidth / 2, currentY, { align: "center" });
       
-      currentY += PDF_CONFIG.lineHeight * 1.5; // Increased space after winner name
+      // More space after winner name
+      currentY += PDF_CONFIG.lineHeight * 2; 
       
       // Find winning combinations
       const winningCombos = playerData.combinations.filter(c => c.hits === 6);
@@ -128,7 +114,7 @@ export const addWinnersSection = (
         
         // Center the number badges
         const numberCount = sortedNumbers.length;
-        const badgeWidth = 13; // Width per badge in mm
+        const badgeWidth = 14; // Increased width per badge in mm
         const totalWidth = numberCount * badgeWidth;
         let startX = (PDF_CONFIG.pageWidth - totalWidth) / 2;
         
@@ -140,24 +126,24 @@ export const addWinnersSection = (
           
           // Draw larger badge background
           pdf.setFillColor(0, 158, 26); // Green
-          pdf.circle(x + 6, currentY, 6, 'F'); // Larger circle (6mm radius)
+          pdf.circle(x + 7, currentY, 7, 'F'); // Larger circle (7mm radius)
           
           // Draw number on badge with larger text
           pdf.setTextColor(255, 255, 255); // White
           pdf.setFont("helvetica", "bold");
-          pdf.setFontSize(PDF_CONFIG.fontSizes.normal); // Larger text
+          pdf.setFontSize(PDF_CONFIG.fontSizes.normal + 2); // Larger text
           
           // Center text in circle
           const textWidth = pdf.getStringUnitWidth(numString) * pdf.getFontSize() / pdf.internal.scaleFactor;
-          pdf.text(numString, x + 6 - (textWidth/2), currentY + 1.5);
+          pdf.text(numString, x + 7 - (textWidth/2), currentY + 1.8);
         }
         
-        // Add space after the combo
-        currentY += PDF_CONFIG.lineHeight * 2.5;
+        // Add more space after the combo
+        currentY += PDF_CONFIG.lineHeight * 3;
       }
       
       // Add more space between winners
-      currentY += 5;
+      currentY += 10;
       
       // Add separator line between winners (except after the last one)
       if (winnerCount < game.winners.length) {
@@ -165,11 +151,10 @@ export const addWinnersSection = (
         pdf.setLineWidth(0.5);
         pdf.line(
           PDF_CONFIG.pageWidth / 4, 
-          currentY, 
+          currentY - 5, 
           PDF_CONFIG.pageWidth * 3/4, 
-          currentY
+          currentY - 5
         );
-        currentY += 5; // Space after separator
       }
     } catch (error) {
       console.error("Error processing winner:", error);
@@ -178,7 +163,7 @@ export const addWinnersSection = (
   }
   
   // Ensure adequate spacing after the winners section
-  currentY += 10;
+  currentY += 15;
   
   // Add a more visible separator at the end of the section
   pdf.setDrawColor(0, 130, 20);
@@ -190,5 +175,5 @@ export const addWinnersSection = (
     currentY
   );
   
-  return currentY + 10; // Return with extra padding for next section
+  return currentY + 15; // Return with extra padding for next section
 };

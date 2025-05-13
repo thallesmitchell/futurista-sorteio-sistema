@@ -44,12 +44,15 @@ export const generateSimplePdf = async (
     const pdf = createPDF();
     
     // 1. HEADER SECTION
-    // Obter a data do último sorteio (se houver) ou usar a data de início do jogo
+    // Get the date of the last draw or use the game start date
     const lastDrawDate = getLastDrawDate(game.dailyDraws) || game.startDate;
     console.log('Data do último sorteio:', lastDrawDate);
     
     // Add header section using the standardized builder and the last draw date
     let yPosition = addHeader(pdf, game.name, lastDrawDate, { color: options.themeColor || '#39FF14' });
+    
+    // Add extra spacing after header
+    yPosition += 10;
     
     // Get all drawn numbers from the game
     const allDrawnNumbers = safeGetDrawnNumbers(game);
@@ -59,16 +62,19 @@ export const generateSimplePdf = async (
     const hasWinners = Array.isArray(game.winners) && game.winners.length > 0;
     console.log(`Game has winners: ${hasWinners}, count: ${hasWinners ? game.winners.length : 0}`);
     
-    // 2. WINNERS or NEAR WINNERS SECTION
+    // 2. WINNERS OR NEAR WINNERS SECTION
     if (hasWinners) {
       console.log('Adding winners section in PDF');
       yPosition = addWinnersSection(pdf, game, yPosition);
       console.log(`Y-position after winners section: ${yPosition}`);
       
       // Check if we need to add a new page before the draws section
-      if (yPosition > PDF_CONFIG.pageHeight - 40) {
+      if (yPosition > PDF_CONFIG.pageHeight - 60) {
         pdf.addPage();
-        yPosition = PDF_CONFIG.margin;
+        yPosition = PDF_CONFIG.margin + 10;
+      } else {
+        // Add extra spacing between sections
+        yPosition += 15;
       }
     } 
     // Only add near winners section if there are NO winners and if requested
@@ -78,9 +84,12 @@ export const generateSimplePdf = async (
       console.log(`Y-position after near winners section: ${yPosition}`);
       
       // Check if we need to add a new page before the draws section
-      if (yPosition > PDF_CONFIG.pageHeight - 40) {
+      if (yPosition > PDF_CONFIG.pageHeight - 60) {
         pdf.addPage();
-        yPosition = PDF_CONFIG.margin;
+        yPosition = PDF_CONFIG.margin + 10;
+      } else {
+        // Add extra spacing between sections
+        yPosition += 15;
       }
     }
     
@@ -89,9 +98,12 @@ export const generateSimplePdf = async (
     console.log(`Y-position after draws section: ${yPosition}`);
     
     // Check if we need to add a new page before players section
-    if (yPosition > PDF_CONFIG.pageHeight - 70) {
+    if (yPosition > PDF_CONFIG.pageHeight - 100) {
       pdf.addPage();
-      yPosition = PDF_CONFIG.margin;
+      yPosition = PDF_CONFIG.margin + 10;
+    } else {
+      // Add extra spacing between sections
+      yPosition += 15;
     }
     
     // 4. PLAYERS SECTION

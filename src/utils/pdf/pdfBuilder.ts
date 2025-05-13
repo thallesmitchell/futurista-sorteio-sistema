@@ -56,55 +56,60 @@ export const generateGameReport = async (
       maxCombosPerPlayer: 1000 // Show all sequences for completeness
     };
     
-    // Obter a data do último sorteio (se houver) ou usar a data de início do jogo
+    // Get the date of the last draw or use the game start date
     const lastDrawDate = getLastDrawDate(game.dailyDraws) || game.startDate;
     
     // Add header with better error handling for dates
     const gameName = typeof game.name === 'string' ? game.name : 'Resultado';
     let currentY = addHeader(pdf, gameName, lastDrawDate, { color: options.themeColor });
     
+    // Extra spacing after header
+    currentY += 10;
+    
     // Check if we have winners
     const hasWinners = Array.isArray(game.winners) && game.winners.length > 0;
     
-    // ALWAYS add winners section if winners exist - do this before near winners
+    // FIRST: always add winners section if winners exist
     if (hasWinners) {
       // Add winners section
       currentY = addWinnersSection(pdf, game, currentY);
       
       // Check if we need to add a new page before the draws section
-      if (currentY > PDF_CONFIG.pageHeight - 40) {
+      if (currentY > PDF_CONFIG.pageHeight - 60) {
         pdf.addPage();
-        currentY = PDF_CONFIG.margin;
+        currentY = PDF_CONFIG.margin + 10;
+      } else {
+        // Add extra spacing between sections
+        currentY += 15;
       }
-      
-      // Add draws section after winners section
-      currentY = addDrawsSection(pdf, game.dailyDraws, currentY);
     } 
-    // If no winners, add near winners section (if requested)
+    // SECOND: If no winners, add near winners section (if requested)
     else if (options.includeNearWinners) {
       currentY = addNearWinnersSection(pdf, game, allDrawnNumbers, sectionOptions);
       
       // Check if we need to add a new page before the draws section
-      if (currentY > PDF_CONFIG.pageHeight - 40) {
+      if (currentY > PDF_CONFIG.pageHeight - 60) {
         pdf.addPage();
-        currentY = PDF_CONFIG.margin;
+        currentY = PDF_CONFIG.margin + 10;
+      } else {
+        // Add extra spacing between sections
+        currentY += 15;
       }
-      
-      // Add draws section after near winners section
-      currentY = addDrawsSection(pdf, game.dailyDraws, currentY);
     }
-    else {
-      // Add draws section directly
-      currentY = addDrawsSection(pdf, game.dailyDraws, currentY);
-    }
+    
+    // THIRD: Add draws section
+    currentY = addDrawsSection(pdf, game.dailyDraws, currentY);
     
     // Check if we need a new page before players section
     if (currentY > PDF_CONFIG.pageHeight - 100) {
       pdf.addPage();
-      currentY = PDF_CONFIG.margin;
+      currentY = PDF_CONFIG.margin + 10;
+    } else {
+      // Add extra spacing between sections
+      currentY += 15;
     }
     
-    // Add players section in a tabular format
+    // FOURTH: Add players section in a tabular format
     addPlayersListSection(pdf, game, currentY);
     
     // Use provided filename or generate one with sanitizing
@@ -124,4 +129,4 @@ export const generateGameReport = async (
 }
 
 // Re-export required PDF_CONFIG so it's available to consumers
-export { PDF_CONFIG } from './builders';
+export { PDF_CONFIG } from './builders/base-pdf';
