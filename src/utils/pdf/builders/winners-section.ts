@@ -1,4 +1,3 @@
-
 import { jsPDF } from 'jspdf';
 import { Game } from '@/contexts/game/types';
 import { PDF_CONFIG } from './base-pdf';
@@ -35,45 +34,25 @@ export const addWinnersSection = (
   
   let currentY = sectionStartY + PDF_CONFIG.lineHeight * 2;
   
-  // Draw SVG trophies next to title
-  const drawTrophy = (x: number, y: number, scale: number = 1) => {
-    // Trophy base
-    const baseSize = 7 * scale;
-    
-    // Save the current state
-    pdf.saveGraphicsState();
-    
-    // Set colors
-    pdf.setFillColor(212, 175, 55); // Gold color
-    pdf.setDrawColor(139, 69, 19);  // Dark bronze for outlines
-    pdf.setLineWidth(0.2);
-    
-    // Trophy cup
-    pdf.ellipse(x, y - baseSize/2, baseSize/2, baseSize/3, 'F');
-    
-    // Trophy stem
-    pdf.rect(x - baseSize/8, y - baseSize/2, baseSize/4, baseSize/1.5, 'F');
-    
-    // Trophy base
-    pdf.rect(x - baseSize/2, y + baseSize/3, baseSize, baseSize/4, 'F');
-    
-    // Trophy handles (curved lines)
-    pdf.setLineWidth(baseSize/10);
-    pdf.setDrawColor(212, 175, 55);
-    
-    // Left handle
-    pdf.line(x - baseSize/2, y - baseSize/2, x - baseSize/1.2, y - baseSize/4);
-    
-    // Right handle
-    pdf.line(x + baseSize/2, y - baseSize/2, x + baseSize/1.2, y - baseSize/4);
-    
-    // Restore the previous state
-    pdf.restoreGraphicsState();
+  // Add SVG trophies from external URL
+  const trophyURL = "https://upload.wikimedia.org/wikipedia/commons/2/20/Trof%C3%A9u_de_NFA.svg";
+  
+  // Function to add trophy SVG on both sides of the title
+  const addTrophyImage = (x: number, y: number, width: number, height: number) => {
+    try {
+      pdf.addSvgAsImage(trophyURL, x - width/2, y - height/2, width, height);
+    } catch (error) {
+      console.error("Error adding trophy SVG:", error);
+      // Fallback to a simple rectangle if SVG fails
+      pdf.setFillColor(212, 175, 55); // Gold color
+      pdf.rect(x - width/2, y - height/2, width, height, 'F');
+    }
   };
   
-  // Draw trophies on both sides of the title
-  drawTrophy(PDF_CONFIG.pageWidth / 2 - 25, sectionStartY, 1.2);
-  drawTrophy(PDF_CONFIG.pageWidth / 2 + 25, sectionStartY, 1.2);
+  // Add trophies on both sides of the title
+  const trophySize = 15; // Size in mm
+  addTrophyImage(PDF_CONFIG.pageWidth / 2 - 30, sectionStartY, trophySize, trophySize);
+  addTrophyImage(PDF_CONFIG.pageWidth / 2 + 30, sectionStartY, trophySize, trophySize);
   
   // Add each winner with improved spacing and centralized content
   let winnerCount = 0;
