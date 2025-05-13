@@ -22,7 +22,7 @@ export const addWinnersSection = (
   console.log(`Adding ${game.winners.length} winners to PDF with improved design`);
   
   // Start with a good amount of space before the section
-  const sectionStartY = yPosition + 15;
+  const sectionStartY = yPosition + 7;
   
   // Winners title with clean design
   pdf.setFont("helvetica", "bold");
@@ -68,7 +68,7 @@ export const addWinnersSection = (
       console.log(`Adding winner ${winnerCount}: ${playerData.name}`);
       
       // Ensure adequate spacing before each winner
-      currentY += 12;
+      currentY += 7;
       
       // Add winner name centered with better styling
       pdf.setFont("helvetica", "bold");
@@ -122,7 +122,7 @@ export const addWinnersSection = (
       }
       
       // Add more space between winners
-      currentY += 10;
+      currentY += 8;
       
       // Add separator line between winners (except after the last one)
       if (winnerCount < game.winners.length) {
@@ -142,7 +142,7 @@ export const addWinnersSection = (
   }
   
   // Ensure adequate spacing after the winners section
-  currentY += 15;
+  currentY += 10;
   
   // Add a more visible separator at the end of the section
   pdf.setDrawColor(0, 130, 20);
@@ -154,5 +154,5 @@ export const addWinnersSection = (
     currentY
   );
   
-  return currentY + 15; // Return with extra padding for next section
+  return currentY + 10; // Return with extra padding for next section
 };
