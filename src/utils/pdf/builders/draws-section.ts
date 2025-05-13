@@ -1,5 +1,5 @@
 
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import { DailyDraw } from '@/contexts/game/types';
 import { PDF_CONFIG } from './base-pdf';
 import { formatDate } from '@/lib/date';
@@ -12,7 +12,7 @@ const renderNumberCircle = (
   number: number,
   x: number,
   y: number,
-  size = 8 // Reduzido de 5 para 3mm
+  size = 8 // Tamanho do círculo
 ): void => {
   // Salvar estado atual
   pdf.saveGraphicsState();
@@ -24,7 +24,7 @@ const renderNumberCircle = (
   // Adicionar texto do número
   pdf.setTextColor(255, 255, 255); // Texto branco
   pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(11); // Reduzido para combinar com o novo tamanho de círculo
+  pdf.setFontSize(11); // Tamanho da fonte
   
   // Formatar número com zero à esquerda se necessário
   const formattedNumber = String(number).padStart(2, '0');
@@ -58,7 +58,8 @@ export const addDrawsSection = (
     return startY;
   }
   
-  let yPosition = startY;
+  // Adicionando espaço adequado antes da seção
+  let yPosition = startY + 10;
   
   // Título da seção
   pdf.setFont('helvetica', 'bold');
@@ -66,7 +67,7 @@ export const addDrawsSection = (
   pdf.setTextColor(39, 174, 96); // Verde escuro
   pdf.text('Sorteios Realizados', PDF_CONFIG.pageWidth / 2, yPosition, { align: 'center' });
   
-  yPosition += 6; // Espaçamento reduzido após título
+  yPosition += 10; // Espaçamento adequado após título
   
   // Ordenar sorteios do mais recente para o mais antigo
   const sortedDraws = [...draws].sort((a, b) => 
@@ -90,11 +91,11 @@ export const addDrawsSection = (
     }
     
     pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(PDF_CONFIG.fontSizes.normal - 1); // Reduzido
+    pdf.setFontSize(PDF_CONFIG.fontSizes.normal);
     pdf.setTextColor(0, 0, 0);
     pdf.text(dateText, PDF_CONFIG.margin, yPosition);
     
-    yPosition += 5; // Espaçamento reduzido
+    yPosition += 8; // Espaçamento adequado
     
     // Verificar se há números para mostrar
     if (!draw.numbers || !Array.isArray(draw.numbers) || draw.numbers.length === 0) {
@@ -108,9 +109,9 @@ export const addDrawsSection = (
     // Ordenar números
     const sortedNumbers = [...draw.numbers].sort((a, b) => a - b);
     
-    // Definir layout para os números - reduzido
-    const circleRadius = 4; // Reduzido para 3mm
-    const circleSpacing = 10; // Reduzido proporcional ao novo tamanho do círculo
+    // Definir layout para os números
+    const circleRadius = 4;
+    const circleSpacing = 10;
     const maxCirclesPerRow = Math.floor((PDF_CONFIG.pageWidth - (PDF_CONFIG.margin * 2)) / circleSpacing);
     
     // Renderizar números em círculos
@@ -126,17 +127,28 @@ export const addDrawsSection = (
     
     // Calcular quantas linhas ocupamos
     const rowsUsed = Math.ceil(sortedNumbers.length / maxCirclesPerRow);
-    yPosition += (rowsUsed * circleSpacing) + 4; // Espaçamento reduzido
+    yPosition += (rowsUsed * circleSpacing) + 8; // Espaçamento adequado
     
     // Adicionar linha separadora entre sorteios (exceto após o último)
     if (drawIndex < sortedDraws.length - 1) {
       pdf.setDrawColor(200, 200, 200);
       pdf.line(PDF_CONFIG.margin, yPosition - 2, PDF_CONFIG.pageWidth - PDF_CONFIG.margin, yPosition - 2);
-      yPosition += 3; // Espaçamento reduzido
+      yPosition += 5; // Espaçamento adequado
     }
   });
   
-  return yPosition + 3; // Retorna a nova posição Y com um espaçamento reduzido
+  // Adicionar separador mais visível após a seção de sorteios
+  yPosition += 5;
+  pdf.setDrawColor(39, 174, 96); // Verde
+  pdf.setLineWidth(0.8);
+  pdf.line(
+    PDF_CONFIG.margin, 
+    yPosition, 
+    PDF_CONFIG.pageWidth - PDF_CONFIG.margin, 
+    yPosition
+  );
+  
+  return yPosition + 10; // Espaçamento adequado para a próxima seção
 };
 
 /**

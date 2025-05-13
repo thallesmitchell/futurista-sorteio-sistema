@@ -1,5 +1,5 @@
 
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import { Game } from '@/contexts/game/types';
 import { 
   createPDF, 
@@ -105,7 +105,6 @@ export const generateGameReport = async (
     }
     
     // Add players section in a tabular format
-    // Fix: Call addPlayersListSection with only 3 arguments
     addPlayersListSection(pdf, game, currentY);
     
     // Use provided filename or generate one with sanitizing

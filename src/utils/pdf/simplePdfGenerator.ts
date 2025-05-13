@@ -1,5 +1,5 @@
 
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import { Game } from '@/contexts/game/types';
 import { createPDF, PDF_CONFIG, addHeader } from './builders/base-pdf';
 import { addNearWinnersSection } from './builders/near-winners';
@@ -87,18 +87,6 @@ export const generateSimplePdf = async (
     // 3. DRAWS SECTION
     yPosition = addDrawsSection(pdf, game.dailyDraws, yPosition);
     console.log(`Y-position after draws section: ${yPosition}`);
-    
-    // Add a separator line between draws and players section
-    pdf.setDrawColor(100, 100, 100);
-    pdf.setLineWidth(0.5);
-    pdf.line(
-      PDF_CONFIG.margin,
-      yPosition + 5,
-      PDF_CONFIG.pageWidth - PDF_CONFIG.margin,
-      yPosition + 5
-    );
-    
-    yPosition += 10; // Add some space after the separator
     
     // Check if we need to add a new page before players section
     if (yPosition > PDF_CONFIG.pageHeight - 70) {

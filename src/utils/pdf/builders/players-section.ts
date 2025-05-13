@@ -1,5 +1,5 @@
 
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import { Game } from '@/contexts/game/types';
 import { PDF_CONFIG } from './base-pdf';
 

@@ -1,5 +1,5 @@
 
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import { PDF_CONFIG } from '../base-pdf';
 import { PdfSectionOptions } from '../../types';
 
@@ -13,8 +13,10 @@ export const drawNearWinnersHeader = (
   try {
     console.log('Drawing near winners header section');
     
-    // Section title
+    // Start with extra spacing
     let currentY = PDF_CONFIG.margin + 35;
+    
+    // Section title
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(PDF_CONFIG.fontSizes.subtitle);
     pdf.setTextColor(options.color);

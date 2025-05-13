@@ -1,5 +1,5 @@
 
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import { Game } from '@/contexts/game/types';
 import { PDF_CONFIG } from './base-pdf';
 import { PdfSectionOptions } from '../types';
@@ -51,8 +51,19 @@ export const addNearWinnersSection = (
     
     // Generate table and return final Y position
     const finalY = generateNearWinnersTable(pdf, tableData, currentY);
-    console.log(`Table rendered successfully, new Y position: ${finalY}`);
-    return finalY;
+    
+    // Add a separator after the near winners section
+    pdf.setDrawColor(0, 130, 20);
+    pdf.setLineWidth(0.8);
+    pdf.line(
+      PDF_CONFIG.margin, 
+      finalY + 5, 
+      PDF_CONFIG.pageWidth - PDF_CONFIG.margin, 
+      finalY + 5
+    );
+    
+    console.log(`Table rendered successfully, new Y position: ${finalY + 10}`);
+    return finalY + 10; // Extra spacing after section
   } catch (error) {
     console.error("Error in addNearWinnersSection:", error);
     return PDF_CONFIG.margin + 30; // Return a safe position in case of error
