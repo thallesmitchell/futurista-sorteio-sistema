@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import { autoTable } from 'jspdf-autotable';
 import { PDFOptions, PdfSectionOptions } from '../../types';
@@ -152,11 +153,11 @@ export const renderTable = (
   const tableOptions = {
     startY: options.startY || 10,
     headStyles: {
-      fillColor: options.headStyles?.fillColor || [41, 128, 185],
-      textColor: options.headStyles?.textColor || [255, 255, 255],
+      fillColor: options.headStyles?.fillColor || [41, 128, 185] as [number, number, number],
+      textColor: options.headStyles?.textColor || [255, 255, 255] as [number, number, number],
       fontStyle: options.headStyles?.fontStyle || "bold" as const
     },
-    theme: options.theme || "striped",
+    theme: options.theme || "striped" as const,
     styles: {
       fontSize: options.styles?.fontSize || 10,
       cellPadding: options.styles?.cellPadding || 3

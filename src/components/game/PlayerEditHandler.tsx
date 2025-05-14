@@ -3,6 +3,7 @@ import React, { useState, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Player } from '@/contexts/game/types';
 import { useGame } from '@/contexts/GameContext';
+import { ToasterToast, Toast } from '@/hooks/use-toast';
 
 interface PlayerEditHandlerProps {
   gameId: string;
@@ -20,8 +21,12 @@ class PlayerEditHandler {
     this.gameId = gameId;
     this.onNewWinnerFound = onNewWinnerFound;
     
-    // These will be set later by setDependencies
-    this.toast = () => {};
+    // Initialize with a default implementation that matches the expected return type
+    this.toast = (props: Toast) => ({
+      id: '',
+      dismiss: () => {},
+      update: () => {}
+    });
     this.updatePlayerSequences = async () => false;
     this.checkWinners = async () => [];
   }
