@@ -15,12 +15,12 @@ import { PdfSectionOptions } from '../types';
  * @param options Section options
  * @returns Y position after adding the section
  */
-export function addNearWinnersSection(
+export async function addNearWinnersSection(
   doc: jsPDF, 
   game: Game, 
   allDrawnNumbers: number[],
   options: PdfSectionOptions = { color: '#39FF14' }
-): number {
+): Promise<number> {
   try {
     // Generate the list of near winners
     const nearWinnersList = generateNearWinnersList(game, allDrawnNumbers);
@@ -35,8 +35,15 @@ export function addNearWinnersSection(
     // Add section header
     const headerY = addNearWinnersSectionHeader(doc, options);
     
+    // Format the data for the table
+    const formattedData: [string, string, string][] = nearWinnersList.map(item => [
+      item.player.name,
+      item.combinations.map(combo => combo.numbers.join(', ')).join('\n'),
+      item.missingHit.toString()
+    ]);
+    
     // Render table with near winners
-    const finalY = renderNearWinnersTable(doc, nearWinnersList, headerY);
+    const finalY = await renderNearWinnersTable(doc, formattedData, headerY);
     
     return finalY;
   } catch (error) {

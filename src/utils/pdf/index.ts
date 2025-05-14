@@ -15,23 +15,25 @@ export type { GeneratePdfOptions, PDFOptions } from './types';
  */
 export const generatePdf = async (game: any, options: {
   themeColor?: string;
-  simpleMode?: boolean;
-  hasWinners?: boolean;
+  filename?: string;
   includeNearWinners?: boolean;
   includeWinners?: boolean;
+  hasWinners?: boolean;
   trophySvgData?: string;
 } = {}) => {
   try {
     // Convert options to use newer format
     const newOptions: import('./types').GeneratePdfOptions = {
       themeColor: options.themeColor,
+      filename: options.filename || 'game-report.pdf',
       includeNearWinners: options.includeNearWinners,
       hasWinners: options.hasWinners,
-      trophySvgData: options.trophySvgData
+      trophySvgData: options.trophySvgData,
+      includeWinners: options.includeWinners
     };
     
-    // Choose PDF function based on mode
-    if (options.simpleMode) {
+    // Choose PDF function based on simpler or complete report
+    if (options.includeNearWinners === true && !options.includeWinners) {
       return generateSimplePdf(game, newOptions);
     } else {
       return generateGameReport(game, newOptions);

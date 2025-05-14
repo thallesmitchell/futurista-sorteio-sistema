@@ -1,24 +1,20 @@
 
 import jsPDF from "jspdf";
 import { addSectionHeader, addSubtitle } from "../utils/pdf-table-utils";
+import { PdfSectionOptions } from "../../types";
 
 /**
- * Renders the header for the near winners section
+ * Adds the header for the near winners section
  */
-export const renderNearWinnersSectionHeader = (
+export const addNearWinnersSectionHeader = (
   doc: jsPDF,
-  totalNearWinners: number,
-  startY: number = 20
+  options: PdfSectionOptions = { color: '#39FF14' }
 ): number => {
   // Add section header
+  const startY = 20; // Default starting position
   let y = addSectionHeader(doc, "Jogadores Próximos de Ganhar", startY);
   
-  // Add subtitle with count
-  y = addSubtitle(
-    doc, 
-    `Total de combinações com 5 acertos: ${totalNearWinners}`,
-    y
-  );
-  
+  // Return the position after the header
   return y;
 };
+

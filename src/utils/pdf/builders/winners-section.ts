@@ -1,110 +1,71 @@
-
 import jsPDF from 'jspdf';
-import { Game, Player, Winner } from '@/contexts/game/types';
-import { formatCurrency } from '@/components/game/GameFinancialCards';
+import { Game, Winner } from '@/contexts/game/types';
+import { addTableHeader, createSimpleTable } from './utils/pdf-table-utils';
 import { PdfSectionOptions } from '../types';
 
 /**
- * Add the winners section to the PDF
- * @returns The Y position after adding the section
+ * Adds the winners section to the PDF
+ * @param doc PDF document
+ * @param game Game data
+ * @param options Section options
+ * @returns Y position after adding the section
  */
-export function addWinnersSection(doc: jsPDF, game: Game, yPosition: number): number {
-  try {
-    if (!game.winners || game.winners.length === 0) {
-      console.log('No winners to display in PDF');
-      return yPosition;
-    }
-
-    console.log('Adding winners section to PDF with ', game.winners.length, ' winners');
-    
-    // Add trophy as SVG if provided
-    doc.setFontSize(24);
-    doc.setTextColor(255, 165, 0); // Orange color
-    doc.text('🏆', doc.internal.pageSize.width / 2, yPosition, { align: 'center' });
-    
-    yPosition += 10;
-    
-    // Add header
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(20);
-    doc.setTextColor(0, 128, 0); // Green color
-    doc.text(
-      'GANHADORES!', 
-      doc.internal.pageSize.width / 2, 
-      yPosition, 
-      { align: 'center' }
-    );
-    
-    yPosition += 15;
-    
-    // Process each winner
-    game.winners.forEach((winner, index) => {
-      // Add winner name with prize amount
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(0, 0, 0);
-      
-      // Format name and prize (if available)
-      // Get the name from name property or from related player
-      const winnerName = winner.name || `Ganhador #${index + 1}`;
-      const prizeText = winner.prize_amount ? ` - ${formatCurrency(winner.prize_amount)}` : 
-                         winner.prize ? ` - ${formatCurrency(winner.prize)}` : '';
-      
-      doc.text(
-        `${winnerName}${prizeText}`,
-        doc.internal.pageSize.width / 2,
-        yPosition,
-        { align: 'center' }
-      );
-      
-      yPosition += 10;
-
-      // Find winning combinations - either from winner or related player
-      // Check if winner has winning combinations directly
-      const winningCombos = winner.combinations ? 
-        winner.combinations.filter(combo => combo.hits >= (game.requiredHits || 6)) : 
-        // For DB winners we need to find the player and get the combinations
-        game.players.find(p => p.id === winner.player_id)?.combinations
-          .filter(combo => combo.hits >= (game.requiredHits || 6)) || [];
-      
-      if (winningCombos.length > 0) {
-        winningCombos.forEach(combo => {
-          // Sort numbers for display
-          const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
-          
-          // Format numbers as string with zero-padding
-          const numbersText = sortedNumbers
-            .map(n => n.toString().padStart(2, '0'))
-            .join(' - ');
-          
-          // Add the winning numbers
-          doc.setFontSize(12);
-          doc.setFont('helvetica', 'normal');
-          doc.setTextColor(100, 100, 100);
-          doc.text(
-            numbersText,
-            doc.internal.pageSize.width / 2,
-            yPosition,
-            { align: 'center' }
-          );
-          
-          yPosition += 15;
-        });
-      }
-      
-      // Add spacing between winners
-      yPosition += 5;
-      
-      // Check if we need a new page
-      if (yPosition > doc.internal.pageSize.height - 40 && index < game.winners.length - 1) {
-        doc.addPage();
-        yPosition = 20;
-      }
-    });
-    
-    return yPosition;
-  } catch (error) {
-    console.error('Error adding winners section:', error);
-    return yPosition;
+export function addWinnersSection(
+  doc: jsPDF,
+  game: Game,
+  options: PdfSectionOptions = { color: '#39FF14' }
+): number {
+  // Check if there are winners
+  if (!game.winners || game.winners.length === 0) {
+    return 0;
   }
+  
+  // Add section header
+  let currentY = addTableHeader(doc, "Ganhadores", 20, options);
+  
+  // Format winner data for the table
+  const winnerData = game.winners.map((winner, index) => formatWinnerData(winner, index));
+  
+  // Define table headers
+  const headers = ["#", "Nome", "Números", "Prêmio"];
+  
+  // Create the table
+  currentY = createSimpleTable(doc, headers, winnerData, currentY, options);
+  
+  return currentY;
+}
+
+/**
+ * Formats the winner data for the table
+ * @param winner Winner data
+ * @param index Index of the winner
+ * @returns Formatted winner data
+ */
+export function formatWinnerData(winner: Winner, index: number): [string, string, string, string] {
+  // Handle different winner data formats
+  const winnerName = winner.name || `Ganhador ${index + 1}`;
+  
+  // Format prize amount with currency
+  const prizeAmount = typeof winner.prize === 'number' ? winner.prize : 0;
+  const formattedPrize = `R$ ${prizeAmount.toFixed(2).replace('.', ',')}`;
+  
+  // Get winning numbers - handle different data structures
+  let winningNumbers = '';
+  
+  if (winner.combinations && Array.isArray(winner.combinations)) {
+    // Format combinations from array
+    winningNumbers = winner.combinations
+      .map(combo => combo.numbers.join(', '))
+      .join(' | ');
+  } else if (typeof winner.combination_id === 'string') {
+    // This is a typical winner structure - attempt to get data from game if available
+    winningNumbers = winner.combination_id || 'Combinação ganhadora';
+  }
+
+  return [
+    (index + 1).toString(),
+    winnerName,
+    winningNumbers,
+    formattedPrize
+  ];
 }

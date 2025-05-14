@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,6 +19,7 @@ import { DeleteGameButton } from '@/components/game/DeleteGameButton';
 import Confetti from '@/components/game/Confetti';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useGameWinners } from '@/hooks/useGameWinners';
+import { PlayerEditModal } from '@/components/game/PlayerEditModal';
 
 const GameAdmin = () => {
   const { gameId } = useParams<{ gameId: string }>();
@@ -36,6 +36,7 @@ const GameAdmin = () => {
   const [isShowWinnersModalOpen, setIsShowWinnersModalOpen] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   
   // Use our hook to get winners directly from the database
   const { winners, isLoading: isLoadingWinners } = useGameWinners(gameId || '', game?.players || []);
@@ -154,7 +155,7 @@ const GameAdmin = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-background pb-20">
       {/* Game Header */}
       <GameHeader
         game={game}
@@ -233,11 +234,17 @@ const GameAdmin = () => {
       )}
       
       {/* Player Edit Handler */}
-      {playerToEdit && (
-        <PlayerEditHandler 
-          player={playerToEdit} 
-          onClose={() => setPlayerToEdit(null)} 
-        />
+      {selectedPlayer && (
+        <PlayerEditModal
+          isOpen={!!selectedPlayer}
+          onClose={() => setSelectedPlayer(null)}
+        >
+          <PlayerEditHandler 
+            gameId={gameId!}
+            playerId={selectedPlayer.id}
+            onClose={() => setSelectedPlayer(null)}
+          />
+        </PlayerEditModal>
       )}
       
       {/* Confirm Close Modal */}

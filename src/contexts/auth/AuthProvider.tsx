@@ -1,79 +1,84 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Session } from '@supabase/supabase-js';
-import { UserProfile, AuthContextType } from './types';
+import { AuthContextType, UserProfile } from './types';
+import { Session, User } from '@supabase/supabase-js';
 import { useAuthState } from './hooks/useAuthState';
-import AuthContext from './AuthContext';
-import { useLogin } from './hooks/useLogin';
-import { useLogout } from './hooks/useLogout';
-import { useSignup } from './hooks/useSignup';
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  // Use the auth state hook to manage authentication state
-  const authState = useAuthState(); 
-  const { login } = useLogin();
-  const { logout } = useLogout();
-  const { signup } = useSignup();
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false);
+// Create context with default values
+export const AuthContext = createContext<AuthContextType>({
+  user: null,
+  isAuthenticated: false,
+  isLoading: true,
+  session: null,
+  checkUser: async () => {},
+});
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Use the auth state hook with initial state parameter
+  const auth = useAuthState({ 
+    isLoading: true,
+    user: null,
+    isAuthenticated: false
+  });
+  
   const [session, setSession] = useState<Session | null>(null);
 
-  // Get user profile and check if super admin
-  const refreshUserProfile = async () => {
-    if (!authState.user) {
-      setUserProfile(null);
-      setIsSuperAdmin(false);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', authState.user.id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        return;
-      }
-
-      setUserProfile(data as UserProfile);
-      setIsSuperAdmin(data?.role === 'super_admin');
-    } catch (error) {
-      console.error('Error in refreshUserProfile:', error);
-    }
-  };
-
-  // Effect to update session when auth state changes
   useEffect(() => {
-    if (authState.user) {
-      // Get session from authState
-      const userSession = authState.session || null;
-      setSession(userSession);
-      refreshUserProfile();
-    } else {
-      setUserProfile(null);
-      setIsSuperAdmin(false);
-      setSession(null);
-    }
-  }, [authState.user, authState.session]);
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          setSession(session);
+          if (session?.user) {
+            auth.setUser(session.user);
+            auth.setIsAuthenticated(true);
+          }
+        }
+        
+        if (event === 'SIGNED_OUT') {
+          auth.setUser(null);
+          auth.setIsAuthenticated(false);
+          setSession(null);
+        }
+        
+        auth.setIsLoading(false);
+      }
+    );
 
-  // Provide the complete auth context to children
-  const authContext: AuthContextType = {
-    ...authState,
-    userProfile,
-    isSuperAdmin,
+    // Check for session on mount
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setSession(session);
+          auth.setUser(session.user);
+          auth.setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error('Error checking session:', error);
+      } finally {
+        auth.setIsLoading(false);
+      }
+    };
+
+    checkSession();
+
+    // Cleanup subscription on unmount
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  // Provide the combined auth state and session
+  const contextValue: AuthContextType = {
+    ...auth,
     session,
-    login,
-    logout,
-    signup,
-    refreshUserProfile
+    checkUser: auth.checkUser,
   };
-  
+
   return (
-    <AuthContext.Provider value={authContext}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

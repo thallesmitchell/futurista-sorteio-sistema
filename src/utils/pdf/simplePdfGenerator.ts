@@ -57,8 +57,10 @@ export const generateSimplePdf = async (
     if (options.includeNearWinners && game.dailyDraws && game.dailyDraws.length > 0) {
       try {
         console.log('Adding near winners section to simple PDF');
-        const nearWinnersY = addNearWinnersSection(pdf, game, allDrawnNumbers, sectionOptions);
+        // Use await with the async function
+        const nearWinnersY = await addNearWinnersSection(pdf, game, allDrawnNumbers, sectionOptions);
         if (nearWinnersY > 0) {
+          // Use the returned Y position
           currentY = nearWinnersY + 20; // Add space after section
         }
       } catch (error) {
