@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useGame } from '@/contexts/game';
 import { useAuth } from '@/contexts/auth';
 import { Loader2 } from 'lucide-react';
@@ -69,7 +69,7 @@ export const GameCreationForm: React.FC<GameCreationFormProps> = ({ onSuccess, o
       
       const newGame = await addGame({
         name: gameName,
-        startDate: new Date().toISOString(),
+        start_date: new Date().toISOString(),
         status: 'active',
         owner_id: user.id,
         players: [],

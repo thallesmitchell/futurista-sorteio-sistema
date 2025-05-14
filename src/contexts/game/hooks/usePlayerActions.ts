@@ -1,7 +1,7 @@
 
 import { Game, Player } from '../types';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * Custom hook for player-related actions
@@ -36,6 +36,7 @@ export const usePlayerActions = (
       const newPlayer: Player = {
         id: playerData.id,
         name: player.name,
+        game_id: gameId,
         combinations: []
       };
 
@@ -148,7 +149,7 @@ export const usePlayerActions = (
           // If there is a winner, update game status
           if (hasWinner) {
             game.status = 'closed';
-            game.endDate = new Date().toISOString();
+            game.end_date = new Date().toISOString();
             
             // Also update the database
             supabase
@@ -194,7 +195,7 @@ export const usePlayerActions = (
           ...currentGame,
           players: updatedPlayers,
           status: hasWinner ? 'closed' : currentGame.status,
-          endDate: hasWinner ? new Date().toISOString() : currentGame.endDate
+          end_date: hasWinner ? new Date().toISOString() : currentGame.end_date
         });
         
         // If there is a winner, check winners completely
@@ -353,10 +354,87 @@ export const usePlayerActions = (
     }
   };
 
+  /**
+   * Delete a player
+   */
+  const deletePlayer = async (playerId: string): Promise<boolean> => {
+    try {
+      // Find the game containing this player
+      const gameWithPlayer = games.find(game => 
+        game.players.some(player => player.id === playerId)
+      );
+      
+      if (!gameWithPlayer) {
+        console.error('Player not found in any game');
+        return false;
+      }
+      
+      const gameId = gameWithPlayer.id;
+      
+      // First delete player combinations
+      const { error: combosError } = await supabase
+        .from('player_combinations')
+        .delete()
+        .eq('player_id', playerId);
+        
+      if (combosError) throw combosError;
+      
+      // Delete winners entries if any
+      const { error: winnersError } = await supabase
+        .from('winners')
+        .delete()
+        .eq('player_id', playerId);
+      
+      if (winnersError) throw winnersError;
+      
+      // Then delete the player
+      const { error } = await supabase
+        .from('players')
+        .delete()
+        .eq('id', playerId)
+        .eq('game_id', gameId);
+        
+      if (error) throw error;
+      
+      // Update local state
+      const updatedGames = games.map(game => {
+        if (game.id !== gameId) return game;
+        
+        return {
+          ...game,
+          players: game.players.filter(player => player.id !== playerId),
+          winners: game.winners.filter(winner => winner.player_id !== playerId)
+        };
+      });
+      
+      setGames(updatedGames);
+      
+      // Update current game if being viewed
+      if (currentGame?.id === gameId) {
+        setCurrentGame({
+          ...currentGame,
+          players: currentGame.players.filter(player => player.id !== playerId),
+          winners: currentGame.winners.filter(winner => winner.player_id !== playerId)
+        });
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error deleting player:', error);
+      toast({
+        title: "Error deleting player",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+
   return {
     addPlayer,
     addPlayerCombination,
     updatePlayerSequences,
-    updatePlayer
+    updatePlayer,
+    deletePlayer
   };
 };

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useGame } from '@/contexts/GameContext';
+import { useGame } from '@/contexts/game';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar } from '@/components/ui/calendar';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Search, Calendar as CalendarIcon, RefreshCw } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/components/game/GameFinancialCards';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -52,7 +52,9 @@ const FinancialView = () => {
       setIsLoading(true);
       try {
         // Load financial data
-        const financialData = await loadFinancialProjections();
+        const start_date = undefined; // No date filtering initially
+        const end_date = undefined;
+        const financialData = await loadFinancialProjections(start_date, end_date) || [];
         
         // Filter active games
         const activeGames = financialData.filter(g => g.status === 'active');
@@ -83,7 +85,7 @@ const FinancialView = () => {
     // Apply date filter
     if (dateRange.from && dateRange.to) {
       filtered = filtered.filter(game => {
-        const gameDate = new Date(game.startDate);
+        const gameDate = new Date(game.start_date);
         return gameDate >= dateRange.from! && gameDate <= dateRange.to!;
       });
     }
@@ -92,7 +94,7 @@ const FinancialView = () => {
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
-        game => game.name.toLowerCase().includes(term)
+        game => game.name && game.name.toLowerCase().includes(term)
       );
     }
 
@@ -102,7 +104,9 @@ const FinancialView = () => {
   const handleRefresh = async () => {
     setIsLoading(true);
     try {
-      const financialData = await loadFinancialProjections();
+      const start_date = undefined;
+      const end_date = undefined;
+      const financialData = await loadFinancialProjections(start_date, end_date) || [];
       const activeGames = financialData.filter(g => g.status === 'active');
       setActiveFinancialData(activeGames);
       setAllFinancialData(financialData);
@@ -205,11 +209,11 @@ const FinancialView = () => {
                       activeFinancialData.map((game) => (
                         <TableRow key={game.id}>
                           <TableCell className="font-medium">{game.name}</TableCell>
-                          <TableCell>{format(new Date(game.startDate), 'P', { locale: ptBR })}</TableCell>
+                          <TableCell>{format(new Date(game.start_date), 'P', { locale: ptBR })}</TableCell>
                           <TableCell>{game.totalSequences}</TableCell>
-                          <TableCell>{formatCurrency(game.totalCollected)}</TableCell>
-                          <TableCell>{formatCurrency(game.adminProfit)}</TableCell>
-                          <TableCell>{formatCurrency(game.totalPrize)}</TableCell>
+                          <TableCell>{formatCurrency(game.totalCollected || 0)}</TableCell>
+                          <TableCell>{formatCurrency(game.adminProfit || 0)}</TableCell>
+                          <TableCell>{formatCurrency(game.totalPrize || 0)}</TableCell>
                         </TableRow>
                       ))
                     ) : (
@@ -324,11 +328,11 @@ const FinancialView = () => {
                               {game.status === 'active' ? 'Ativo' : 'Encerrado'}
                             </span>
                           </TableCell>
-                          <TableCell>{format(new Date(game.startDate), 'P', { locale: ptBR })}</TableCell>
+                          <TableCell>{format(new Date(game.start_date), 'P', { locale: ptBR })}</TableCell>
                           <TableCell>{game.totalSequences}</TableCell>
-                          <TableCell>{formatCurrency(game.totalCollected)}</TableCell>
-                          <TableCell>{formatCurrency(game.adminProfit)}</TableCell>
-                          <TableCell>{formatCurrency(game.totalPrize)}</TableCell>
+                          <TableCell>{formatCurrency(game.totalCollected || 0)}</TableCell>
+                          <TableCell>{formatCurrency(game.adminProfit || 0)}</TableCell>
+                          <TableCell>{formatCurrency(game.totalPrize || 0)}</TableCell>
                         </TableRow>
                       ))
                     ) : (

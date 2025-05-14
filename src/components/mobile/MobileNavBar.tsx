@@ -80,8 +80,8 @@ export function MobileNavBar() {
       // Add owner_id to the new game
       const newGame = await addGame({
         name: data.name,
-        startDate: new Date().toISOString(),
-        endDate: null,
+        start_date: new Date().toISOString(),
+        end_date: null,
         status: 'active',
         players: [],
         dailyDraws: [],

@@ -21,10 +21,10 @@ export const GameFinancialCards: React.FC<GameFinancialCardsProps> = ({ game }) 
     game.players.reduce((total, player) => total + player.combinations.length, 0);
     
   const totalCollected = game.financialProjections?.totalCollected || 
-    totalSequences * game.sequencePrice;
+    (totalSequences * (game.sequencePrice || 10));
     
   const adminProfit = game.financialProjections?.adminProfit || 
-    totalCollected * (game.adminProfitPercentage / 100);
+    totalCollected * ((game.adminProfitPercentage || 15) / 100);
     
   const totalPrize = game.financialProjections?.totalPrize || 
     totalCollected - adminProfit;
@@ -42,7 +42,7 @@ export const GameFinancialCards: React.FC<GameFinancialCardsProps> = ({ game }) 
           <div className="text-lg md:text-2xl font-bold">{formatCurrency(totalCollected)}</div>
           <p className="text-xs text-muted-foreground">
             <Users className="inline h-3 w-3 mr-1" /> 
-            {totalSequences} {totalSequences === 1 ? 'sequência' : 'sequências'} de {formatCurrency(game.sequencePrice)}
+            {totalSequences} {totalSequences === 1 ? 'sequência' : 'sequências'} de {formatCurrency(game.sequencePrice || 10)}
           </p>
         </CardContent>
       </Card>
@@ -57,7 +57,7 @@ export const GameFinancialCards: React.FC<GameFinancialCardsProps> = ({ game }) 
         <CardContent>
           <div className="text-lg md:text-2xl font-bold">{formatCurrency(adminProfit)}</div>
           <p className="text-xs text-muted-foreground">
-            {game.adminProfitPercentage}% do valor arrecadado
+            {game.adminProfitPercentage || 15}% do valor arrecadado
           </p>
         </CardContent>
       </Card>

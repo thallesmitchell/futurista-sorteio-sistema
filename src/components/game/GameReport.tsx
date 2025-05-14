@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { FileText, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { Game } from '@/contexts/game/types';
+import { Game, Winner } from '@/contexts/game/types';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { generateGameReport } from '@/utils/pdf';
 import { useGameWinners } from '@/hooks/useGameWinners';
@@ -115,19 +115,17 @@ export const GameReport: React.FC<GameReportProps> = ({
         .replace(/[^a-zA-Z0-9]/g, '-')
         .toLowerCase()}.pdf`;
       
-      // IMPORTANT: Create a game object that includes the winners from the database
-      // Using the database winners ensures consistency between dashboard and game page
-      const gameWithWinners = {
+      // IMPORTANT: Create a game object with the proper shape for the PDF generator
+      const gameForReport = {
         ...game,
-        winners: winners || [],
-        // Add the requiredHits property for "near winners" logic
-        requiredHits: game.requiredHits || 6
+        // Ensure winners is of the right type for the PDF generator
+        winners: winners || []
       };
       
-      console.log('Generating PDF with winners:', gameWithWinners.winners?.length || 0);
+      console.log('Generating PDF with winners:', gameForReport.winners?.length || 0);
       
-      // Use the updated PDF generator with the updated game object
-      await generateGameReport(gameWithWinners, {
+      // Use the updated PDF generator
+      await generateGameReport(gameForReport, {
         themeColor: profileData.themeColor,
         filename: safeFilename,
         // Only include near winners if there are no winners and game is not closed

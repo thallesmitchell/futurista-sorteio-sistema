@@ -1,9 +1,9 @@
 
 import { ReactNode, useState, useEffect } from 'react';
 import GameContext from './GameContext';
-import { Game, FinancialProjection } from './types';
+import { Game, Player, FinancialProjection } from './types';
 import { useAuth } from '@/contexts/auth';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useGameActions } from './hooks/useGameActions';
 import { useWinnerActions } from './hooks/useWinnerActions';
 import { usePlayerActions } from './hooks/usePlayerActions';
@@ -112,6 +112,14 @@ export function GameProvider({ children }: GameProviderProps) {
     }
   };
 
+  const wrappedDeletePlayer = async (playerId: string): Promise<boolean> => {
+    try {
+      return await deletePlayer(playerId);
+    } catch (error) {
+      return false;
+    }
+  };
+
   const wrappedLoadFinancialProjections = async (game: Game): Promise<FinancialProjection | null> => {
     try {
       const projections = await loadFinancialProjections(game.start_date, game.end_date);
@@ -140,7 +148,7 @@ export function GameProvider({ children }: GameProviderProps) {
       checkWinners,
       addWinner,
       getWinners,
-      deletePlayer,
+      deletePlayer: wrappedDeletePlayer,
       loadFinancialProjections: wrappedLoadFinancialProjections,
       isLoading
     }}>

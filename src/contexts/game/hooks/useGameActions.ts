@@ -1,7 +1,8 @@
+
 import { useState } from 'react';
-import { Game, Player, DailyDraw, FinancialProjection } from '../types';
+import { Game, Player, DailyDraw, FinancialProjection, GameFinancialProjections } from '../types';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * Custom hook for game CRUD operations
@@ -11,17 +12,127 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
   const [isLoading, setIsLoading] = useState(true);
 
   /**
+   * Fetch a specific game by ID
+   */
+  const fetchGame = async (id: string): Promise<Game | null> => {
+    try {
+      const game = games.find(g => g.id === id);
+      if (game) return game;
+      
+      // Game not found in state, fetch from database
+      const { data: gameData, error: gameError } = await supabase
+        .from('games')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (gameError) throw gameError;
+      if (!gameData) return null;
+      
+      // Fetch related data (players, draws, winners)
+      const fullGame = await buildGameFromDbData(gameData);
+      
+      // Add to local state
+      setGames(prev => [...prev, fullGame]);
+      
+      return fullGame;
+    } catch (error) {
+      console.error('Error fetching game:', error);
+      return null;
+    }
+  };
+
+  /**
+   * Helper to build a game object with related data
+   */
+  const buildGameFromDbData = async (gameData: any): Promise<Game> => {
+    // Fetch players
+    const { data: playersData } = await supabase
+      .from('players')
+      .select('*')
+      .eq('game_id', gameData.id);
+
+    // For each player, fetch combinations
+    const players = await Promise.all(
+      (playersData || []).map(async (player) => {
+        const { data: combinationsData } = await supabase
+          .from('player_combinations')
+          .select('*')
+          .eq('player_id', player.id);
+
+        return {
+          id: player.id,
+          name: player.name,
+          game_id: player.game_id,
+          combinations: (combinationsData || []).map(combo => ({
+            id: combo.id,
+            numbers: combo.numbers,
+            hits: combo.hits || 0
+          }))
+        } as Player;
+      })
+    );
+
+    // Fetch daily draws
+    const { data: dailyDrawsData } = await supabase
+      .from('daily_draws')
+      .select('*')
+      .eq('game_id', gameData.id);
+
+    const dailyDraws = (dailyDrawsData || []).map(draw => ({
+      id: draw.id,
+      game_id: draw.game_id,
+      date: draw.date,
+      numbers: draw.numbers,
+      created_at: draw.created_at
+    })) as DailyDraw[];
+
+    // Fetch winners
+    const { data: winnersData } = await supabase
+      .from('winners')
+      .select('*')
+      .eq('game_id', gameData.id);
+
+    const winners = (winnersData || []).map(winner => ({
+      id: winner.id,
+      game_id: winner.game_id,
+      player_id: winner.player_id,
+      combination_id: winner.combination_id,
+      created_at: winner.created_at,
+      prize_amount: winner.prize_amount
+    }));
+
+    // Build and return the full game object
+    return {
+      id: gameData.id,
+      name: gameData.name,
+      start_date: gameData.start_date,
+      end_date: gameData.end_date,
+      status: gameData.status,
+      players,
+      dailyDraws,
+      winners,
+      owner_id: gameData.owner_id,
+      numbersPerSequence: gameData.numbers_per_sequence,
+      requiredHits: gameData.required_hits,
+      sequencePrice: gameData.sequence_price,
+      adminProfitPercentage: gameData.admin_profit_percentage,
+      created_at: gameData.created_at
+    };
+  };
+
+  /**
    * Add a new game to the database and state
    */
-  const addGame = async (game: Omit<Game, 'id'>): Promise<Game> => {
+  const addGame = async (game: Partial<Game>): Promise<Game> => {
     try {
       if (!game) throw new Error('Game data is required');
       
       // Log what we're sending to Supabase for debugging
       console.log('Adding game with data:', {
         name: game.name,
-        start_date: game.startDate,
-        end_date: game.endDate,
+        start_date: game.start_date,
+        end_date: game.end_date,
         status: game.status,
         owner_id: game.owner_id,
         numbers_per_sequence: game.numbersPerSequence,
@@ -35,8 +146,8 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
         .from('games')
         .insert({
           name: game.name,
-          start_date: game.startDate,
-          end_date: game.endDate,
+          start_date: game.start_date,
+          end_date: game.end_date,
           status: game.status,
           owner_id: game.owner_id,
           user_id: game.owner_id, // For compatibility
@@ -63,14 +174,14 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
       // Create new game with ID generated by Supabase
       const newGame: Game = {
         id: data.id,
-        name: game.name,
-        startDate: game.startDate,
-        endDate: game.endDate,
-        status: game.status,
+        name: game.name!,
+        start_date: game.start_date!,
+        end_date: game.end_date,
+        status: game.status as 'active' | 'closed' | 'canceled',
         players: [],
         dailyDraws: [],
         winners: [],
-        owner_id: game.owner_id,
+        owner_id: game.owner_id!,
         numbersPerSequence: data.numbers_per_sequence || 6,
         requiredHits: data.required_hits || 6,
         sequencePrice: data.sequence_price || 10,
@@ -102,8 +213,8 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
         .from('games')
         .update({
           name: gameUpdates.name,
-          start_date: gameUpdates.startDate,
-          end_date: gameUpdates.endDate,
+          start_date: gameUpdates.start_date,
+          end_date: gameUpdates.end_date,
           status: gameUpdates.status,
           numbers_per_sequence: gameUpdates.numbersPerSequence,
           required_hits: gameUpdates.requiredHits,
@@ -168,8 +279,8 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
       const exportData = {
         game: {
           name: game.name,
-          startDate: game.startDate,
-          endDate: game.endDate,
+          start_date: game.start_date,
+          end_date: game.end_date,
           status: game.status,
           numbersPerSequence: game.numbersPerSequence,
           requiredHits: game.requiredHits,
@@ -218,8 +329,8 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
       // Create the new game first
       const newGame = await addGame({
         name: `${importData.game.name} (Importado)`,
-        startDate: importData.game.startDate || new Date().toISOString(),
-        endDate: importData.game.endDate,
+        start_date: importData.game.start_date || new Date().toISOString(),
+        end_date: importData.game.end_date,
         status: 'active', // Always start as active
         players: [],
         dailyDraws: [],
@@ -339,7 +450,9 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
               return {
                 id: player.id,
                 name: player.name,
+                game_id: game.id, // Ensure game_id is set
                 combinations: (combinationsData || []).map(combo => ({
+                  id: combo.id,
                   numbers: combo.numbers,
                   hits: combo.hits || 0
                 }))
@@ -356,37 +469,41 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
 
           const dailyDraws = (dailyDrawsData || []).map(draw => ({
             id: draw.id,
+            game_id: draw.game_id,
             date: draw.date,
+            created_at: draw.created_at,
             numbers: draw.numbers
           })) as DailyDraw[];
 
           // Fetch winners
           const { data: winnersData } = await supabase
             .from('winners')
-            .select('player_id, combination_id, prize_amount')
+            .select('player_id, combination_id, prize_amount, id, game_id, created_at')
             .eq('game_id', game.id);
 
-          // Map winners to corresponding players
-          let winners: Player[] = [];
-          if (winnersData && winnersData.length > 0) {
-            // Create a set of unique winner player IDs
-            const winnerPlayerIds = [...new Set(winnersData.map(w => w.player_id))];
-            
-            // Filter winning players from the players list
-            winners = players.filter(player => 
-              winnerPlayerIds.includes(player.id)
-            ).map(player => {
-              // Find prize amount for this player
-              const winnerData = winnersData.find(w => w.player_id === player.id);
-              return {
-                ...player,
-                prize: winnerData?.prize_amount || 0
-              };
-            });
-          }
+          // Map winners
+          const winners = (winnersData || []).map(w => ({
+            id: w.id,
+            game_id: w.game_id,
+            player_id: w.player_id,
+            combination_id: w.combination_id,
+            prize_amount: w.prize_amount,
+            created_at: w.created_at
+          }));
 
           // Find matching financial projection
           const financialProjection = financialData?.find(fp => fp.id === game.id);
+          
+          // Build financial projections object if available
+          let gameFinancialProjections: GameFinancialProjections | undefined = undefined;
+          if (financialProjection) {
+            gameFinancialProjections = {
+              totalSequences: financialProjection.total_sequences || 0,
+              totalCollected: financialProjection.total_collected || 0,
+              adminProfit: financialProjection.admin_profit || 0,
+              totalPrize: financialProjection.total_prize || 0
+            };
+          }
 
           // Ensure the status is always 'active' or 'closed'
           let gameStatus = game.status === 'active' ? 'active' : 'closed';
@@ -394,9 +511,9 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
           return {
             id: game.id,
             name: game.name,
-            startDate: game.start_date,
-            endDate: game.end_date,
-            status: gameStatus,
+            start_date: game.start_date,
+            end_date: game.end_date,
+            status: gameStatus as 'active' | 'closed' | 'canceled',
             players,
             dailyDraws,
             winners,
@@ -405,12 +522,7 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
             requiredHits: game.required_hits || 6,
             sequencePrice: game.sequence_price || 10,
             adminProfitPercentage: game.admin_profit_percentage || 15,
-            financialProjections: financialProjection ? {
-              totalSequences: financialProjection.total_sequences || 0,
-              totalCollected: financialProjection.total_collected || 0,
-              adminProfit: financialProjection.admin_profit || 0,
-              totalPrize: financialProjection.total_prize || 0
-            } : undefined
+            financialProjections: gameFinancialProjections
           } as Game;
         })
       );
@@ -455,7 +567,7 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
   /**
    * Load financial projections for a date range
    */
-  const loadFinancialProjections = async (startDate?: string, endDate?: string) => {
+  const loadFinancialProjections = async (startDate?: string, endDate?: string): Promise<FinancialProjection[]> => {
     try {
       let query = supabase
         .from('financial_projections')
@@ -479,13 +591,20 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
         id: item.id,
         name: item.name,
         status: item.status,
-        startDate: item.start_date,
-        endDate: item.end_date,
+        start_date: item.start_date,
+        end_date: item.end_date,
+        startDate: item.start_date, // Alias for backwards compatibility
+        endDate: item.end_date, // Alias for backwards compatibility
+        totalRevenue: item.total_collected || 0,
+        adminProfit: item.admin_profit || 0,
+        prizePool: item.total_prize || 0,
+        playerCount: 0, // Default values
+        combinationCount: 0,
+        averagePayout: 0,
         totalSequences: item.total_sequences || 0,
         sequencePrice: item.sequence_price || 0,
         adminProfitPercentage: item.admin_profit_percentage || 0,
         totalCollected: item.total_collected || 0,
-        adminProfit: item.admin_profit || 0,
         totalPrize: item.total_prize || 0
       })) as FinancialProjection[];
     } catch (error) {
@@ -508,6 +627,7 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
     exportGame,
     importGame,
     loadFinancialProjections,
+    fetchGame,
     isLoading 
   };
 };

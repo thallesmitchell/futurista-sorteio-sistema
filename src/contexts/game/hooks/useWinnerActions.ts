@@ -1,8 +1,8 @@
 
 import { useState } from 'react';
-import { Game, Player } from '../types';
+import { Game, Player, Winner } from '../types';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 /**
  * Custom hook for winner-related actions
@@ -36,6 +36,8 @@ export const useWinnerActions = (
       
       console.log('Found winners:', winners.length);
       
+      const winnerEntries: Winner[] = [];
+      
       // Register winners in Supabase regardless of game status
       if (winners.length > 0) {
         for (const winner of winners) {
@@ -64,13 +66,36 @@ export const useWinnerActions = (
               // Register the winner only if not already registered
               if (!existingWinner) {
                 console.log('Registering new winner in database:', winner.name);
-                await supabase
+                const { data: newWinner } = await supabase
                   .from('winners')
                   .insert({
                     game_id: gameId,
                     player_id: winner.id,
                     combination_id: comboData.id
+                  })
+                  .select()
+                  .single();
+                  
+                if (newWinner) {
+                  winnerEntries.push({
+                    id: newWinner.id,
+                    game_id: newWinner.game_id,
+                    player_id: newWinner.player_id,
+                    combination_id: newWinner.combination_id,
+                    created_at: newWinner.created_at,
+                    prize_amount: newWinner.prize_amount
                   });
+                }
+              } else if (existingWinner) {
+                // Add existing winner to our entries
+                winnerEntries.push({
+                  id: existingWinner.id,
+                  game_id: existingWinner.game_id,
+                  player_id: existingWinner.player_id,
+                  combination_id: existingWinner.combination_id,
+                  created_at: existingWinner.created_at,
+                  prize_amount: existingWinner.prize_amount
+                });
               }
             }
           }
@@ -82,7 +107,7 @@ export const useWinnerActions = (
         const updatedGames = [...games];
         updatedGames[gameIndex] = {
           ...game,
-          winners: winners
+          winners: winnerEntries
         };
         
         setGames(updatedGames);
@@ -92,7 +117,7 @@ export const useWinnerActions = (
           console.log('Updating current game with winners');
           setCurrentGame({
             ...currentGame,
-            winners: winners
+            winners: winnerEntries
           });
         }
         
@@ -124,5 +149,134 @@ export const useWinnerActions = (
     }
   };
 
-  return { checkWinners };
+  /**
+   * Add a winner manually
+   */
+  const addWinner = async (gameId: string, playerId: string, combinationId: string): Promise<boolean> => {
+    try {
+      // Check if winner already exists
+      const { data: existingWinner } = await supabase
+        .from('winners')
+        .select('*')
+        .eq('game_id', gameId)
+        .eq('player_id', playerId)
+        .eq('combination_id', combinationId)
+        .maybeSingle();
+        
+      if (existingWinner) {
+        console.log('Winner already exists');
+        return false;
+      }
+      
+      // Add the winner
+      const { data: newWinner, error } = await supabase
+        .from('winners')
+        .insert({
+          game_id: gameId,
+          player_id: playerId,
+          combination_id: combinationId
+        })
+        .select()
+        .single();
+        
+      if (error) throw error;
+      
+      if (!newWinner) {
+        throw new Error('Failed to add winner');
+      }
+      
+      // Update local state
+      const gameIndex = games.findIndex(g => g.id === gameId);
+      if (gameIndex === -1) return false;
+      
+      const updatedGames = [...games];
+      updatedGames[gameIndex] = {
+        ...games[gameIndex],
+        winners: [
+          ...games[gameIndex].winners,
+          {
+            id: newWinner.id,
+            game_id: newWinner.game_id,
+            player_id: newWinner.player_id,
+            combination_id: newWinner.combination_id,
+            created_at: newWinner.created_at,
+            prize_amount: newWinner.prize_amount
+          }
+        ]
+      };
+      
+      setGames(updatedGames);
+      
+      // Update current game if being viewed
+      if (currentGame && currentGame.id === gameId) {
+        setCurrentGame({
+          ...currentGame,
+          winners: [
+            ...currentGame.winners,
+            {
+              id: newWinner.id,
+              game_id: newWinner.game_id,
+              player_id: newWinner.player_id,
+              combination_id: newWinner.combination_id,
+              created_at: newWinner.created_at,
+              prize_amount: newWinner.prize_amount
+            }
+          ]
+        });
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error adding winner:', error);
+      toast({
+        title: "Error adding winner",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
+      });
+      return false;
+    }
+  };
+  
+  /**
+   * Get winners for a game
+   */
+  const getWinners = async (gameId: string): Promise<Player[]> => {
+    try {
+      // Find the game
+      const game = games.find(g => g.id === gameId);
+      if (!game) return [];
+      
+      // Get winners from database
+      const { data: winnersData, error } = await supabase
+        .from('winners')
+        .select('player_id')
+        .eq('game_id', gameId);
+        
+      if (error) throw error;
+      
+      if (!winnersData || winnersData.length === 0) {
+        return [];
+      }
+      
+      // Get unique player IDs
+      const winnerPlayerIds = [...new Set(winnersData.map(w => w.player_id))];
+      
+      // Get players who are winners
+      const winningPlayers = game.players.filter(player => 
+        winnerPlayerIds.includes(player.id)
+      );
+      
+      return winningPlayers;
+    } catch (error) {
+      console.error('Error getting winners:', error);
+      toast({
+        title: "Error getting winners",
+        description: error instanceof Error ? error.message : "An unknown error occurred",
+        variant: "destructive"
+      });
+      return [];
+    }
+  };
+
+  return { checkWinners, addWinner, getWinners };
 };

@@ -6,6 +6,7 @@ export interface Winner {
   player_id: string;
   combination_id: string;
   created_at: string;
+  prize_amount?: number;
 }
 
 export interface PlayerCombination {
@@ -20,6 +21,7 @@ export interface Player {
   game_id: string;
   combinations: PlayerCombination[];
   created_at?: string;
+  prize?: number;
 }
 
 export interface DailyDraw {
@@ -48,15 +50,35 @@ export interface Game {
   totalPlayers?: number;
   totalDraws?: number;
   totalCombinations?: number;
+  financialProjections?: GameFinancialProjections;
+}
+
+export interface GameFinancialProjections {
+  totalSequences?: number;
+  totalCollected?: number;
+  adminProfit?: number;
+  totalPrize?: number;
 }
 
 export interface FinancialProjection {
+  id: string;
+  name: string;
+  status: string;
+  start_date: string;
+  end_date?: string;
   totalRevenue: number;
   adminProfit: number;
   prizePool: number;
   playerCount: number;
   combinationCount: number;
   averagePayout: number;
+  totalSequences?: number;
+  sequencePrice?: number;
+  adminProfitPercentage?: number;
+  totalCollected?: number;
+  totalPrize?: number;
+  startDate?: string; // Alias for backwards compatibility
+  endDate?: string; // Alias for backwards compatibility
 }
 
 export interface GameContextType {
