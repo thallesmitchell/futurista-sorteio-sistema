@@ -33,9 +33,9 @@ export const TabsController: React.FC<TabsControllerProps> = ({
           <TabsTrigger 
             key={tab.id}
             value={tab.id} 
-            className={`${isMobile ? "text-xs py-2" : "text-sm py-3"} data-[state=active]:bg-primary/20 data-[state=active]:text-primary transition-all duration-300`}
+            className={`${isMobile ? "text-xs py-3" : "text-sm py-3"} data-[state=active]:bg-primary/20 data-[state=active]:text-primary transition-all duration-300`}
           >
-            <tab.icon className={`${isMobile ? "mr-1 h-3.5 w-3.5" : "mr-2 h-4 w-4"}`} />
+            <tab.icon className={`${isMobile ? "mr-2 h-4 w-4" : "mr-2 h-4 w-4"}`} />
             {tab.label}
           </TabsTrigger>
         ))}

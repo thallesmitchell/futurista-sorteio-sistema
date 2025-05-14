@@ -21,7 +21,7 @@ const Dashboard = () => {
   };
   
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto px-4 py-6">
       <DashboardHeader 
         user={user}
         isCreateDialogOpen={isCreateDialogOpen}

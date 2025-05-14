@@ -53,8 +53,8 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
   }, [allDrawnNumbers]);
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2 items-center">
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
           <Input
@@ -69,9 +69,10 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
             variant="outline" 
             size={isMobile ? "sm" : "default"} 
             asChild
+            className="whitespace-nowrap"
           >
             <Link to={`/game/players/${gameId}`}>
-              <Eye className="mr-1 h-4 w-4" />
+              <Eye className="mr-2 h-4 w-4" />
               Ver Jogadas
             </Link>
           </Button>
@@ -79,21 +80,21 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
       </div>
 
       {/* Changed to masonry layout using CSS columns - responsive */}
-      <div className="columns-1 xs:columns-2 md:columns-3 gap-4 space-y-0 w-full overflow-x-hidden">
+      <div className="columns-1 xs:columns-2 md:columns-3 gap-6 space-y-0 w-full overflow-x-hidden">
         {filteredPlayers.map((player) => {
           const playerIsWinner = isWinner(player.id);
           
           return (
             <Card 
               key={player.id} 
-              className={`mb-4 inline-block w-full overflow-hidden break-inside-avoid ${
+              className={`mb-6 inline-block w-full overflow-hidden break-inside-avoid ${
                 playerIsWinner 
                 ? 'border-2 border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)] bg-green-500/5' 
                 : ''
               }`}
             >
-              <CardContent className={`p-4 ${isMobile ? 'px-3 py-3' : ''}`}>
-                <div className="flex justify-between items-center mb-3 md:mb-4 flex-wrap gap-2">
+              <CardContent className={`p-5 ${isMobile ? 'p-4' : ''}`}>
+                <div className="flex justify-between items-center mb-4 flex-wrap gap-3">
                   <div className="space-y-1 min-w-0 flex-1">
                     <h3 className={`font-semibold ${isMobile ? 'text-base' : 'text-lg'} flex items-center gap-2 flex-wrap`}>
                       {playerIsWinner && <Trophy className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-green-500 flex-shrink-0`} />}
@@ -109,12 +110,12 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                       Acertos máximos: {Math.max(...player.combinations.map(c => c.hits), 0)}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <Button 
                       variant="outline" 
                       size={isMobile ? "sm" : "default"}
                       onClick={() => onEditPlayer(player)}
-                      className={isMobile ? "px-3 py-1 text-xs flex-shrink-0" : "flex-shrink-0"}
+                      className={isMobile ? "px-3 py-1 h-8 text-xs flex-shrink-0" : "flex-shrink-0"}
                     >
                       <Pencil className="h-3.5 w-3.5 mr-1" />
                       Editar
@@ -129,7 +130,7 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {player.combinations.map((combination, idx) => {
                     // Verifica se esta é uma combinação vencedora (6 acertos)
                     const isWinningCombo = combination.hits === 6;
@@ -137,7 +138,7 @@ export const PlayersList = ({ players, allDrawnNumbers, onEditPlayer, currentWin
                     return (
                       <div 
                         key={`${player.id}-${idx}`} 
-                        className={`flex flex-wrap gap-1 md:gap-1.5 p-1.5 md:p-2 rounded-md justify-center ${
+                        className={`flex flex-wrap gap-2 p-3 rounded-md justify-center ${
                           isWinningCombo 
                           ? 'bg-green-500/20 border border-green-500/50 animate-pulse-slow' 
                           : 'bg-muted/40'

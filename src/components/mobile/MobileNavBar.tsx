@@ -23,11 +23,11 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, active, onClick }) => (
   <button 
     onClick={onClick} 
     className={cn(
-      "flex flex-col items-center justify-center flex-1 py-2 px-1",
+      "flex flex-col items-center justify-center flex-1 py-3 px-2",
       active ? "text-primary" : "text-muted-foreground"
     )}
   >
-    <div className="mb-1">{icon}</div>
+    <div className="mb-1.5">{icon}</div>
     <span className="text-xs font-medium">{label}</span>
   </button>
 );
@@ -161,15 +161,15 @@ export function MobileNavBar() {
       </div>
       
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] p-5">
           <form onSubmit={onSubmit}>
-            <DialogHeader>
-              <DialogTitle>Criar Novo Jogo</DialogTitle>
+            <DialogHeader className="mb-4">
+              <DialogTitle className="mb-2">Criar Novo Jogo</DialogTitle>
               <DialogDescription>
                 Preencha os dados para criar um novo jogo.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-5 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <label htmlFor="name" className="text-right col-span-1">
                   Nome
@@ -186,7 +186,7 @@ export function MobileNavBar() {
                 )}
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="mt-2">
               <Button type="submit">Criar Jogo</Button>
             </DialogFooter>
           </form>

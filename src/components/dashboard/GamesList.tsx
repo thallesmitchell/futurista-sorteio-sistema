@@ -18,8 +18,8 @@ export const GamesList: React.FC<GamesListProps> = ({
 }) => {
   if (games.length === 0) {
     return (
-      <div className="text-center py-8 border rounded-lg">
-        <p className="text-muted-foreground">
+      <div className="text-center py-8 border rounded-lg my-4">
+        <p className="text-muted-foreground mb-3">
           {status === 'active' 
             ? 'Nenhum jogo ativo encontrado' 
             : 'Nenhum jogo encerrado encontrado'
@@ -39,7 +39,7 @@ export const GamesList: React.FC<GamesListProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {status === 'active'
         ? games.map(game => <GameCard key={game.id} game={game} />)
         : games.map(game => <ClosedGameCard key={game.id} game={game} />)

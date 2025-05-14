@@ -20,38 +20,38 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const hasWinners = winners && winners.length > 0;
   
   return (
-    <Card className="overflow-hidden border-primary/20 hover:border-primary/50 transition-colors">
-      <div className="p-4 border-b border-primary/10 flex justify-between items-center">
+    <Card className="overflow-hidden border-primary/20 hover:border-primary/50 transition-colors h-full flex flex-col">
+      <div className="p-4 md:p-5 border-b border-primary/10 flex justify-between items-center">
         <div>
-          <h2 className="font-semibold text-lg">{game.name}</h2>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+          <h2 className="font-semibold text-lg mb-1">{game.name}</h2>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <CalendarIcon className="h-3 w-3" />
             <span>
               Iniciado em {format(new Date(game.start_date), 'P', { locale: ptBR })}
             </span>
           </div>
         </div>
-        <Badge variant={hasWinners ? "destructive" : "secondary"}>
+        <Badge variant={hasWinners ? "destructive" : "secondary"} className="ml-2 whitespace-nowrap">
           {hasWinners ? "Tem Ganhador!" : "Ativo"}
         </Badge>
       </div>
 
-      <div className="p-4 grid grid-cols-2 gap-2 text-sm">
-        <div>
-          <Users className="h-4 w-4 mb-1 text-primary/70" />
-          <p className="font-medium">{game.players.length}</p>
+      <div className="p-4 md:p-5 grid grid-cols-2 gap-4 text-sm flex-grow">
+        <div className="flex flex-col items-center md:items-start">
+          <Users className="h-4 w-4 mb-2 text-primary/70" />
+          <p className="font-medium text-base">{game.players.length}</p>
           <p className="text-xs text-muted-foreground">Jogadores</p>
         </div>
-        <div>
-          <CalendarIcon className="h-4 w-4 mb-1 text-primary/70" />
-          <p className="font-medium">{game.dailyDraws.length}</p>
+        <div className="flex flex-col items-center md:items-start">
+          <CalendarIcon className="h-4 w-4 mb-2 text-primary/70" />
+          <p className="font-medium text-base">{game.dailyDraws.length}</p>
           <p className="text-xs text-muted-foreground">Sorteios</p>
         </div>
       </div>
 
-      <div className="px-4 pb-4">
+      <div className="px-4 pb-4 md:px-5 md:pb-5 mt-auto">
         <Link to={`/game/${game.id}`}>
-          <Button variant="default" className="w-full gap-2">
+          <Button variant="default" className="w-full gap-2 py-2">
             <span>Gerenciar</span> 
             <ArrowRight className="h-4 w-4" />
           </Button>

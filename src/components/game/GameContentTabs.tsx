@@ -25,7 +25,7 @@ export const GameContentTabs: React.FC<GameContentTabsProps> = ({
 }) => {
   return (
     <TabsController defaultValue="players">
-      <TabsContent value="players">
+      <TabsContent value="players" className="pt-4">
         <PlayersList 
           players={players} 
           allDrawnNumbers={allDrawnNumbers}
@@ -35,7 +35,7 @@ export const GameContentTabs: React.FC<GameContentTabsProps> = ({
         />
       </TabsContent>
       
-      <TabsContent value="draws">
+      <TabsContent value="draws" className="pt-4">
         <DrawsList 
           draws={draws} 
           isReadOnly={false}

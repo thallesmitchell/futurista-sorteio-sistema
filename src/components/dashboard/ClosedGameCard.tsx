@@ -20,37 +20,37 @@ export const ClosedGameCard: React.FC<ClosedGameCardProps> = ({ game }) => {
   const { winners } = useGameWinners(game.id, game.players);
   
   return (
-    <Card className="overflow-hidden border-muted hover:border-muted/80 transition-colors">
-      <div className="p-4 border-b border-muted/10 bg-muted/5 flex justify-between items-center">
+    <Card className="overflow-hidden border-muted hover:border-muted/80 transition-colors h-full flex flex-col">
+      <div className="p-4 md:p-5 border-b border-muted/10 bg-muted/5 flex justify-between items-center">
         <div>
-          <h2 className="font-semibold text-lg opacity-80">{game.name}</h2>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+          <h2 className="font-semibold text-lg mb-1 opacity-80">{game.name}</h2>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <CalendarIcon className="h-3 w-3" />
             <span>
               Encerrado em {format(new Date(game.end_date || game.start_date), 'P', { locale: ptBR })}
             </span>
           </div>
         </div>
-        <Badge variant="outline" className="bg-muted/20">
+        <Badge variant="outline" className="bg-muted/20 ml-2 whitespace-nowrap">
           <X className="h-3 w-3 mr-1" /> Encerrado
         </Badge>
       </div>
 
-      <div className="p-4 grid grid-cols-2 gap-2 text-sm">
-        <div>
-          <Users className="h-4 w-4 mb-1 opacity-70" />
-          <p className="font-medium">{game.players.length}</p>
+      <div className="p-4 md:p-5 grid grid-cols-2 gap-4 text-sm flex-grow">
+        <div className="flex flex-col items-center md:items-start">
+          <Users className="h-4 w-4 mb-2 opacity-70" />
+          <p className="font-medium text-base">{game.players.length}</p>
           <p className="text-xs text-muted-foreground">Jogadores</p>
         </div>
-        <div>
-          <CalendarIcon className="h-4 w-4 mb-1 opacity-70" />
-          <p className="font-medium">{game.dailyDraws.length}</p>
+        <div className="flex flex-col items-center md:items-start">
+          <CalendarIcon className="h-4 w-4 mb-2 opacity-70" />
+          <p className="font-medium text-base">{game.dailyDraws.length}</p>
           <p className="text-xs text-muted-foreground">Sorteios</p>
         </div>
       </div>
 
-      <div className="px-4 pb-4">
-        <div className="flex gap-2">
+      <div className="px-4 pb-4 md:px-5 md:pb-5 mt-auto">
+        <div className="flex gap-3">
           <Link to={`/game/${game.id}`} className="flex-1">
             <Button variant="outline" size="sm" className="w-full">
               Visualizar

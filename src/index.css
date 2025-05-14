@@ -54,11 +54,13 @@
     -webkit-text-size-adjust: 100%;
   }
 
-  /* Allow horizontal scrolling but prevent vertical overflow for titles */
+  /* Allow horizontal scrolling but prevent vertical overflow for titles with improved spacing */
   h1, h2, h3, h4, h5, h6 {
     overflow-y: hidden !important;
     white-space: nowrap;
     text-overflow: ellipsis;
+    margin-bottom: 0.5rem;
+    line-height: 1.25;
   }
   
   /* Mobile viewport improvements */
@@ -68,7 +70,8 @@
   
   /* Improve tap target sizes on mobile */
   button, a, input[type="button"], input[type="submit"] {
-    @apply min-h-9 min-w-9;
+    @apply min-h-10 min-w-10;
+    padding: 0.5rem 0.75rem;
   }
   
   /* Improved form elements on mobile */
@@ -76,11 +79,14 @@
     font-size: 16px !important; /* Prevents iOS zoom on focus */
     max-width: 100% !important;
     width: 100% !important; /* Ensure inputs don't overflow */
+    padding: 0.5rem 0.75rem !important;
+    margin-bottom: 0.75rem;
   }
   
-  /* Better grid and flex layouts on mobile */
+  /* Better grid and flex layouts on mobile with improved spacing */
   .grid, .flex {
     max-width: 100% !important;
+    gap: 0.75rem;
   }
 
   /* Ensure content doesn't cause vertical scrollbars in titles */
@@ -92,6 +98,18 @@
   table {
     table-layout: fixed;
     width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  /* Improved spacing for list items */
+  li {
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Improved card spacing */
+  .card {
+    padding: 1rem !important;
+    margin-bottom: 1rem;
   }
 }
 
@@ -105,15 +123,19 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
 }
 
-/* Responsive font sizes */
+/* Responsive font sizes with improved spacing */
 @screen xs {
-  h1 { font-size: 1.5rem; }
-  h2 { font-size: 1.25rem; }
+  h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+  h2 { font-size: 1.25rem; margin-bottom: 0.75rem; }
+  p { margin-bottom: 0.75rem; }
+  .container { padding-left: 1rem; padding-right: 1rem; }
 }
 
 @screen md {
-  h1 { font-size: 2rem; }
-  h2 { font-size: 1.5rem; }
+  h1 { font-size: 2rem; margin-bottom: 1.25rem; }
+  h2 { font-size: 1.5rem; margin-bottom: 1rem; }
+  p { margin-bottom: 1rem; }
+  .container { padding-left: 1.5rem; padding-right: 1.5rem; }
 }
 
 /* Animation keyframes */
@@ -143,7 +165,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   animation: pulse-slow 3s infinite;
 }
 
-/* Mobile navigation improvements */
+/* Mobile navigation improvements with consistent spacing */
 @media (max-width: 640px) {
   .td-truncate {
     max-width: 120px;
@@ -155,10 +177,12 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   .mobile-full-width {
     width: 100% !important;
     max-width: 100% !important;
+    margin-bottom: 1rem;
   }
   
   .mobile-stack {
     flex-direction: column !important;
+    gap: 1rem;
   }
   
   .mobile-text-center {
@@ -167,13 +191,15 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   
   /* Improved card layouts on mobile */
   .card {
-    padding: 12px !important;
+    padding: 1rem !important;
+    margin-bottom: 1rem;
   }
   
   /* Improved form inputs on mobile */
   input, select, textarea {
     font-size: 16px !important;
-    padding: 8px 12px !important;
+    padding: 0.75rem 1rem !important;
+    margin-bottom: 1rem;
   }
   
   /* Smaller table text on mobile */
@@ -184,18 +210,30 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   /* Better button spacing on mobile */
   button + button {
     margin-left: 0 !important;
-    margin-top: 8px !important;
+    margin-top: 0.75rem !important;
   }
   
   /* Mobile dialog adjustments for keyboard */
   .mobile-dialog {
     position: fixed;
     transition: transform 0.3s ease;
+    padding: 1rem;
   }
   
   /* Adjust dialog position when keyboard is visible */
   .keyboard-open .mobile-dialog {
     transform: translate(-50%, -65%) !important;
+  }
+  
+  /* Ensure proper spacing in flexbox on mobile */
+  .flex {
+    gap: 0.75rem;
+  }
+  
+  /* Better container padding on mobile */
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
   }
 }
 
@@ -203,20 +241,25 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
 .pdf-content {
   background-color: #020817 !important;
   color: #FFFFFF !important;
+  padding: 1.5rem;
 }
 
 .pdf-player-box {
   background-color: #0D1526 !important;
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
 
 .pdf-masonry {
   background-color: #020817 !important;
+  column-gap: 1.5rem;
 }
 
 /* Fix for iOS input fields */
 @supports (-webkit-touch-callout: none) {
   input, textarea, select {
     font-size: 16px !important;
+    margin-bottom: 1rem;
   }
   
   /* iOS keyboard handling for modals */
@@ -227,6 +270,12 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   
   body.keyboard-open .mobile-dialog {
     transform: translateY(-30%);
+  }
+  
+  /* Fix iOS specific flexbox issues */
+  .flex {
+    display: flex;
+    gap: 0.75rem;
   }
 }
 
@@ -242,35 +291,44 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   
   .xs\:w-full {
     width: 100% !important;
+    margin-bottom: 0.75rem;
   }
   
   /* Improve card padding on very small screens */
   .card {
-    padding: 10px !important;
+    padding: 0.875rem !important;
+    margin-bottom: 0.875rem;
   }
   
   /* Smaller margins and paddings */
   .p-4 {
-    padding: 12px !important;
+    padding: 0.75rem !important;
   }
   
   .m-4 {
-    margin: 12px !important;
+    margin: 0.75rem !important;
   }
   
   /* Stack buttons on very small screens */
   .flex {
     flex-wrap: wrap !important;
+    gap: 0.625rem;
   }
   
   /* Mobile form layout adjustments */
   .mobile-form-label {
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: 0.5rem;
   }
   
   .mobile-form-input {
     font-size: 14px !important;
+    margin-bottom: 0.875rem;
+  }
+  
+  /* Better spacing for grid layouts */
+  .grid {
+    gap: 0.625rem !important;
   }
 }
 
@@ -279,6 +337,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   .pdf-content {
     width: 100% !important;
     max-width: 100% !important;
+    padding: 1.5rem;
   }
   
   /* Ensure proper background color is maintained */
@@ -292,6 +351,8 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
 .table-container {
   overflow-x: auto;
   overflow-y: hidden;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.25rem;
 }
 
 /* Make winners banner permanent */
@@ -299,11 +360,14 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
+  margin: 1rem 0;
 }
 
 /* Glass morphism effect */
 .glass-panel {
   @apply backdrop-blur-xl bg-background/80 border border-white/10 shadow-lg !important;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 /* Safe area bottom padding for mobile */
@@ -318,11 +382,13 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
 /* Mobile swipe area */
 .swipe-area {
   @apply touch-pan-y overflow-y-auto overscroll-y-contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Mobile friendly button size */
 .mobile-btn {
-  @apply min-h-10 min-w-10;
+  @apply min-h-12 min-w-12;
+  padding: 0.75rem 1rem;
 }
 
 /* Animation for mobile transitions */
@@ -333,4 +399,62 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
 
 .animate-slide-up {
   animation: slide-up 0.3s ease-out forwards;
+}
+
+/* Consistent card spacing */
+.card-content {
+  padding: 1.25rem;
+}
+
+/* Fix for flex container spacing */
+.flex-container {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Consistent spacing for section containers */
+.section-container {
+  margin-bottom: 2rem;
+}
+
+/* Fix masonry layout for player cards */
+.masonry-grid {
+  column-gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .masonry-grid {
+    column-count: 3;
+    column-gap: 1.5rem;
+  }
+}
+
+/* Improved spacing for dashboard cards */
+.dashboard-card {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+}
+
+/* Fix for tabs spacing */
+.tabs-container {
+  margin-bottom: 1.5rem;
+}
+
+.tab-content {
+  padding-top: 1.25rem;
+}
+
+/* Improved list spacing */
+.list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Consistent form spacing */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }

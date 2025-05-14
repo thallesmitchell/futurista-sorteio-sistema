@@ -18,18 +18,18 @@ export const GamesTabs: React.FC<GamesTabsProps> = ({
 }) => {
   return (
     <Tabs defaultValue="active" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 mb-4">
-        <TabsTrigger value="active">
+      <TabsList className="grid w-full grid-cols-2 mb-6">
+        <TabsTrigger value="active" className="py-3">
           <Hourglass className="mr-2 h-4 w-4" />
           Jogos Ativos ({activeGames.length})
         </TabsTrigger>
-        <TabsTrigger value="closed">
+        <TabsTrigger value="closed" className="py-3">
           <CheckCircle className="mr-2 h-4 w-4" />
           Jogos Encerrados ({closedGames.length})
         </TabsTrigger>
       </TabsList>
       
-      <TabsContent value="active">
+      <TabsContent value="active" className="pt-2">
         <GamesList 
           games={activeGames} 
           status="active" 
@@ -37,7 +37,7 @@ export const GamesTabs: React.FC<GamesTabsProps> = ({
         />
       </TabsContent>
       
-      <TabsContent value="closed">
+      <TabsContent value="closed" className="pt-2">
         <GamesList 
           games={closedGames} 
           status="closed" 
