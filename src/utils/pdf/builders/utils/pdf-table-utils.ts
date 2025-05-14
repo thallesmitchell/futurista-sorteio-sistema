@@ -24,15 +24,15 @@ export function drawTable(
   // Create column headers
   const headers = columns.map(col => col.header || '');
 
-  // Setup table options
+  // Setup table options with proper color formatting
   const tableOptions = {
     startY,
     head: [headers],
     body: tableData,
     headStyles: {
-      fillColor: [0, 0, 0],
+      fillColor: [0, 0, 0], // This should be a tuple with 3 elements
       textColor: [255, 255, 255],
-      fontStyle: 'bold' as 'bold' // Type assertion to match FontStyle
+      fontStyle: 'bold'
     },
     theme: 'grid' as const, // Fix type issue with theme
     styles: {
@@ -82,13 +82,13 @@ export function createSimpleTable(
   yPosition: number,
   options: PdfSectionOptions
 ): number {
-  // Define table style based on options
+  // Define table style based on options with proper color formats
   const tableOptions = {
     startY: yPosition,
     headStyles: {
-      fillColor: [0, 0, 0],
-      textColor: [255, 255, 255],
-      fontStyle: 'bold' as 'bold' // Type assertion to match FontStyle
+      fillColor: [0, 0, 0] as [number, number, number], // Explicitly type as tuple
+      textColor: [255, 255, 255] as [number, number, number], // Explicitly type as tuple
+      fontStyle: 'bold'
     },
     theme: 'grid' as const, // Fix type issue with theme
     styles: {

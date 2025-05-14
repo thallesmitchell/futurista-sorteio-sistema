@@ -3,7 +3,6 @@ import React, { useState, useCallback, forwardRef, useImperativeHandle } from 'r
 import { useToast } from '@/components/ui/use-toast';
 import { Player } from '@/contexts/game/types';
 import { useGame } from '@/contexts/GameContext';
-import { PlayerEditModal } from '@/components/game/PlayerEditModal';
 
 interface PlayerEditHandlerProps {
   gameId: string;
@@ -21,6 +20,9 @@ export const PlayerEditHandler = forwardRef<any, PlayerEditHandlerProps>(({ game
   useImperativeHandle(ref, () => ({
     handleEditPlayer: (player: Player) => {
       handleEditPlayer(player);
+    },
+    handleSavePlayerEdit: () => {
+      handleSavePlayerEdit();
     }
   }));
 
@@ -87,15 +89,7 @@ export const PlayerEditHandler = forwardRef<any, PlayerEditHandlerProps>(({ game
 
   return (
     <>
-      <PlayerEditModal 
-        isOpen={isEditModalOpen}
-        setIsOpen={setIsEditModalOpen}
-        player={playerToEdit}
-        editPlayerNumbers={editPlayerNumbers}
-        setEditPlayerNumbers={setEditPlayerNumbers}
-        gameId={gameId}
-        onSave={handleSavePlayerEdit}
-      />
+      {/* This component now serves primarily as a logic handler */}
     </>
   );
 });

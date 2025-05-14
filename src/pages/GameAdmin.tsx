@@ -37,6 +37,7 @@ const GameAdmin = () => {
   const [isShowWinnersModalOpen, setIsShowWinnersModalOpen] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
+  const [editPlayerNumbers, setEditPlayerNumbers] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   
   // Use our hook to get winners directly from the database
@@ -122,6 +123,14 @@ const GameAdmin = () => {
   
   const handlePlayerEdit = (player: Player) => {
     setPlayerToEdit(player);
+    
+    // Convert player combinations to text format for the textarea
+    const playerNumbersText = player.combinations
+      .map(combo => combo.numbers.map(n => String(n).padStart(2, '0')).join('-'))
+      .join('\n');
+      
+    setEditPlayerNumbers(playerNumbersText);
+    setSelectedPlayer(player);
   };
 
   // Game not loaded yet
@@ -160,7 +169,8 @@ const GameAdmin = () => {
       {/* Game Header */}
       <GameHeader
         game={game}
-        onCloseClick={handleGameClose}
+        onCloseGameClick={handleGameClose}
+        showCloseButton={true}
       />
       
       {/* Winners Section */}
@@ -236,16 +246,37 @@ const GameAdmin = () => {
       {/* Player Edit Modal */}
       {selectedPlayer && (
         <PlayerEditModal
-          player={selectedPlayer}
           isOpen={!!selectedPlayer}
-          onClose={() => setSelectedPlayer(null)}
-        >
-          <PlayerEditHandler 
-            gameId={gameId!}
-            player={selectedPlayer}
-            onClose={() => setSelectedPlayer(null)}
-          />
-        </PlayerEditModal>
+          setIsOpen={() => setSelectedPlayer(null)}
+          player={selectedPlayer}
+          gameId={gameId || ''}
+          editPlayerNumbers={editPlayerNumbers}
+          setEditPlayerNumbers={setEditPlayerNumbers}
+          onSave={() => {
+            // Handle player edit save
+            if (!gameId || !selectedPlayer) return;
+            
+            // Create onNewWinnerFound function for PlayerEditHandler
+            const onNewWinnerFound = (hasWinners: boolean) => {
+              if (hasWinners) {
+                setShowConfetti(true);
+                setTimeout(() => {
+                  setShowConfetti(false);
+                  fetchGameData(); // Refresh data to show winners
+                }, 5000);
+              }
+            };
+            
+            // Use the PlayerEditHandler to handle the save
+            const playerEditHandler = new PlayerEditHandler({
+              gameId,
+              onNewWinnerFound
+            });
+            
+            // Call the handleSavePlayerEdit method
+            playerEditHandler.handleSavePlayerEdit();
+          }}
+        />
       )}
       
       {/* Confirm Close Modal */}
