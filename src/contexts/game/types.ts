@@ -1,3 +1,4 @@
+
 // Types for game-related data
 
 export interface CombinationWithHits {

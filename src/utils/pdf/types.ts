@@ -11,6 +11,10 @@ export interface GeneratePdfOptions {
   filename?: string;
   /** Whether to include the near winners section */
   includeNearWinners?: boolean;
+  /** Trophy SVG data for rendering */
+  trophySvgData?: string;
+  /** Whether winners are included */
+  hasWinners?: boolean;
 }
 
 /**
@@ -31,4 +35,21 @@ export interface PdfSectionOptions {
   color: string;
   /** Max number of combinations to display per player */
   maxCombosPerPlayer?: number;
+}
+
+/**
+ * Options for PDF generation with full features
+ * Used by both PDF generators
+ */
+export interface PDFOptions {
+  /** Theme color for highlights and accents */
+  color?: string;
+  /** Whether to include winners section */
+  includeWinners?: boolean;
+  /** Whether to include near winners section */
+  includeNearWinners?: boolean;
+  /** Whether this is a simple mode PDF (player list only) */
+  simpleMode?: boolean;
+  /** Trophy SVG data for rendering */
+  trophySvgData?: string;
 }

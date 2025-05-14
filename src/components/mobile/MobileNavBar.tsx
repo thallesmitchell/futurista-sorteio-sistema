@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, BarChart, Settings, List, Plus } from 'lucide-react';
@@ -86,7 +85,11 @@ export function MobileNavBar() {
         players: [],
         dailyDraws: [],
         winners: [],
-        owner_id: user.id
+        owner_id: user.id,
+        numbersPerSequence: 6,
+        requiredHits: 6,
+        sequencePrice: 10,
+        adminProfitPercentage: 15
       });
       
       // Reset form

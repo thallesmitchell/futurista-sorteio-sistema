@@ -1,23 +1,26 @@
 
-import React, { useState, useRef } from 'react';
-import { 
-  DropdownMenu, 
-  DropdownMenuTrigger, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuSeparator 
-} from '@/components/ui/dropdown-menu';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { 
-  EllipsisVertical, 
-  Download, 
-  Upload,
-  FileJson,
-  AlertTriangle
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
+import { MoreVertical, FileJson, Upload, Download } from 'lucide-react';
 import { useGame } from '@/contexts/GameContext';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/auth';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface GameOptionsMenuProps {
   gameId: string;
@@ -26,36 +29,29 @@ interface GameOptionsMenuProps {
 export const GameOptionsMenu: React.FC<GameOptionsMenuProps> = ({ gameId }) => {
   const { exportGame, importGame } = useGame();
   const { toast } = useToast();
-  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [exportData, setExportData] = useState('');
+  const [importData, setImportData] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
-  const handleExportGame = async () => {
+  const handleExportClick = async () => {
     try {
-      const jsonData = await exportGame(gameId);
-      
-      // Create a blob and download it
-      const blob = new Blob([jsonData], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `jogo-${gameId.substring(0, 8)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      toast({
-        title: "Jogo exportado com sucesso",
-        description: "O arquivo JSON foi baixado no seu dispositivo",
-      });
+      setIsExporting(true);
+      const data = await exportGame(gameId);
+      setExportData(data);
+      setIsExportDialogOpen(true);
     } catch (error) {
-      console.error('Error exporting game:', error);
       toast({
         title: "Erro ao exportar jogo",
         description: error instanceof Error ? error.message : "Ocorreu um erro inesperado",
         variant: "destructive"
       });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -63,51 +59,82 @@ export const GameOptionsMenu: React.FC<GameOptionsMenuProps> = ({ gameId }) => {
     setIsImportDialogOpen(true);
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCopyToClipboard = () => {
+    navigator.clipboard.writeText(exportData);
+    toast({
+      title: "Copiado!",
+      description: "Dados do jogo copiados para a área de transferência."
+    });
+  };
+
+  const handleDownloadJson = () => {
+    const blob = new Blob([exportData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `game-export-${gameId}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast({
+      title: "Download iniciado",
+      description: "O arquivo JSON está sendo baixado."
+    });
+  };
+
+  const handleImportSubmit = async () => {
+    if (!importData.trim()) {
+      toast({
+        title: "Erro ao importar",
+        description: "Dados de importação vazios",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setIsImporting(true);
+      JSON.parse(importData); // Validate JSON
+
+      if (!user) {
+        throw new Error("Usuário não autenticado");
+      }
+
+      const importedGame = await importGame(importData, user.id);
+      
+      setIsImportDialogOpen(false);
+      setImportData('');
+      
+      toast({
+        title: "Jogo importado com sucesso",
+        description: `O jogo "${importedGame.name}" foi importado.`
+      });
+      
+      // Navigate to the newly imported game
+      navigate(`/game/${importedGame.id}`);
+    } catch (error) {
+      toast({
+        title: "Erro ao importar jogo",
+        description: error instanceof Error 
+          ? `Formato inválido: ${error.message}` 
+          : "O arquivo não está no formato correto",
+        variant: "destructive"
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        try {
-          if (!event.target?.result || typeof event.target.result !== 'string') {
-            throw new Error('Falha ao ler o arquivo');
-          }
-
-          if (!user?.id) {
-            throw new Error('Usuário não autenticado');
-          }
-          
-          // Attempt to parse the JSON to validate it before importing
-          JSON.parse(event.target.result);
-          
-          await importGame(event.target.result, user.id);
-          
-          toast({
-            title: "Jogo importado com sucesso",
-            description: "O jogo foi importado e está disponível no dashboard",
-          });
-          
-          setIsImportDialogOpen(false);
-        } catch (parseError) {
-          console.error('Error parsing JSON file:', parseError);
-          toast({
-            title: "Erro ao importar jogo",
-            description: "O arquivo não contém um formato JSON válido",
-            variant: "destructive"
-          });
-        }
-      };
-      reader.readAsText(file);
-    } catch (error) {
-      console.error('Error importing game:', error);
-      toast({
-        title: "Erro ao importar jogo",
-        description: error instanceof Error ? error.message : "Ocorreu um erro inesperado",
-        variant: "destructive"
-      });
-    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setImportData(event.target?.result as string);
+    };
+    reader.readAsText(file);
   };
 
   return (
@@ -115,53 +142,96 @@ export const GameOptionsMenu: React.FC<GameOptionsMenuProps> = ({ gameId }) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon">
-            <EllipsisVertical className="h-5 w-5" />
+            <MoreVertical className="h-5 w-5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={handleExportGame} className="cursor-pointer">
-            <Download className="h-4 w-4 mr-2" />
+          <DropdownMenuItem 
+            onClick={handleExportClick}
+            disabled={isExporting}
+          >
+            <Download className="mr-2 h-4 w-4" />
             Exportar Jogo
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleImportClick} className="cursor-pointer">
-            <Upload className="h-4 w-4 mr-2" />
+          <DropdownMenuItem 
+            onClick={handleImportClick}
+            disabled={isImporting}
+          >
+            <Upload className="mr-2 h-4 w-4" />
             Importar Jogo
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+      {/* Export Dialog */}
+      <Dialog open={isExportDialogOpen} onOpenChange={setIsExportDialogOpen}>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center">
-              <FileJson className="mr-2 h-5 w-5" /> 
-              Importar Jogo
-            </DialogTitle>
+            <DialogTitle>Exportar Jogo</DialogTitle>
+            <DialogDescription>
+              Copie os dados abaixo ou faça o download do arquivo JSON.
+            </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
-            <div className="border-2 border-dashed border-primary/50 rounded-lg p-6 text-center space-y-2">
-              <FileJson className="h-8 w-8 mx-auto text-primary/70" />
-              <p className="text-sm">Selecione um arquivo JSON de jogo para importar</p>
-              <p className="text-xs text-muted-foreground">Somente arquivos exportados pelo sistema são válidos</p>
-              <Button onClick={() => fileInputRef.current?.click()}>
-                Selecionar arquivo
-              </Button>
-              <input 
+            <div className="relative">
+              <pre className="bg-muted p-4 rounded-md overflow-auto max-h-60 text-xs">
+                {exportData}
+              </pre>
+              
+              <div className="mt-4 flex justify-end space-x-2">
+                <Button variant="outline" onClick={handleCopyToClipboard}>
+                  <FileJson className="mr-2 h-4 w-4" /> Copiar
+                </Button>
+                <Button onClick={handleDownloadJson}>
+                  <Download className="mr-2 h-4 w-4" /> Download
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Import Dialog */}
+      <Dialog open={isImportDialogOpen} onOpenChange={setIsImportDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Importar Jogo</DialogTitle>
+            <DialogDescription>
+              Cole os dados do jogo no formato JSON ou envie um arquivo.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="import-file">Upload de arquivo</Label>
+              <Input 
+                id="import-file" 
                 type="file" 
-                ref={fileInputRef}
-                className="hidden"
                 accept=".json" 
-                onChange={handleFileChange}
+                onChange={handleFileUpload} 
+                className="mt-1" 
               />
             </div>
             
-            <div className="bg-amber-50 dark:bg-amber-950/30 rounded-lg p-3 flex items-start">
-              <AlertTriangle className="text-amber-600 dark:text-amber-500 h-5 w-5 mt-0.5 mr-2 flex-shrink-0" />
-              <p className="text-xs text-amber-800 dark:text-amber-300">
-                A importação criará um novo jogo com os dados contidos no arquivo. O jogo terá um novo ID, mas manterá todas as informações de jogadores, sequências e sorteios.
-              </p>
+            <div>
+              <Label htmlFor="import-text">Ou cole os dados JSON</Label>
+              <textarea
+                id="import-text"
+                value={importData}
+                onChange={(e) => setImportData(e.target.value)}
+                className="w-full min-h-32 p-2 border rounded-md mt-1"
+                placeholder='{"game": {...}, "players": [...], ...}'
+              />
+            </div>
+            
+            <div className="flex justify-end">
+              <Button 
+                onClick={handleImportSubmit} 
+                disabled={isImporting || !importData.trim()}
+              >
+                {isImporting ? "Importando..." : "Importar"}
+              </Button>
             </div>
           </div>
         </DialogContent>

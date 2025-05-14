@@ -31,7 +31,7 @@ const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="theme">
+    <ThemeProvider>
       <AuthProvider>
         <GameProvider>
           <Router>

@@ -4,14 +4,15 @@ export * from './pdfBuilder';
 export * from './simplePdfGenerator';
 
 // Main export for game report generation
-import { generatePdf } from './pdfBuilder';
-import { PDFOptions } from './types';
+import { generateGameReport } from './pdfBuilder';
+import { generateSimplePdf } from './simplePdfGenerator';
+import { GeneratePdfOptions } from './types';
 import { Game } from '@/contexts/game/types';
 
 /**
  * Generate a PDF report for a game
  */
-export const generateGameReport = async (game: Game, options: PDFOptions) => {
+export const generateGameReport = async (game: Game, options: GeneratePdfOptions = {}) => {
   console.log('Starting PDF generation for game:', game.id);
   console.log('Game has winners:', game.winners?.length || 0);
   
@@ -20,7 +21,7 @@ export const generateGameReport = async (game: Game, options: PDFOptions) => {
   console.log('hasWinners flag set to:', hasWinners);
   
   try {
-    await generatePdf(game, {
+    await generateGameReport(game, {
       ...options,
       hasWinners,
       // If we have winners, we should not include near winners
@@ -35,9 +36,9 @@ export const generateGameReport = async (game: Game, options: PDFOptions) => {
 /**
  * Generate a simple player list PDF
  */
-export const generateSimplePdf = async (game: Game, options: PDFOptions) => {
+export const generateSimplePdf = async (game: Game, options: GeneratePdfOptions = {}) => {
   try {
-    await generatePdf(game, {
+    await generateSimplePdf(game, {
       ...options,
       // Simple PDF is primarily a player list
       includeWinners: false,

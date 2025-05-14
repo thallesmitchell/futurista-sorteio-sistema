@@ -3,10 +3,10 @@ import { jsPDF } from 'jspdf';
 import { Game } from '@/contexts/game/types';
 import { createPDF, PDF_CONFIG, addHeader } from './builders/base-pdf';
 import { addNearWinnersSection } from './builders/near-winners';
-import { addPlayersListSection, safeGetDrawnNumbers } from './builders/players-section';
+import { addPlayersListSection } from './builders/players-section';
 import { addWinnersSection } from './builders/winners-section';
 import { addDrawsSection, getLastDrawDate } from './builders/draws-section';
-import { GeneratePdfOptions } from './types';
+import { GeneratePdfOptions, PdfSectionOptions } from './types';
 
 /**
  * Generate a complete game report PDF
@@ -43,6 +43,12 @@ export const generateSimplePdf = async (
     // Create PDF document
     const pdf = createPDF();
     
+    // Create section options
+    const sectionOptions: PdfSectionOptions = { 
+      color: options.themeColor || '#39FF14',
+      maxCombosPerPlayer: 1000 // Show all sequences
+    };
+    
     // 1. HEADER SECTION
     // Get the date of the last draw or use the game start date
     const lastDrawDate = getLastDrawDate(game.dailyDraws) || game.startDate;
@@ -55,7 +61,7 @@ export const generateSimplePdf = async (
     yPosition += 10;
     
     // Get all drawn numbers from the game
-    const allDrawnNumbers = safeGetDrawnNumbers(game);
+    const allDrawnNumbers = game.dailyDraws.flatMap(draw => Array.isArray(draw.numbers) ? draw.numbers : []);
     console.log(`Total drawn numbers: ${allDrawnNumbers.length}`);
     
     // Check if we have winners from the database
@@ -65,8 +71,10 @@ export const generateSimplePdf = async (
     // 2. WINNERS OR NEAR WINNERS SECTION
     if (hasWinners) {
       console.log('Adding winners section in PDF');
-      yPosition = addWinnersSection(pdf, game, yPosition);
-      console.log(`Y-position after winners section: ${yPosition}`);
+      let winnersY = addWinnersSection(pdf, game, yPosition);
+      if (winnersY > 0) {
+        yPosition = winnersY;
+      }
       
       // Check if we need to add a new page before the draws section
       if (yPosition > PDF_CONFIG.pageHeight - 60) {
@@ -80,8 +88,10 @@ export const generateSimplePdf = async (
     // Only add near winners section if there are NO winners and if requested
     else if (options.includeNearWinners !== false) {
       console.log('Including near winners section in PDF');
-      yPosition = addNearWinnersSection(pdf, game, allDrawnNumbers, { color: options.themeColor || '#39FF14' });
-      console.log(`Y-position after near winners section: ${yPosition}`);
+      let nearWinnersY = addNearWinnersSection(pdf, game, allDrawnNumbers, sectionOptions);
+      if (nearWinnersY > 0) {
+        yPosition = nearWinnersY;
+      }
       
       // Check if we need to add a new page before the draws section
       if (yPosition > PDF_CONFIG.pageHeight - 60) {
@@ -107,7 +117,7 @@ export const generateSimplePdf = async (
     }
     
     // 4. PLAYERS SECTION
-    yPosition = addPlayersListSection(pdf, game, yPosition);
+    addPlayersListSection(pdf, game, yPosition);
     
     // Sanitize filename
     const safeFilename = options.filename

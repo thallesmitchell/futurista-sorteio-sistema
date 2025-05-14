@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Game } from '@/contexts/game/types';
-import { MonitorDollar, Users, DollarSign, Trophy } from 'lucide-react';
+import { MonitorDot, Users, DollarSign, Trophy } from 'lucide-react';
 
 interface GameFinancialCardsProps {
   game: Game;
@@ -34,7 +34,7 @@ export const GameFinancialCards: React.FC<GameFinancialCardsProps> = ({ game }) 
       <Card className="bg-card/60 backdrop-blur-sm border-primary/20">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm md:text-base flex items-center">
-            <MonitorDollar className="h-4 w-4 mr-2 text-green-500" />
+            <MonitorDot className="h-4 w-4 mr-2 text-green-500" />
             Valor Arrecadado
           </CardTitle>
         </CardHeader>

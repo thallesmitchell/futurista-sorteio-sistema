@@ -11,7 +11,7 @@ import {
   addDrawsSection,
   getLastDrawDate
 } from './builders';
-import { PdfSectionOptions } from './types';
+import { GeneratePdfOptions, PdfSectionOptions } from './types';
 
 /**
  * Generate and download complete PDF report for a game
@@ -22,7 +22,7 @@ import { PdfSectionOptions } from './types';
  */
 export const generateGameReport = async (
   game: Game,
-  options = { 
+  options: GeneratePdfOptions = { 
     themeColor: '#39FF14',
     filename: 'resultado.pdf',
     includeNearWinners: true
@@ -54,7 +54,7 @@ export const generateGameReport = async (
     
     // Create section options with proper typing
     const sectionOptions: PdfSectionOptions = { 
-      color: options.themeColor,
+      color: options.themeColor || '#39FF14',
       maxCombosPerPlayer: 1000 // Show all sequences for completeness
     };
     
@@ -63,7 +63,7 @@ export const generateGameReport = async (
     
     // Add header with better error handling for dates
     const gameName = typeof game.name === 'string' ? game.name : 'Resultado';
-    let currentY = addHeader(pdf, gameName, lastDrawDate, { color: options.themeColor });
+    let currentY = addHeader(pdf, gameName, lastDrawDate, { color: options.themeColor || '#39FF14' });
     
     // Extra spacing after header
     currentY += 10;
@@ -97,7 +97,10 @@ export const generateGameReport = async (
     // SECOND: If no winners, add near winners section (if requested)
     else if (options.includeNearWinners) {
       console.log('No winners, adding near winners section');
-      currentY = addNearWinnersSection(pdf, game, allDrawnNumbers, sectionOptions);
+      let nearWinnersY = addNearWinnersSection(pdf, game, allDrawnNumbers, sectionOptions);
+      if (nearWinnersY > 0) {
+        currentY = nearWinnersY;
+      }
       
       // Check if we need to add a new page before the draws section
       if (currentY > PDF_CONFIG.pageHeight - 60) {
@@ -140,7 +143,7 @@ export const generateGameReport = async (
     console.error('Error generating PDF:', error);
     return Promise.reject(error instanceof Error ? error : new Error('Unknown error in PDF generation'));
   }
-}
+};
 
 // Re-export required PDF_CONFIG so it's available to consumers
 export { PDF_CONFIG } from './builders/base-pdf';

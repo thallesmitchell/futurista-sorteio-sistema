@@ -9,28 +9,24 @@ import { useLogout } from './hooks/useLogout';
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { 
     user, 
-    session, 
     isAuthenticated, 
-    userProfile, 
-    isSuperAdmin, 
-    refreshUserProfile 
+    isLoading, 
+    checkUser 
   } = useAuthState();
   
   const { login } = useLogin();
-  const { signup } = useSignup(isSuperAdmin);
+  const { signup } = useSignup();
   const { logout } = useLogout();
 
   return (
     <AuthContext.Provider value={{ 
       isAuthenticated, 
-      user, 
-      session, 
+      user,
+      isLoading,
+      checkUser,
       login, 
       signup, 
-      logout, 
-      userProfile, 
-      isSuperAdmin,
-      refreshUserProfile
+      logout
     }}>
       {children}
     </AuthContext.Provider>

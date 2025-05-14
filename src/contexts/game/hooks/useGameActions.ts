@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Game, Player, DailyDraw, FinancialProjection } from '../types';
 import { supabase } from '@/integrations/supabase/client';
@@ -476,7 +475,19 @@ export const useGameActions = (games: Game[], setGames: React.Dispatch<React.Set
         throw error;
       }
 
-      return data as FinancialProjection[];
+      return data.map(item => ({
+        id: item.id,
+        name: item.name,
+        status: item.status,
+        startDate: item.start_date,
+        endDate: item.end_date,
+        totalSequences: item.total_sequences || 0,
+        sequencePrice: item.sequence_price || 0,
+        adminProfitPercentage: item.admin_profit_percentage || 0,
+        totalCollected: item.total_collected || 0,
+        adminProfit: item.admin_profit || 0,
+        totalPrize: item.total_prize || 0
+      })) as FinancialProjection[];
     } catch (error) {
       console.error('Error loading financial projections:', error);
       toast({

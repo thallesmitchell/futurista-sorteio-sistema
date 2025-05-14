@@ -124,23 +124,23 @@ const GameAdmin = () => {
         </div>
       </div>
       
-      {/* Modals */}
+      {/* This will be updated to match component props */}
       <PlayerEditHandler 
-        player={selectedPlayer} 
+        selectedPlayer={selectedPlayer} 
         onClose={() => setSelectedPlayer(null)} 
       />
       
       <ConfirmCloseModal 
         isOpen={isCloseModalOpen} 
-        onClose={() => setIsCloseModalOpen(false)} 
+        setIsOpen={setIsCloseModalOpen}
         onConfirm={handleCloseGame} 
       />
       
       <WinnersModal 
-        isOpen={isWinnersModalOpen} 
-        onClose={() => setIsWinnersModalOpen(false)} 
+        isOpen={isWinnersModalOpen}
+        setIsOpen={setIsWinnersModalOpen}
         winners={winners || []}
-        gameId={game.id}
+        onClose={() => setIsWinnersModalOpen(false)}
       />
     </div>
   );
