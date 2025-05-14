@@ -88,7 +88,7 @@ export function createSimpleTable(
     headStyles: {
       fillColor: [0, 0, 0] as [number, number, number], // Explicitly type as tuple
       textColor: [255, 255, 255] as [number, number, number], // Explicitly type as tuple
-      fontStyle: 'bold'
+      fontStyle: 'bold' as 'normal' | 'bold' | 'italic' | 'bolditalic'
     },
     theme: 'grid' as const, // Fix type issue with theme
     styles: {
