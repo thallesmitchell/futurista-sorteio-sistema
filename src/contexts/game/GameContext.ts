@@ -1,6 +1,6 @@
 
 import { createContext } from 'react';
-import { Game, Player, DailyDraw, Winner, GameContextType } from './types';
+import { Game, Player, DailyDraw, GameContextType } from './types';
 
 // Create GameContext with initial empty state
 const GameContext = createContext<GameContextType>({

@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
-import { useToast } from '@/hooks/use-toast';
-import { useGame } from '@/contexts/GameContext';
-import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/components/ui/use-toast';
+import { useGame } from '@/contexts/game';
+import { useAuth } from '@/contexts/auth';
 import { Loader2 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface GameCreationFormProps {
   onSuccess?: (gameId: string) => void;
@@ -20,6 +21,7 @@ export const GameCreationForm: React.FC<GameCreationFormProps> = ({ onSuccess, o
   const { user } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMobile = useIsMobile();
   
   // Form state
   const [gameName, setGameName] = useState('');
@@ -113,22 +115,38 @@ export const GameCreationForm: React.FC<GameCreationFormProps> = ({ onSuccess, o
     return sanitized;
   };
   
+  // Handle input focus on mobile to help with keyboard issues
+  const handleInputFocus = () => {
+    if (isMobile) {
+      document.body.classList.add('keyboard-open');
+    }
+  };
+  
+  const handleInputBlur = () => {
+    if (isMobile) {
+      document.body.classList.remove('keyboard-open');
+    }
+  };
+  
   return (
     <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
+      <CardHeader className={isMobile ? "px-3 py-4" : "px-6 py-6"}>
         <CardTitle>Criar Novo Jogo</CardTitle>
         <CardDescription>Defina as regras e configurações do seu novo jogo</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className={isMobile ? "px-3 pb-4" : "px-6 pb-6"}>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="game-name">Nome do Jogo</Label>
+          <div className={`space-y-${isMobile ? '3' : '2'}`}>
+            <Label htmlFor="game-name" className={isMobile ? "mobile-form-label" : ""}>Nome do Jogo</Label>
             <Input 
               id="game-name" 
               placeholder="Digite o nome do jogo"
               value={gameName}
               onChange={(e) => setGameName(e.target.value)}
               required
+              className={isMobile ? "mobile-form-input text-base" : ""}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
             />
           </div>
           
@@ -169,6 +187,9 @@ export const GameCreationForm: React.FC<GameCreationFormProps> = ({ onSuccess, o
               placeholder="10.00"
               value={sequencePrice}
               onChange={(e) => setSequencePrice(formatCurrency(e.target.value))}
+              className={isMobile ? "mobile-form-input text-base" : ""}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
             />
             <p className="text-xs text-muted-foreground">Exemplo: 10.00 ou 10,00</p>
           </div>
@@ -193,7 +214,9 @@ export const GameCreationForm: React.FC<GameCreationFormProps> = ({ onSuccess, o
                   setAdminProfitPercentage(value);
                 }
               }}
-              className="mt-2"
+              className={`mt-2 ${isMobile ? "mobile-form-input text-base" : ""}`}
+              onFocus={handleInputFocus}
+              onBlur={handleInputBlur}
             />
           </div>
           

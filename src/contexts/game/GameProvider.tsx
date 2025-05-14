@@ -1,8 +1,8 @@
 
 import { ReactNode, useState, useEffect } from 'react';
-import { GameContext } from './GameContext';
+import GameContext from './GameContext';
 import { Game, FinancialProjection } from './types';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import { useToast } from '@/components/ui/use-toast';
 import { useGameActions } from './hooks/useGameActions';
 import { useWinnerActions } from './hooks/useWinnerActions';
@@ -76,7 +76,8 @@ export function GameProvider({ children }: GameProviderProps) {
       updatePlayerSequences,
       addDailyDraw,
       checkWinners,
-      loadFinancialProjections
+      loadFinancialProjections,
+      isLoading
     }}>
       {children}
     </GameContext.Provider>

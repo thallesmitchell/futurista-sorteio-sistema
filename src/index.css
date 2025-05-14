@@ -186,6 +186,17 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
     margin-left: 0 !important;
     margin-top: 8px !important;
   }
+  
+  /* Mobile dialog adjustments for keyboard */
+  .mobile-dialog {
+    position: fixed;
+    transition: transform 0.3s ease;
+  }
+  
+  /* Adjust dialog position when keyboard is visible */
+  .keyboard-open .mobile-dialog {
+    transform: translate(-50%, -65%) !important;
+  }
 }
 
 /* Fixes for PDF rendering */
@@ -206,6 +217,16 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
 @supports (-webkit-touch-callout: none) {
   input, textarea, select {
     font-size: 16px !important;
+  }
+  
+  /* iOS keyboard handling for modals */
+  body.keyboard-open {
+    height: calc(100% - 50vh);
+    overflow: hidden;
+  }
+  
+  body.keyboard-open .mobile-dialog {
+    transform: translateY(-30%);
   }
 }
 
@@ -240,6 +261,16 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   /* Stack buttons on very small screens */
   .flex {
     flex-wrap: wrap !important;
+  }
+  
+  /* Mobile form layout adjustments */
+  .mobile-form-label {
+    display: block;
+    margin-bottom: 4px;
+  }
+  
+  .mobile-form-input {
+    font-size: 14px !important;
   }
 }
 

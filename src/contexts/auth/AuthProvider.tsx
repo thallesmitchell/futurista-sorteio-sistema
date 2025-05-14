@@ -46,17 +46,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Effect to update session and check user profile when auth state changes
+  // Effect to update session when auth state changes
   useEffect(() => {
     if (authState.user) {
-      setSession(authState.user.session || null);
+      // Get session from authState
+      const userSession = authState.session || null;
+      setSession(userSession);
       refreshUserProfile();
     } else {
       setUserProfile(null);
       setIsSuperAdmin(false);
       setSession(null);
     }
-  }, [authState.user]);
+  }, [authState.user, authState.session]);
 
   // Provide the complete auth context to children
   const authContext: AuthContextType = {

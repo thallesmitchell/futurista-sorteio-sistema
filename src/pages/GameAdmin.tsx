@@ -4,14 +4,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useGame } from '@/contexts/game';
 import { useAuth } from '@/contexts/auth';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { User, Lock, Flag, Users, Calendar, Trophy } from 'lucide-react';
 import { Player, DailyDraw } from '@/contexts/game/types';
 import { GameHeader } from '@/components/game/GameHeader';
 import { GameContentTabs } from '@/components/game/GameContentTabs';
 import { ConfirmCloseModal } from '@/components/game/ConfirmCloseModal';
 import { WinnersModal } from '@/components/game/WinnersModal';
-import { PlayerEditModal } from '@/components/game/PlayerEditModal';
 import PlayerEditHandler from '@/components/game/PlayerEditHandler';
 import { GameAdminForms } from '@/components/game/GameAdminForms';
 import { GameFinancialCards } from '@/components/game/GameFinancialCards';
@@ -149,13 +148,18 @@ const GameAdmin = () => {
     );
   }
 
+  // Handle closing game (for GameHeader)
+  const handleGameClose = () => {
+    setIsConfirmCloseModalOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Game Header */}
       <GameHeader 
         game={game} 
-        onClose={() => setIsConfirmCloseModalOpen(true)}
         showCloseButton={game.status === 'active'}
+        onCloseClick={handleGameClose}
       />
       
       {/* Winners Section */}
@@ -228,10 +232,10 @@ const GameAdmin = () => {
         </div>
       )}
       
-      {/* Player Edit Modal */}
+      {/* Player Edit Handler */}
       {playerToEdit && (
         <PlayerEditHandler 
-          playerData={playerToEdit} 
+          player={playerToEdit} 
           onClose={() => setPlayerToEdit(null)} 
         />
       )}
@@ -239,7 +243,7 @@ const GameAdmin = () => {
       {/* Confirm Close Modal */}
       <ConfirmCloseModal 
         isOpen={isConfirmCloseModalOpen}
-        onOpenChange={setIsConfirmCloseModalOpen}
+        setIsOpen={setIsConfirmCloseModalOpen}
         onConfirm={handleCloseGame}
       />
       
@@ -249,6 +253,7 @@ const GameAdmin = () => {
         setIsOpen={setIsShowWinnersModalOpen}
         winners={winners || []}
         allDrawnNumbers={allDrawnNumbers}
+        onClose={() => setIsShowWinnersModalOpen(false)}
       />
       
       {/* Confetti effect for winners */}

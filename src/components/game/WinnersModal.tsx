@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Player } from '@/contexts/GameContext';
+import { Player } from '@/contexts/game/types';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Drawer, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
@@ -14,7 +14,7 @@ interface WinnersModalProps {
   setIsOpen: (open: boolean) => void;
   winners: Player[];
   allDrawnNumbers: number[];
-  onClose: () => void;
+  onClose?: () => void; // Make onClose optional
 }
 
 export const WinnersModal: React.FC<WinnersModalProps> = ({
@@ -25,6 +25,15 @@ export const WinnersModal: React.FC<WinnersModalProps> = ({
   onClose
 }) => {
   const isMobile = useIsMobile();
+
+  // Use onClose if provided, otherwise just close the modal
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      setIsOpen(false);
+    }
+  };
 
   const renderContent = () => (
     <>
@@ -53,7 +62,7 @@ export const WinnersModal: React.FC<WinnersModalProps> = ({
   const renderFooter = () => (
     <Button 
       className="w-full futuristic-button bg-green-500 hover:bg-green-600" 
-      onClick={onClose}
+      onClick={handleClose}
     >
       <Trophy className="mr-2 h-4 w-4" />
       Encerrar Jogo

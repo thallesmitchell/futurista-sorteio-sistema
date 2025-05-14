@@ -1,6 +1,7 @@
 
 // Export types and utilities
 export * from './types';
-export * from './GameContext';
-export * from './GameProvider';
+export { default as GameContext } from './GameContext';
+export { GameProvider } from './GameProvider';
 export * from './utils';
+export { useGame } from './hooks/useGame';

@@ -40,6 +40,9 @@ export default function PlayersView() {
     gameId
   });
 
+  // Ensure drawnNumbersSet is correctly typed
+  const typedDrawnNumbersSet: Set<number> = drawnNumbersSet as Set<number>;
+
   return (
     <div className="bg-background min-h-screen pb-safe-bottom">
       <div className="mx-auto" style={{ maxWidth: '950px', width: '100%' }}>
@@ -67,7 +70,7 @@ export default function PlayersView() {
         <div id="players-view-content" className={`space-y-4 pb-8 ${isMobile ? 'px-3 pb-20' : 'px-4 md:px-0'}`}>
           <PlayerViewList
             sortedPlayers={sortedPlayers}
-            drawnNumbersSet={drawnNumbersSet}
+            drawnNumbersSet={typedDrawnNumbersSet}
           />
         </div>
       </div>

@@ -11,14 +11,19 @@ interface ConfirmCloseModalProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   onConfirm: () => void;
+  onOpenChange?: (open: boolean) => void; // Add this for compatibility
 }
 
 export const ConfirmCloseModal: React.FC<ConfirmCloseModalProps> = ({
   isOpen,
   setIsOpen,
-  onConfirm
+  onConfirm,
+  onOpenChange
 }) => {
   const isMobile = useIsMobile();
+  
+  // Use onOpenChange if provided, otherwise use setIsOpen
+  const handleOpenChange = onOpenChange || setIsOpen;
 
   const renderContent = () => (
     <div className="py-4">
@@ -36,7 +41,7 @@ export const ConfirmCloseModal: React.FC<ConfirmCloseModalProps> = ({
     <div className="mt-4 flex gap-2 w-full">
       <Button 
         variant="outline" 
-        onClick={() => setIsOpen(false)}
+        onClick={() => handleOpenChange(false)}
         className="flex-1"
       >
         Cancelar
@@ -53,7 +58,7 @@ export const ConfirmCloseModal: React.FC<ConfirmCloseModalProps> = ({
 
   if (isMobile) {
     return (
-      <Drawer open={isOpen} onOpenChange={setIsOpen}>
+      <Drawer open={isOpen} onOpenChange={handleOpenChange}>
         <DrawerContent className="px-4">
           <DrawerHeader className="text-center pb-2">
             <DrawerTitle>Encerrar Jogo</DrawerTitle>
@@ -69,7 +74,7 @@ export const ConfirmCloseModal: React.FC<ConfirmCloseModalProps> = ({
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Encerrar Jogo</DialogTitle>
