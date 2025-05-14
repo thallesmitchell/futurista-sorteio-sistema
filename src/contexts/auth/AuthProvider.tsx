@@ -1,76 +1,30 @@
 
-import { ReactNode, useState, useEffect } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import AuthContext from './AuthContext';
-import { useAuthState } from './hooks/useAuthState';
-import { useLogin } from './hooks/useLogin';
-import { useSignup } from './hooks/useSignup';
-import { useLogout } from './hooks/useLogout';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { UserProfile } from './types';
+import { User } from '@supabase/supabase-js';
+import { UserProfile, AuthContextType } from './types';
+import { useAuthState } from './hooks/useAuthState';
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+// Create Auth Context
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  // Use the auth state hook to manage authentication state
+  const authState = useAuthState();
   
-  const { 
-    user, 
-    isAuthenticated, 
-    isLoading, 
-    checkUser 
-  } = useAuthState();
-  
-  const { login } = useLogin();
-  const { signup } = useSignup();
-  const { logout } = useLogout();
-
-  const refreshUserProfile = async () => {
-    if (!user) {
-      setUserProfile(null);
-      setIsSuperAdmin(false);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (error) throw error;
-
-      setUserProfile(data as UserProfile);
-      setIsSuperAdmin(data?.role === 'super_admin');
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-      setUserProfile(null);
-      setIsSuperAdmin(false);
-    }
-  };
-
-  useEffect(() => {
-    if (user) {
-      refreshUserProfile();
-    }
-  }, [user]);
-
+  // Provide the auth context to children
   return (
-    <AuthContext.Provider value={{ 
-      isAuthenticated, 
-      user,
-      session,
-      userProfile,
-      isSuperAdmin,
-      isLoading,
-      checkUser,
-      login, 
-      signup, 
-      logout,
-      refreshUserProfile
-    }}>
+    <AuthContext.Provider value={authState}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
+
+// Export the useAuth hook
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

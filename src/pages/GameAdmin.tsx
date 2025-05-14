@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -16,14 +17,14 @@ import { GameAdminForms } from '@/components/game/GameAdminForms';
 import { GameFinancialCards } from '@/components/game/GameFinancialCards';
 import GameReport from '@/components/game/GameReport';
 import { GameWinnersSection } from '@/components/game/GameWinnersSection';
-import DeleteGameButton from '@/components/game/DeleteGameButton';
+import { DeleteGameButton } from '@/components/game/DeleteGameButton';
 import Confetti from '@/components/game/Confetti';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useGameWinners } from '@/hooks/useGameWinners';
 
 const GameAdmin = () => {
   const { gameId } = useParams<{ gameId: string }>();
-  const { games, getGame, getGamePlayers, updateGame } = useGame();
+  const { games, fetchGame, updateGame } = useGame();
   const { isAuthenticated, userProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ const GameAdmin = () => {
     
     try {
       setIsLoading(true);
-      const gameData = await getGame(gameId);
+      const gameData = await fetchGame(gameId);
       
       if (!gameData) {
         toast({
@@ -87,7 +88,7 @@ const GameAdmin = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [gameId, getGame, navigate, toast]);
+  }, [gameId, fetchGame, navigate, toast]);
   
   useEffect(() => {
     if (isAuthenticated) {
@@ -153,7 +154,7 @@ const GameAdmin = () => {
       {/* Game Header */}
       <GameHeader 
         game={game} 
-        onCloseGame={() => setIsConfirmCloseModalOpen(true)}
+        onClose={() => setIsConfirmCloseModalOpen(true)}
         showCloseButton={game.status === 'active'}
       />
       
@@ -220,9 +221,9 @@ const GameAdmin = () => {
           
           <DeleteGameButton 
             gameId={gameId || ''} 
-            gameName={game.name} 
             variant="outline"
             className="sm:w-auto"
+            onSuccess={() => navigate('/dashboard')}
           />
         </div>
       )}
@@ -230,7 +231,7 @@ const GameAdmin = () => {
       {/* Player Edit Modal */}
       {playerToEdit && (
         <PlayerEditHandler 
-          player={playerToEdit} 
+          playerData={playerToEdit} 
           onClose={() => setPlayerToEdit(null)} 
         />
       )}
@@ -238,7 +239,7 @@ const GameAdmin = () => {
       {/* Confirm Close Modal */}
       <ConfirmCloseModal 
         isOpen={isConfirmCloseModalOpen}
-        onClose={() => setIsConfirmCloseModalOpen(false)}
+        onOpenChange={setIsConfirmCloseModalOpen}
         onConfirm={handleCloseGame}
       />
       
@@ -248,7 +249,6 @@ const GameAdmin = () => {
         setIsOpen={setIsShowWinnersModalOpen}
         winners={winners || []}
         allDrawnNumbers={allDrawnNumbers}
-        onClose={() => setIsShowWinnersModalOpen(false)}
       />
       
       {/* Confetti effect for winners */}

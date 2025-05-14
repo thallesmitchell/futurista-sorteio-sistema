@@ -1,42 +1,44 @@
 
+import { Game, Player } from '@/contexts/game/types';
 import jsPDF from 'jspdf';
-import { Game } from '@/contexts/game/types';
-import { PdfSectionOptions } from '../types';
-import { findNearWinners } from './near-winners/data-helpers';
+import { GeneratePdfOptions } from '../types';
+import { createTableHeader, addSubtitle } from './utils/pdf-table-utils';
 import { generateNearWinnersTable } from './near-winners/table-renderer';
-import { addNearWinnersSectionHeader } from './near-winners/section-header';
+import { getNearWinners } from './near-winners/data-helpers';
+import { NearWinner } from '../types';
 
 /**
- * Add the near winners section to the PDF
+ * Adds a section for near winners (players with 5 hits) to the PDF
  */
-export function addNearWinnersSection(doc: jsPDF, game: Game, allDrawnNumbers: number[], options: PdfSectionOptions): number {
+export const addNearWinnersSection = async (
+  doc: jsPDF,
+  game: Game,
+  options: GeneratePdfOptions = {}
+): Promise<void> => {
+  if (!options.includeNearWinners) {
+    return;
+  }
+
   try {
-    // If game is closed and has winners, skip near winners section
-    if (game.status === 'closed' && game.winners && game.winners.length > 0) {
-      console.log('Game is closed and has winners. Skipping near winners section.');
-      return 0;
+    // Add a page break if there's content already
+    if (doc.getNumberOfPages() > 0 && doc.internal.getCurrentPageInfo().pageNumber > 1) {
+      doc.addPage();
     }
-    
-    // Find players who are close to winning
-    // Updated to use requiredHits - 1 (instead of fixed at 5)
-    const requiredHits = game.requiredHits || 6;
-    const nearWinHitCount = requiredHits - 1;
-    console.log(`Looking for near winners with ${nearWinHitCount} hits (required: ${requiredHits})`);
-    
-    const nearWinners = findNearWinners(game.players, nearWinHitCount);
-    
-    if (nearWinners.length === 0) {
-      // No near winners found
-      return 0;
-    }
-    
+
     // Add section header
-    addNearWinnersSectionHeader(doc, nearWinHitCount);
+    addSubtitle(doc, 'Quase Ganhadores (5 Acertos)', 14);
     
-    // Add the near winners table
-    return generateNearWinnersTable(doc, nearWinners, options);
+    // Get near winners (players with 5 hits)
+    const nearWinners = getNearWinners(game);
+    
+    if (nearWinners.length > 0) {
+      // Create table with near winners data
+      await generateNearWinnersTable(doc, nearWinners);
+    } else {
+      doc.setFontSize(12);
+      doc.text('Nenhum jogador com 5 acertos encontrado.', 14, doc.autoTable.previous.finalY + 10);
+    }
   } catch (error) {
     console.error('Error adding near winners section:', error);
-    return 0;
   }
-}
+};

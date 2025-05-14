@@ -1,140 +1,123 @@
 
-import { useLocation, NavLink } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-
-import { 
-  Home,
-  File,
-  Users,
+import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import {
   LayoutDashboard,
+  Users,
+  History,
   Settings,
-  CalendarCheck,
   LogOut,
-  DollarSign
-} from "lucide-react";
+  ChevronRight,
+  DollarSign,
+  ShieldCheck,
+} from 'lucide-react';
+import { useAuth } from '@/contexts/auth';
+import { Separator } from '@/components/ui/separator';
 
-import { useAuth } from "@/contexts/AuthContext";
-
-export type SidebarProps = React.HTMLAttributes<HTMLDivElement> & {
-  className?: string;
-  isCollapsed?: boolean;
-};
-
-export function Sidebar({ className, isCollapsed = false }: SidebarProps) {
-  const { logout, user } = useAuth();
+export function Sidebar() {
+  const navigate = useNavigate();
   const location = useLocation();
-  const isSuperAdmin = user?.userMetadata?.role === "super_admin";
+  const { user, isAuthenticated, logout, isSuperAdmin } = useAuth();
+
+  // Handle logout
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  // Get user name from metadata
+  const userName = user?.user_metadata?.name || 'Usuário';
+  const userRole = isSuperAdmin ? 'Super Admin' : 'Admin';
+
+  // Navigation items
+  const navItems = [
+    {
+      name: 'Dashboard',
+      path: '/dashboard',
+      icon: <LayoutDashboard className="h-5 w-5" />,
+    },
+    {
+      name: 'Jogadores',
+      path: '/players',
+      icon: <Users className="h-5 w-5" />,
+    },
+    {
+      name: 'Histórico',
+      path: '/history',
+      icon: <History className="h-5 w-5" />,
+    },
+    {
+      name: 'Financeiro',
+      path: '/finance',
+      icon: <DollarSign className="h-5 w-5" />,
+    },
+    {
+      name: 'Configurações',
+      path: '/profile',
+      icon: <Settings className="h-5 w-5" />,
+    },
+  ];
+
+  // Add super admin route if user is super admin
+  if (isSuperAdmin) {
+    navItems.push({
+      name: 'Super Admin',
+      path: '/admin',
+      icon: <ShieldCheck className="h-5 w-5" />,
+    });
+  }
 
   return (
-    <div className={cn("pb-12", className)}>
-      <div className="space-y-4 py-4">
-        <div className="px-3 py-2">
-          <h2 className={cn("mb-2 px-4 text-lg font-semibold tracking-tight", isCollapsed && "hidden")}>
-            Admin
-          </h2>
-          <div className="space-y-1">
-            <NavLink to="/dashboard">
-              {({ isActive }) => (
-                <Button
-                  variant={isActive ? "default" : "ghost"}
-                  size="sm"
-                  className="w-full justify-start"
-                >
-                  <LayoutDashboard className={cn("mr-2 h-4 w-4", isCollapsed && "mr-0")} />
-                  {!isCollapsed && <span>Dashboard</span>}
-                </Button>
-              )}
-            </NavLink>
-            
-            <NavLink to="/finance">
-              {({ isActive }) => (
-                <Button
-                  variant={isActive ? "default" : "ghost"}
-                  size="sm"
-                  className="w-full justify-start"
-                >
-                  <DollarSign className={cn("mr-2 h-4 w-4", isCollapsed && "mr-0")} />
-                  {!isCollapsed && <span>Financeiro</span>}
-                </Button>
-              )}
-            </NavLink>
-
-            <NavLink to="/history">
-              {({ isActive }) => (
-                <Button
-                  variant={isActive ? "default" : "ghost"}
-                  size="sm"
-                  className="w-full justify-start"
-                >
-                  <CalendarCheck className={cn("mr-2 h-4 w-4", isCollapsed && "mr-0")} />
-                  {!isCollapsed && <span>Histórico</span>}
-                </Button>
-              )}
-            </NavLink>
-
-            <NavLink to="/players">
-              {({ isActive }) => (
-                <Button
-                  variant={isActive ? "default" : "ghost"}
-                  size="sm"
-                  className="w-full justify-start"
-                >
-                  <Users className={cn("mr-2 h-4 w-4", isCollapsed && "mr-0")} />
-                  {!isCollapsed && <span>Jogadores</span>}
-                </Button>
-              )}
-            </NavLink>
-            
-            {isSuperAdmin && (
-              <NavLink to="/admin">
-                {({ isActive }) => (
-                  <Button
-                    variant={isActive ? "default" : "ghost"}
-                    size="sm"
-                    className="w-full justify-start"
-                  >
-                    <Users className={cn("mr-2 h-4 w-4", isCollapsed && "mr-0")} />
-                    {!isCollapsed && <span>Administradores</span>}
-                  </Button>
-                )}
-              </NavLink>
-            )}
+    <div className="flex flex-col h-screen border-r border-border bg-card">
+      {/* Logo and name */}
+      <div className="p-6">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold">
+            {userName.charAt(0).toUpperCase()}
           </div>
-        </div>
-
-        <div className="px-3 py-2">
-          <h2 className={cn("mb-2 px-4 text-lg font-semibold tracking-tight", isCollapsed && "hidden")}>
-            Configurações
-          </h2>
-          <div className="space-y-1">
-            <NavLink to="/profile">
-              {({ isActive }) => (
-                <Button
-                  variant={isActive ? "default" : "ghost"}
-                  size="sm"
-                  className="w-full justify-start"
-                >
-                  <Settings className={cn("mr-2 h-4 w-4", isCollapsed && "mr-0")} />
-                  {!isCollapsed && <span>Meu Perfil</span>}
-                </Button>
-              )}
-            </NavLink>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={logout}
-              className="w-full justify-start text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-            >
-              <LogOut className={cn("mr-2 h-4 w-4", isCollapsed && "mr-0")} />
-              {!isCollapsed && <span>Sair</span>}
-            </Button>
+          <div>
+            <h2 className="font-medium">{userName}</h2>
+            <p className="text-xs text-muted-foreground">{userRole}</p>
           </div>
         </div>
       </div>
+
+      <Separator />
+
+      {/* Navigation */}
+      <nav className="flex-1 overflow-auto py-6 px-3">
+        <ul className="space-y-1">
+          {navItems.map((item) => {
+            const isActive = location.pathname === item.path;
+            return (
+              <li key={item.path}>
+                <Button
+                  variant={isActive ? "secondary" : "ghost"}
+                  className={cn(
+                    "w-full justify-start",
+                    isActive ? "font-medium" : "",
+                  )}
+                  onClick={() => navigate(item.path)}
+                >
+                  {item.icon}
+                  <span className="ml-3">{item.name}</span>
+                  {isActive && <ChevronRight className="ml-auto h-4 w-4" />}
+                </Button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      {/* Logout button */}
+      <div className="p-6">
+        <Button variant="outline" className="w-full justify-start" onClick={handleLogout}>
+          <LogOut className="h-5 w-5 mr-3" />
+          Sair
+        </Button>
+      </div>
     </div>
-  )
+  );
 }
