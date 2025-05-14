@@ -59,7 +59,7 @@ export const generateGameReport = async (
     };
     
     // Get the date of the last draw or use the game start date
-    const lastDrawDate = getLastDrawDate(game.dailyDraws) || game.startDate;
+    const lastDrawDate = getLastDrawDate(game.dailyDraws) || game.start_date;
     
     // Add header with better error handling for dates
     const gameName = typeof game.name === 'string' ? game.name : 'Resultado';

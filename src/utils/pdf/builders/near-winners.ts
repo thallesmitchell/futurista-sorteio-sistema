@@ -79,5 +79,8 @@ export const buildNearWinnersSection = async (
   }
 };
 
-// Export the function
+// Export the function with the name that's expected in pdfBuilder.ts
+export const addNearWinnersSection = buildNearWinnersSection;
+
+// Export the default function
 export default buildNearWinnersSection;
