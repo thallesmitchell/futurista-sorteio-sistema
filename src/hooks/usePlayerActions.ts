@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useGame } from '@/contexts/game/GameContext';
+import { useGame } from '@/contexts/game';
 import { useToast } from './use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Player } from '@/contexts/game/types';
