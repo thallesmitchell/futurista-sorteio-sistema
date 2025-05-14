@@ -1,67 +1,55 @@
-import { Game, Player } from '@/contexts/game/types';
 
-interface NearWinner {
+import { Game, Player, PlayerCombination } from '@/contexts/game/types';
+
+interface NearWinnerItem {
   player: Player;
-  combinations: any[];
+  combinations: PlayerCombination[];
   missingHit: number;
 }
 
-// Update the function to use requiredHits instead of required_hits
-export const generateNearWinnersList = (
-  game: Game,
-  drawnNumbers: number[]
-): NearWinner[] => {
+/**
+ * Generate a list of near winners (players who were close to winning)
+ */
+export function generateNearWinnersList(game: Game, allDrawnNumbers: number[]): NearWinnerItem[] {
   try {
-    // Create set for faster lookups
-    const drawnNumbersSet = new Set(drawnNumbers);
-    
-    // Early returns for invalid data
-    if (!game?.players || !Array.isArray(game.players)) {
-      console.error('No players data available');
+    if (!game.players || !Array.isArray(game.players) || game.players.length === 0) {
+      console.warn('No players found in game data');
       return [];
     }
     
-    if (!drawnNumbers || !drawnNumbers.length) {
-      console.error('No drawn numbers available');
-      return [];
-    }
+    const nearWinners: NearWinnerItem[] = [];
+    const requiredHits = game.requiredHits || 6; // Default to 6 if not specified
     
-    // Get all players with combinations
-    const playersWithCombinations = game.players.filter(
-      player => player.combinations && player.combinations.length > 0
-    );
-    
-    // Define what's "near" to winning - typically 1 number less than required
-    // Use requiredHits (not required_hits) to match the Game type
-    const requiredHits = game.requiredHits;
-    const nearMissCriteria = requiredHits ? requiredHits - 1 : 5;
-    
-    // Process each player's combinations
-    const nearWinners: NearWinner[] = [];
-    
-    for (const player of playersWithCombinations) {
-      // Check each combination against drawn numbers
-      for (const combo of player.combinations) {
-        // Skip invalid combinations
-        if (!combo.numbers || !Array.isArray(combo.numbers)) continue;
+    // For each player
+    for (const player of game.players) {
+      if (!player.combinations || !Array.isArray(player.combinations)) {
+        continue;
+      }
+      
+      // Check each combination for this player
+      for (const combination of player.combinations) {
+        if (!combination.numbers || !Array.isArray(combination.numbers)) {
+          continue;
+        }
         
-        // Count matches
-        const hits = combo.numbers.filter(num => drawnNumbersSet.has(num)).length;
+        // Count hits - how many numbers match the drawn numbers
+        const hits = combination.hits || 
+          combination.numbers.filter(num => allDrawnNumbers.includes(num)).length;
         
-        // If this is a near-win, add to results
-        if (hits === nearMissCriteria) {
-          // Check if player is already in list
-          const existingPlayer = nearWinners.find(w => w.player.id === player.id);
+        // If this is a near win (missing just one number)
+        if (requiredHits - hits === 1) {
+          // Check if this player is already in our nearWinners list
+          const existingEntry = nearWinners.find(item => item.player.id === player.id);
           
-          if (existingPlayer) {
-            // Add this combination to existing player entry
-            existingPlayer.combinations.push(combo);
+          if (existingEntry) {
+            // Add this combination to the existing entry
+            existingEntry.combinations.push(combination);
           } else {
-            // Create new entry for this player
+            // Create a new entry for this player
             nearWinners.push({
               player,
-              combinations: [combo],
-              missingHit: requiredHits - hits
+              combinations: [combination],
+              missingHit: 1 // Missing just one number
             });
           }
         }
@@ -73,4 +61,4 @@ export const generateNearWinnersList = (
     console.error('Error generating near winners list:', error);
     return [];
   }
-};
+}

@@ -78,7 +78,7 @@ export const generateGameReport = async (
       try {
         // Add winners section with detailed logging
         console.log('Adding winners section with:', game.winners);
-        currentY = addWinnersSection(pdf, game, currentY);
+        currentY = addWinnersSection(pdf, game, currentY, sectionOptions);
         console.log('Winners section added successfully, currentY:', currentY);
       } catch (error) {
         console.error('Error adding winners section:', error);
@@ -97,9 +97,14 @@ export const generateGameReport = async (
     // SECOND: If no winners, add near winners section (if requested)
     else if (options.includeNearWinners) {
       console.log('No winners, adding near winners section');
-      const nearWinnersY = addNearWinnersSection(pdf, game, allDrawnNumbers, sectionOptions);
-      if (nearWinnersY > 0) {
-        currentY = nearWinnersY;
+      
+      try {
+        const nearWinnersResult = await addNearWinnersSection(pdf, game, allDrawnNumbers, sectionOptions);
+        if (nearWinnersResult > 0) {
+          currentY = nearWinnersResult;
+        }
+      } catch (error) {
+        console.error('Error adding near winners section:', error);
       }
       
       // Check if we need to add a new page before the draws section

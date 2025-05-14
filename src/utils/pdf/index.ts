@@ -17,7 +17,6 @@ export const generatePdf = async (game: any, options: {
   themeColor?: string;
   filename?: string;
   includeNearWinners?: boolean;
-  includeWinners?: boolean;
   hasWinners?: boolean;
   trophySvgData?: string;
 } = {}) => {
@@ -28,12 +27,15 @@ export const generatePdf = async (game: any, options: {
       filename: options.filename || 'game-report.pdf',
       includeNearWinners: options.includeNearWinners,
       hasWinners: options.hasWinners,
-      trophySvgData: options.trophySvgData,
-      includeWinners: options.includeWinners
+      trophySvgData: options.trophySvgData
     };
     
+    // Import functions dynamically to avoid circular dependencies
+    const { generateGameReport } = await import('./pdfBuilder');
+    const { generateSimplePdf } = await import('./simplePdfGenerator');
+    
     // Choose PDF function based on simpler or complete report
-    if (options.includeNearWinners === true && !options.includeWinners) {
+    if (options.includeNearWinners === true && !options.hasWinners) {
       return generateSimplePdf(game, newOptions);
     } else {
       return generateGameReport(game, newOptions);

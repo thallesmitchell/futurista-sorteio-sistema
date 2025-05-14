@@ -1,6 +1,6 @@
 
 import { createContext } from 'react';
-import { Game, Player, DailyDraw, GameContextType } from './types';
+import { Game, Player, DailyDraw, GameContextType, FinancialProjection } from './types';
 
 // Create GameContext with initial empty state
 const GameContext = createContext<GameContextType>({
@@ -38,6 +38,7 @@ const GameContext = createContext<GameContextType>({
   }),
   addWinner: async (gameId: string, playerId: string, combinationId: string) => false,
   getWinners: async (gameId: string) => [],
+  financialSummary: () => [],
   exportGame: async (gameId: string) => '{}',
   importGame: async (gameData: string, userId: string) => ({ 
     id: '', 

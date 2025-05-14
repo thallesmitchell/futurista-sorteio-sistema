@@ -32,7 +32,7 @@ export function drawTable(
     headStyles: {
       fillColor: [0, 0, 0],
       textColor: [255, 255, 255],
-      fontStyle: 'bold'
+      fontStyle: 'bold' as 'bold' // Type assertion to match FontStyle
     },
     theme: 'grid' as const, // Fix type issue with theme
     styles: {
@@ -88,7 +88,7 @@ export function createSimpleTable(
     headStyles: {
       fillColor: [0, 0, 0],
       textColor: [255, 255, 255],
-      fontStyle: 'bold'
+      fontStyle: 'bold' as 'bold' // Type assertion to match FontStyle
     },
     theme: 'grid' as const, // Fix type issue with theme
     styles: {
@@ -131,4 +131,3 @@ export function addSubtitle(
   doc.text(text, 14, yPosition);
   return yPosition + 6;
 }
-

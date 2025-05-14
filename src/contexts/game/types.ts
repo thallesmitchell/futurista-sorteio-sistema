@@ -80,9 +80,11 @@ export interface FinancialProjection {
   adminProfitPercentage?: number;
   totalCollected?: number;
   totalPrize?: number;
-  filter?: (criteria: any) => FinancialProjection[];
+  revenue?: number; // Add this for compatibility
+  profit?: number; // Add this for compatibility
   startDate?: string; // Alias for backwards compatibility
   endDate?: string; // Alias for backwards compatibility
+  filter?: (criteria: any) => FinancialProjection[];
 }
 
 export interface GameContextType {
@@ -112,6 +114,7 @@ export interface GameContextType {
   addWinner?: (gameId: string, playerId: string, combinationId: string) => Promise<boolean>;
   checkWinners?: (gameId: string) => Promise<Player[]>;
   getWinners?: (gameId: string) => Promise<Player[]>;
+  financialSummary?: () => FinancialProjection[];
   exportGame: (gameId: string) => Promise<string>;
   importGame: (gameData: string, userId: string) => Promise<Game>;
   loadFinancialProjections?: (game: Game) => Promise<FinancialProjection | null>;

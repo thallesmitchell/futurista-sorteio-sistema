@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -159,8 +160,7 @@ const GameAdmin = () => {
       {/* Game Header */}
       <GameHeader
         game={game}
-        showCloseButton={game.status === 'active'}
-        onCloseGameClick={handleGameClose}
+        onCloseClick={handleGameClose}
       />
       
       {/* Winners Section */}
@@ -233,15 +233,16 @@ const GameAdmin = () => {
         </div>
       )}
       
-      {/* Player Edit Handler */}
+      {/* Player Edit Modal */}
       {selectedPlayer && (
         <PlayerEditModal
+          player={selectedPlayer}
           isOpen={!!selectedPlayer}
           onClose={() => setSelectedPlayer(null)}
         >
           <PlayerEditHandler 
             gameId={gameId!}
-            playerId={selectedPlayer.id}
+            player={selectedPlayer}
             onClose={() => setSelectedPlayer(null)}
           />
         </PlayerEditModal>

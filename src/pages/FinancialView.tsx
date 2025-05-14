@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useGame } from '@/contexts/GameContext';
@@ -17,7 +18,7 @@ export default function FinancialView() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const [showAll, setShowAll] = useState(false);
-  const [activeChart, setActiveChart] = useState<'revenue' | 'profit'>('revenue');
+  const [activeChart, setActiveChart] = useState<'totalRevenue' | 'adminProfit'>('totalRevenue');
   const [selectedGame, setSelectedGame] = useState<FinancialProjection | null>(null);
   const [filteredGames, setFilteredGames] = useState<FinancialProjection[]>([]);
   const [chartData, setChartData] = useState<FinancialProjection[]>([]);
@@ -38,18 +39,41 @@ export default function FinancialView() {
             return;
           }
 
-          // Only use this specific game's data
+          // Convert game financial projections to FinancialProjection type
           if (game.financialProjections) {
-            setFilteredGames([game.financialProjections]);
-            setChartData([game.financialProjections]);
+            const gameProjection: FinancialProjection = {
+              id: game.id,
+              name: game.name,
+              status: game.status,
+              start_date: game.start_date,
+              end_date: game.end_date,
+              totalRevenue: game.financialProjections.totalCollected || 0,
+              revenue: game.financialProjections.totalCollected || 0,
+              adminProfit: game.financialProjections.adminProfit || 0,
+              profit: game.financialProjections.adminProfit || 0,
+              prizePool: game.financialProjections.totalPrize || 0,
+              playerCount: game.players?.length || 0,
+              combinationCount: game.financialProjections.totalSequences || 0,
+              averagePayout: game.players?.length ? (game.financialProjections.totalPrize || 0) / game.players.length : 0,
+              totalSequences: game.financialProjections.totalSequences,
+              sequencePrice: game.sequencePrice,
+              adminProfitPercentage: game.adminProfitPercentage,
+              totalCollected: game.financialProjections.totalCollected,
+              totalPrize: game.financialProjections.totalPrize
+            };
+            
+            setFilteredGames([gameProjection]);
+            setChartData([gameProjection]);
           }
         } else {
           // Get all games' financial data from context
-          const projections = financialSummary();
-          if (projections && Array.isArray(projections)) {
-            setFilteredGames(projections);
-            // Default to showing only first 5 games in chart
-            setChartData(showAll ? projections : projections.slice(0, 5));
+          if (financialSummary && typeof financialSummary === 'function') {
+            const projections = financialSummary();
+            if (projections && Array.isArray(projections)) {
+              setFilteredGames(projections);
+              // Default to showing only first 5 games in chart
+              setChartData(showAll ? projections : projections.slice(0, 5));
+            }
           }
         }
       } catch (error) {
@@ -104,8 +128,20 @@ export default function FinancialView() {
         </CardHeader>
         <CardContent className="grid gap-4">
           <div className="flex items-center space-x-4">
-            <Button variant="outline" onClick={() => setActiveChart('revenue')} active={activeChart === 'revenue'}>Receita</Button>
-            <Button variant="outline" onClick={() => setActiveChart('profit')} active={activeChart === 'profit'}>Lucro</Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setActiveChart('totalRevenue')} 
+              className={activeChart === 'totalRevenue' ? 'bg-primary text-primary-foreground' : ''}
+            >
+              Receita
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setActiveChart('adminProfit')} 
+              className={activeChart === 'adminProfit' ? 'bg-primary text-primary-foreground' : ''}
+            >
+              Lucro
+            </Button>
           </div>
           <Separator />
           <div className="h-[450px] w-full">
@@ -137,8 +173,8 @@ export default function FinancialView() {
             <div className="mt-6">
               <h4 className="text-lg font-semibold">Detalhes do Jogo Selecionado</h4>
               <p>Nome: {selectedGame.name}</p>
-              <p>Receita: R$ {selectedGame.revenue.toFixed(2)}</p>
-              <p>Lucro: R$ {selectedGame.profit.toFixed(2)}</p>
+              <p>Receita: R$ {selectedGame.totalRevenue.toFixed(2)}</p>
+              <p>Lucro: R$ {selectedGame.adminProfit.toFixed(2)}</p>
             </div>
           )}
         </CardContent>
@@ -155,8 +191,8 @@ export default function FinancialView() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p>Receita: R$ {game.revenue.toFixed(2)}</p>
-                <p>Lucro: R$ {game.profit.toFixed(2)}</p>
+                <p>Receita: R$ {game.totalRevenue.toFixed(2)}</p>
+                <p>Lucro: R$ {game.adminProfit.toFixed(2)}</p>
               </CardContent>
             </Card>
           ))}
