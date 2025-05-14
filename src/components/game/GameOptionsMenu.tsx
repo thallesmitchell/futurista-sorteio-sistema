@@ -16,7 +16,7 @@ import {
   DialogTitle
 } from '@/components/ui/dialog';
 import { MoreVertical, FileJson, Upload, Download } from 'lucide-react';
-import { useGame } from '@/contexts/GameContext';
+import { useGame } from '@/contexts/game';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/auth';
 import { Input } from '@/components/ui/input';

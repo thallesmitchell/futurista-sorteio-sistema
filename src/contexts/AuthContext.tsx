@@ -1,4 +1,5 @@
 
+// This file is maintained for backward compatibility
 import { AuthProvider, useAuth } from './auth';
 import type { UserProfile, AuthContextType } from './auth/types';
 

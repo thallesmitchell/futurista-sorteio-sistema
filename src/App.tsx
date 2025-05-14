@@ -1,8 +1,8 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { GameProvider } from "@/contexts/GameContext";
+import { AuthProvider } from "@/contexts/auth";
+import { GameProvider } from "@/contexts/game";
 import { Toaster } from "@/components/ui/toaster";
 import MainLayout from "@/layouts/MainLayout";
 import AuthLayout from "@/layouts/AuthLayout";

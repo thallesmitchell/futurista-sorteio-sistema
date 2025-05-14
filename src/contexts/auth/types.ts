@@ -14,12 +14,14 @@ export interface UserProfile {
 
 export interface AuthContextType {
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, username: string, role?: 'admin') => Promise<boolean>;
-  logout: () => Promise<void>;
   user: User | null;
   session: Session | null;
   userProfile: UserProfile | null;
   isSuperAdmin: boolean;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  signup: (email: string, password: string, username: string, role?: 'admin') => Promise<boolean>;
+  logout: () => Promise<void>;
+  checkUser: () => Promise<void>;
   refreshUserProfile: () => Promise<void>;
 }

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Home, BarChart, Settings, List, Plus } from 'lucide-react';
@@ -6,9 +7,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useGame } from '@/contexts/GameContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/components/ui/use-toast';
+import { useGame } from '@/contexts/game';
+import { useAuth } from '@/contexts/auth';
+import { useToast } from '@/hooks/use-toast';
 import { useForm } from 'react-hook-form';
 
 interface NavItemProps {
@@ -105,7 +106,7 @@ export function MobileNavBar() {
       });
       
       // Redirect to game page
-      navigate(`/admin/${newGame.id}`);
+      navigate(`/game/${newGame.id}`);
     } catch (error) {
       console.error("Erro ao criar jogo:", error);
       toast({
@@ -131,7 +132,7 @@ export function MobileNavBar() {
           <NavItem 
             icon={<List size={20} />} 
             label="Jogos" 
-            active={activeRoute.includes('/admin/')} 
+            active={activeRoute.includes('/game/')} 
             onClick={() => navigateTo('/history')} 
           />
           <NavItem 

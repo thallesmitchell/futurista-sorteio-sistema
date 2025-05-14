@@ -1,8 +1,7 @@
 
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { Game, Player } from '@/contexts/game/types';
-import { PDFOptions, PdfSectionOptions } from '../types';
+import { Game } from '@/contexts/game/types';
+import { PdfSectionOptions } from '../types';
 import { findNearWinners } from './near-winners/data-helpers';
 import { generateNearWinnersTable } from './near-winners/table-renderer';
 import { addNearWinnersSectionHeader } from './near-winners/section-header';
