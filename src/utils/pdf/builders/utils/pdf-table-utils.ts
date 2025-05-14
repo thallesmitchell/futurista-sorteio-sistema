@@ -155,7 +155,7 @@ export const renderTable = (
     headStyles: {
       fillColor: options.headStyles?.fillColor || [41, 128, 185] as [number, number, number],
       textColor: options.headStyles?.textColor || [255, 255, 255] as [number, number, number],
-      fontStyle: options.headStyles?.fontStyle || "bold" as const
+      fontStyle: options.headStyles?.fontStyle || "bold" as "normal" | "bold" | "italic" | "bolditalic"
     },
     theme: options.theme || "striped" as const,
     styles: {

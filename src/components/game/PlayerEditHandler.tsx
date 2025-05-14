@@ -1,9 +1,8 @@
 
 import React, { useState, useCallback } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast, Toast, ToasterToast } from '@/hooks/use-toast';
 import { Player } from '@/contexts/game/types';
 import { useGame } from '@/contexts/GameContext';
-import { ToasterToast, Toast } from '@/hooks/use-toast';
 
 interface PlayerEditHandlerProps {
   gameId: string;
