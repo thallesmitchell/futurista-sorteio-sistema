@@ -1,36 +1,24 @@
 
-import jsPDF from 'jspdf';
+import jsPDF from "jspdf";
+import { addSectionHeader, addSubtitle } from "../utils/pdf-table-utils";
 
 /**
- * Add the section header for near winners
+ * Renders the header for the near winners section
  */
-export function addNearWinnersSectionHeader(doc: jsPDF, hitCount: number): void {
-  doc.addPage();
+export const renderNearWinnersSectionHeader = (
+  doc: jsPDF,
+  totalNearWinners: number,
+  startY: number = 20
+): number => {
+  // Add section header
+  let y = addSectionHeader(doc, "Jogadores Próximos de Ganhar", startY);
   
-  // Set font styles for the header
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(18);
-  doc.setTextColor(0, 0, 0);
-  
-  // Add the header text
-  doc.text(
-    `Jogos Amarrados - ${hitCount} Acertos`, 
-    doc.internal.pageSize.width / 2, 
-    20, 
-    { align: 'center' }
+  // Add subtitle with count
+  y = addSubtitle(
+    doc, 
+    `Total de combinações com 5 acertos: ${totalNearWinners}`,
+    y
   );
   
-  // Add explanation text
-  doc.setFontSize(12);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(80, 80, 80);
-  doc.text(
-    `Jogadores que estão a 1 acerto de ganhar`, 
-    doc.internal.pageSize.width / 2, 
-    30, 
-    { align: 'center' }
-  );
-  
-  // Reset text color
-  doc.setTextColor(0, 0, 0);
-}
+  return y;
+};

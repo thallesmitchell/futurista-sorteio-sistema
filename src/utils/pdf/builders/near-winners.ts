@@ -1,57 +1,83 @@
 
-import { Game } from '@/contexts/game/types';
-import jsPDF from 'jspdf';
-import { GeneratePdfOptions } from '../types';
-import { createTableHeader, addSubtitle } from './utils/pdf-table-utils';
-import { generateNearWinnersTable } from './near-winners/table-renderer';
-import { findNearWinners } from './near-winners/data-helpers';
+import jsPDF from "jspdf";
+import { Game } from "@/contexts/game/types";
+import { getNearWinnersData } from "./near-winners/data-helpers";
+import { renderNearWinnersSectionHeader } from "./near-winners/section-header";
+import { renderNearWinnersTable } from "./near-winners/table-renderer";
+import { addSectionHeader, addSubtitle } from "./utils/pdf-table-utils";
+import { PdfSectionOptions } from "../types";
 
 /**
- * Adds a section for near winners (players with 5 hits) to the PDF
+ * Builds the near winners section of the PDF
  */
-export const addNearWinnersSection = async (
+export const buildNearWinnersSection = async (
   doc: jsPDF,
   game: Game,
-  allDrawnNumbers: number[] = [],
-  options: GeneratePdfOptions = {}
+  options: PdfSectionOptions = {}
 ): Promise<number> => {
-  if (!options.includeNearWinners) {
-    return 0;
+  const { startY = 20, title = "Jogadores Próximos de Ganhar" } = options;
+  
+  // Start position
+  let currentY = startY;
+  
+  // Add section header
+  currentY = addSectionHeader(doc, title, currentY);
+  
+  // Get current page height
+  const pageHeight = doc.internal.pageSize.height;
+  
+  // Check if we need to add a new page
+  if (currentY > pageHeight - 100) {
+    doc.addPage();
+    currentY = 20;
+    // Re-add title on new page
+    currentY = addSectionHeader(doc, title, currentY);
   }
-
+  
   try {
-    // Add a page break if there's content already and not the first page
-    const pageNumber = doc.getNumberOfPages();
-    if (pageNumber > 1) {
-      const pageInfo = doc.internal.getCurrentPageInfo?.();
-      if (pageInfo && pageInfo.pageNumber > 1) {
-        doc.addPage();
-      }
-    }
-
-    // Add section header
-    const yPos = addSubtitle(doc, 'Quase Ganhadores (5 Acertos)', 14);
+    // Get near winners data
+    const nearWinnersData = getNearWinnersData(game);
     
-    // Get near winners (players with 5 hits)
-    const nearWinners = findNearWinners(game.players, 5);
+    // Display number of combinations close to winning
+    currentY = addSubtitle(
+      doc,
+      `Total de combinações com 5 acertos: ${nearWinnersData.length}`,
+      currentY
+    );
     
-    if (nearWinners.length > 0) {
-      // Format data for table
-      const tableData = nearWinners.map(winner => [
-        winner.playerName,
-        winner.numbers.map(n => n.toString().padStart(2, '0')).join(' ')
-      ]);
-      
-      // Create table with near winners data
-      const finalY = generateNearWinnersTable(doc, tableData, yPos);
-      return finalY;
-    } else {
-      doc.setFontSize(12);
-      doc.text('Nenhum jogador com 5 acertos encontrado.', 14, yPos + 10);
-      return yPos + 30;
+    if (nearWinnersData.length === 0) {
+      currentY += 10;
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "italic");
+      doc.text("Nenhum jogador próximo de ganhar.", 14, currentY);
+      return currentY + 10;
     }
+    
+    // Render near winners table
+    const tableData = nearWinnersData.map(nw => [
+      nw.playerName,
+      nw.numbers.join(", "),
+      nw.hits.toString()
+    ]) as [string, string, string][];
+    
+    currentY = await renderNearWinnersTable(doc, tableData, currentY + 5);
+    
+    return currentY;
   } catch (error) {
-    console.error('Error adding near winners section:', error);
-    return 0;
+    console.error("Error building near winners section:", error);
+    
+    // Add error message to PDF
+    doc.setFontSize(10);
+    doc.setTextColor(255, 0, 0);
+    doc.text(
+      `Erro ao gerar seção de jogadores próximos: ${error.message}`,
+      14,
+      currentY + 10
+    );
+    
+    return currentY + 20;
   }
 };
+
+// Export the function
+export default buildNearWinnersSection;

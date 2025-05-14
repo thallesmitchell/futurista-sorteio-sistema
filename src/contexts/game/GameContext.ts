@@ -1,70 +1,25 @@
 
-import { createContext, useContext } from 'react';
-import { Game, Player, DailyDraw, FinancialProjection } from './types';
+import { createContext } from 'react';
+import { Game, Player, DailyDraw, Winner, GameContextType } from './types';
 
-// Define more granular context types for improved type safety
-interface GameStateContext {
-  games: Game[];
-  currentGame: Game | null;
-  setCurrentGame: (game: Game | null) => void;
-}
+// Create GameContext with initial empty state
+const GameContext = createContext<GameContextType>({
+  games: [],
+  currentGame: null,
+  isLoading: false,
+  fetchGames: async () => {},
+  fetchGame: async (id: string) => null,
+  addGame: async (game: Partial<Game>) => ({ id: '', name: '', status: 'active', start_date: '', owner_id: '' }),
+  updateGame: async (id: string, game: Partial<Game>) => false,
+  deleteGame: async (id: string) => false,
+  addPlayer: async (gameId: string, player: Partial<Player>) => ({ id: '', name: '', game_id: '' }),
+  updatePlayer: async (player: Player) => false,
+  deletePlayer: async (playerId: string) => false,
+  addDailyDraw: async (gameId: string, numbers: number[]) => ({ id: '', game_id: '', numbers: [], created_at: '', date: '' }),
+  addWinner: async (gameId: string, playerId: string, combinationId: string) => false,
+  getWinners: async (gameId: string) => [],
+  exportGame: async (gameId: string) => '{}',
+  importGame: async (gameData: string, userId: string) => ({ id: '', name: '', status: 'active', start_date: '', owner_id: '' }),
+});
 
-interface GameActionsContext {
-  // Game actions
-  addGame: (game: Omit<Game, 'id'>) => Promise<Game>;
-  updateGame: (id: string, game: Partial<Game>) => Promise<void>;
-  deleteGame: (id: string) => Promise<boolean>;
-  exportGame: (id: string) => Promise<string>;
-  importGame: (jsonData: string, ownerId: string) => Promise<Game>;
-  
-  // Player actions
-  addPlayer: (gameId: string, player: Omit<Player, 'id'>) => Promise<Player | undefined>;
-  addPlayerCombination: (gameId: string, playerId: string, numbers: number[]) => Promise<void>;
-  updatePlayer: (gameId: string, playerId: string, player: Partial<Player>) => Promise<void>;
-  updatePlayerSequences: (gameId: string, playerId: string, sequences: number[][]) => Promise<void>;
-  
-  // Draw actions
-  addDailyDraw: (gameId: string, draw: Omit<DailyDraw, 'id'>) => Promise<DailyDraw | undefined>;
-  
-  // Winner actions
-  checkWinners: (gameId: string) => Promise<Player[]>;
-  
-  // Financial actions
-  loadFinancialProjections: (startDate?: string, endDate?: string) => Promise<FinancialProjection[]>;
-}
-
-// Combined interface for the full context
-export interface GameContextType extends GameStateContext, GameActionsContext {}
-
-// Create the context
-export const GameContext = createContext<GameContextType | undefined>(undefined);
-
-// Custom hook to use the game context
-export const useGame = () => {
-  const context = useContext(GameContext);
-  if (context === undefined) {
-    throw new Error('useGame must be used within a GameProvider');
-  }
-  return context;
-};
-
-// Convenience hooks for specific parts of the context
-// These can be used when components only need access to specific parts
-export const useGameState = (): GameStateContext => {
-  const { games, currentGame, setCurrentGame } = useGame();
-  return { games, currentGame, setCurrentGame };
-};
-
-export const useGameActions = (): GameActionsContext => {
-  const { 
-    addGame, updateGame, deleteGame, exportGame, importGame,
-    addPlayer, addPlayerCombination, updatePlayer, updatePlayerSequences,
-    addDailyDraw, checkWinners, loadFinancialProjections
-  } = useGame();
-  
-  return {
-    addGame, updateGame, deleteGame, exportGame, importGame,
-    addPlayer, addPlayerCombination, updatePlayer, updatePlayerSequences,
-    addDailyDraw, checkWinners, loadFinancialProjections
-  };
-};
+export default GameContext;

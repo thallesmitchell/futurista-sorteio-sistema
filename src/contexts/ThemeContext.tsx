@@ -1,6 +1,6 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { useAuth } from './AuthContext';
+import { useAuth } from './auth';
 
 interface ThemeContextType {
   primaryColor: string;
@@ -74,12 +74,14 @@ const generateColorPalette = (baseColor: string) => {
 };
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const { userProfile } = useAuth();
   const [primaryColor, setPrimaryColor] = useState<string>('#39FF14'); // Verde neon como padrão
   const [secondaryColor, setSecondaryColor] = useState<string>('#1FCC0C');
   const [accentColor, setAccentColor] = useState<string>('#FF39EA');
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [siteName, setSiteName] = useState<string>('SorteioFutura');
+
+  // Get auth context
+  const { userProfile } = useAuth();
 
   // Aplicar CSS customizado para garantir a fonte correta
   useEffect(() => {

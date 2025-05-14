@@ -1,7 +1,7 @@
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AuthProvider } from "@/contexts/auth";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { GameProvider } from "@/contexts/game";
 import { Toaster } from "@/components/ui/toaster";
 import MainLayout from "@/layouts/MainLayout";
@@ -31,10 +31,10 @@ const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   return (
-    <ThemeProvider>
+    <Router>
       <AuthProvider>
-        <GameProvider>
-          <Router>
+        <ThemeProvider>
+          <GameProvider>
             <Routes>
               <Route path="/login" element={<AuthLayout><LoginPage /></AuthLayout>} />
               
@@ -100,11 +100,11 @@ function App() {
               
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </Router>
-          <Toaster />
-        </GameProvider>
+            <Toaster />
+          </GameProvider>
+        </ThemeProvider>
       </AuthProvider>
-    </ThemeProvider>
+    </Router>
   );
 }
 

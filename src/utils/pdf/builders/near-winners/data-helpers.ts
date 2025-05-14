@@ -1,6 +1,7 @@
 
-import { Player } from '@/contexts/game/types';
+import { Game, Player, PlayerCombination } from "@/contexts/game/types";
 
+// Define the near winner type
 export interface NearWinner {
   playerName: string;
   numbers: number[];
@@ -8,38 +9,74 @@ export interface NearWinner {
 }
 
 /**
- * Find players who are close to winning (have N hits in a single combination)
+ * Get data for players with near-winning combinations (5 hits)
  */
-export function findNearWinners(players: Player[], requiredHits: number = 5): NearWinner[] {
-  console.log(`Finding near winners with ${requiredHits} hits`);
-  
-  if (!players || players.length === 0) {
-    console.log('No players provided to findNearWinners');
+export const getNearWinnersData = (game: Game): NearWinner[] => {
+  // Check if game has the necessary data
+  if (!game.players || !game.dailyDraws) {
     return [];
   }
-  
-  // Track near winners
+
+  // Get the latest draw numbers
+  const latestDraw = [...game.dailyDraws].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  )[0];
+
+  if (!latestDraw || !latestDraw.numbers) {
+    return [];
+  }
+
+  const drawnNumbers = latestDraw.numbers;
+  const requireOneMoreHit = (game.required_hits || 6) - 1; // Usually 5 for a 6-number game
+
+  // Find players with combinations that have 5 hits
   const nearWinners: NearWinner[] = [];
-  
-  // Process each player
-  players.forEach(player => {
-    if (!player.combinations || player.combinations.length === 0) {
-      return;
-    }
-    
-    // Find combinations with exactly the required number of hits
-    const nearWinCombos = player.combinations.filter(combo => combo.hits === requiredHits);
-    
-    // Add each near-winning combination to the results
-    nearWinCombos.forEach(combo => {
-      nearWinners.push({
-        playerName: player.name,
-        numbers: [...combo.numbers].sort((a, b) => a - b), // Sort the numbers
-        hits: combo.hits
-      });
+
+  game.players.forEach((player: Player) => {
+    if (!player.combinations) return;
+
+    player.combinations.forEach((combination: PlayerCombination) => {
+      const hits = combination.numbers.filter(num => drawnNumbers.includes(num)).length;
+
+      if (hits === requireOneMoreHit) {
+        nearWinners.push({
+          playerName: player.name,
+          numbers: combination.numbers,
+          hits: hits
+        });
+      }
     });
   });
-  
-  console.log(`Found ${nearWinners.length} near winners`);
+
   return nearWinners;
-}
+};
+
+/**
+ * Group near winners by player
+ */
+export const groupNearWinnersByPlayer = (nearWinners: NearWinner[]): Record<string, NearWinner[]> => {
+  const grouped: Record<string, NearWinner[]> = {};
+  
+  nearWinners.forEach(nw => {
+    if (!grouped[nw.playerName]) {
+      grouped[nw.playerName] = [];
+    }
+    grouped[nw.playerName].push(nw);
+  });
+  
+  return grouped;
+};
+
+/**
+ * Find winning numbers in a combination
+ */
+export const findMatchingNumbers = (combination: number[], drawnNumbers: number[]): number[] => {
+  return combination.filter(num => drawnNumbers.includes(num));
+};
+
+/**
+ * Calculate total near winners
+ */
+export const countTotalNearWinners = (game: Game): number => {
+  return getNearWinnersData(game).length;
+};
