@@ -17,18 +17,6 @@ import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 import FinancialView from "@/pages/FinancialView";
 import './App.css';
 
-// Auth guard component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const token = localStorage.getItem('supabase.auth.token');
-  return token ? children : <Navigate to="/login" />;
-};
-
-// Super admin guard
-const SuperAdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const userRole = JSON.parse(localStorage.getItem('user') || '{}')?.role;
-  return userRole === 'super_admin' ? children : <Navigate to="/dashboard" />;
-};
-
 function App() {
   return (
     <Router>
@@ -37,67 +25,15 @@ function App() {
           <GameProvider>
             <Routes>
               <Route path="/login" element={<AuthLayout><LoginPage /></AuthLayout>} />
-              
-              <Route path="/" element={<ProtectedRoute><Navigate to="/dashboard" /></ProtectedRoute>} />
-              
-              <Route path="/dashboard" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Dashboard />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/game/:gameId" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <GameAdmin />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/players" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <PlayersView />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/history" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <GameHistory />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/finance" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <FinancialView />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/profile" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <ProfileSettings />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              
-              <Route path="/admin" element={
-                <ProtectedRoute>
-                  <SuperAdminRoute>
-                    <MainLayout>
-                      <SuperAdminDashboard />
-                    </MainLayout>
-                  </SuperAdminRoute>
-                </ProtectedRoute>
-              } />
-              
+              <Route path="/" element={<Navigate to="/dashboard" />} />
+              <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
+              <Route path="/game/:gameId" element={<MainLayout><GameAdmin /></MainLayout>} />
+              <Route path="/players/:gameId?" element={<MainLayout><PlayersView /></MainLayout>} />
+              <Route path="/history" element={<MainLayout><GameHistory /></MainLayout>} />
+              <Route path="/finance" element={<MainLayout><FinancialView /></MainLayout>} />
+              <Route path="/profile" element={<MainLayout><ProfileSettings /></MainLayout>} />
+              <Route path="/admin" element={<MainLayout><SuperAdminDashboard /></MainLayout>} />
+              <Route path="/super-admin" element={<MainLayout><SuperAdminDashboard /></MainLayout>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />

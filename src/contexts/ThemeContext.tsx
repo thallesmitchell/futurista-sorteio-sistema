@@ -80,8 +80,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [siteName, setSiteName] = useState<string>('SorteioFutura');
 
-  // Get auth context
-  const { userProfile } = useAuth();
+  // Get auth context with safe fallback
+  const auth = useAuth();
+  const userProfile = auth?.userProfile;
 
   // Aplicar CSS customizado para garantir a fonte correta
   useEffect(() => {

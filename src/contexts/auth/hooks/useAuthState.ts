@@ -1,50 +1,82 @@
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+import { UserProfile } from '../types';
 
-export const useAuthState = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [session, setSession] = useState<Session | null>(null);
+type AuthState = {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  userProfile: UserProfile | null;
+  isSuperAdmin: boolean;
+}
+
+type AuthStateHook = AuthState & {
+  setUser: (user: User | null) => void;
+  setIsAuthenticated: (value: boolean) => void;
+  setIsLoading: (value: boolean) => void;
+  setUserProfile: (profile: UserProfile | null) => void;
+  setIsSuperAdmin: (value: boolean) => void;
+  checkUser: () => Promise<void>;
+}
+
+const initialState: AuthState = {
+  user: null,
+  isAuthenticated: false,
+  isLoading: true,
+  userProfile: null,
+  isSuperAdmin: false
+};
+
+export const useAuthState = (initialValues?: Partial<AuthState>): AuthStateHook => {
+  const [user, setUser] = useState<User | null>(initialValues?.user ?? null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(initialValues?.isAuthenticated ?? false);
+  const [isLoading, setIsLoading] = useState<boolean>(initialValues?.isLoading ?? true);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(initialValues?.userProfile ?? null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(initialValues?.isSuperAdmin ?? false);
 
   const checkUser = async () => {
     try {
       setIsLoading(true);
       
-      const { data } = await supabase.auth.getSession();
-      const session = data?.session;
-      const currentUser = session?.user || null;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const currentUser = sessionData.session?.user || null;
       
       setUser(currentUser);
-      setSession(session);
       setIsAuthenticated(!!currentUser);
+      
+      if (currentUser) {
+        // Fetch user profile from profiles table
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentUser.id)
+          .single();
+          
+        if (profileData) {
+          setUserProfile(profileData as UserProfile);
+          setIsSuperAdmin(profileData.role === 'super_admin');
+        }
+      }
     } catch (error) {
-      console.error('Error checking authentication status:', error);
-      setUser(null);
-      setSession(null);
-      setIsAuthenticated(false);
+      console.error('Error checking user:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    checkUser();
-    
-    // Set up listener for auth state changes
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setUser(session?.user || null);
-      setSession(session);
-      setIsAuthenticated(!!session?.user);
-      setIsLoading(false);
-    });
-    
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
-  }, []);
-
-  return { user, isAuthenticated, isLoading, checkUser, session };
+  return {
+    user,
+    isAuthenticated,
+    isLoading,
+    userProfile,
+    isSuperAdmin,
+    setUser,
+    setIsAuthenticated,
+    setIsLoading,
+    setUserProfile,
+    setIsSuperAdmin,
+    checkUser
+  };
 };
