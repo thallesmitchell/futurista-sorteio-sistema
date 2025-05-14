@@ -4,7 +4,6 @@ import { useGame } from '@/contexts/GameContext';
 import { useAuth } from '@/contexts/auth';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { GamesTabs } from '@/components/dashboard/GamesTabs';
-import { container } from '@/lib/utils';
 
 const Dashboard = () => {
   const { games } = useGame();

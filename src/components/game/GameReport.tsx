@@ -115,11 +115,22 @@ export const GameReport: React.FC<GameReportProps> = ({
         .replace(/[^a-zA-Z0-9]/g, '-')
         .toLowerCase()}.pdf`;
       
-      // IMPORTANT: Create a game object with the proper shape for the PDF generator
-      const gameForReport = {
+      // Ensure winners are typed correctly for the PDF generator
+      const formattedWinners: Winner[] = winners?.map(winner => ({
+        id: winner.id,
+        game_id: winner.game_id,
+        player_id: winner.id, // Use player ID as player_id
+        combination_id: winner.combinations?.[0]?.id || '',
+        created_at: winner.created_at || new Date().toISOString(),
+        name: winner.name,
+        prize: winner.prize,
+        combinations: winner.combinations
+      })) || [];
+      
+      // Create a new game object with the proper winners
+      const gameForReport: Game = {
         ...game,
-        // Ensure winners is of the right type for the PDF generator
-        winners: winners || []
+        winners: formattedWinners
       };
       
       console.log('Generating PDF with winners:', gameForReport.winners?.length || 0);

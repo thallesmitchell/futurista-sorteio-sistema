@@ -1,86 +1,46 @@
 
-import jsPDF from "jspdf";
-import { Game } from "@/contexts/game/types";
-import { getNearWinnersData } from "./near-winners/data-helpers";
-import { renderNearWinnersSectionHeader } from "./near-winners/section-header";
-import { renderNearWinnersTable } from "./near-winners/table-renderer";
-import { addSectionHeader, addSubtitle } from "./utils/pdf-table-utils";
-import { PdfSectionOptions } from "../types";
+import jsPDF from 'jspdf';
+import { generateNearWinnersList } from './near-winners/data-helpers';
+import { Game } from '@/contexts/game/types';
+import { renderNearWinnersTable } from './near-winners/table-renderer';
+import { addNearWinnersSectionHeader } from './near-winners/section-header';
+import { PdfSectionOptions } from '../types';
 
 /**
- * Builds the near winners section of the PDF
+ * Add the near winners section to the PDF if no winners were found
+ * 
+ * @param doc PDF document
+ * @param game Game data
+ * @param allDrawnNumbers All drawn numbers
+ * @param options Section options
+ * @returns Y position after adding the section
  */
-export const buildNearWinnersSection = async (
-  doc: jsPDF,
-  game: Game,
-  options: PdfSectionOptions = {}
-): Promise<number> => {
-  const { startY = 20, title = "Jogadores Próximos de Ganhar" } = options;
-  
-  // Start position
-  let currentY = startY;
-  
-  // Add section header
-  currentY = addSectionHeader(doc, title, currentY);
-  
-  // Get current page height
-  const pageHeight = doc.internal.pageSize.height;
-  
-  // Check if we need to add a new page
-  if (currentY > pageHeight - 100) {
-    doc.addPage();
-    currentY = 20;
-    // Re-add title on new page
-    currentY = addSectionHeader(doc, title, currentY);
-  }
-  
+export function addNearWinnersSection(
+  doc: jsPDF, 
+  game: Game, 
+  allDrawnNumbers: number[],
+  options: PdfSectionOptions = { color: '#39FF14' }
+): number {
   try {
-    // Get near winners data
-    const nearWinnersData = getNearWinnersData(game);
+    // Generate the list of near winners
+    const nearWinnersList = generateNearWinnersList(game, allDrawnNumbers);
     
-    // Display number of combinations close to winning
-    currentY = addSubtitle(
-      doc,
-      `Total de combinações com 5 acertos: ${nearWinnersData.length}`,
-      currentY
-    );
-    
-    if (nearWinnersData.length === 0) {
-      currentY += 10;
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "italic");
-      doc.text("Nenhum jogador próximo de ganhar.", 14, currentY);
-      return currentY + 10;
+    // If no near winners, return current position
+    if (!nearWinnersList || nearWinnersList.length === 0) {
+      return 0;
     }
     
-    // Render near winners table
-    const tableData = nearWinnersData.map(nw => [
-      nw.playerName,
-      nw.numbers.join(", "),
-      nw.hits.toString()
-    ]) as [string, string, string][];
+    console.log(`Found ${nearWinnersList.length} near winners for PDF`);
     
-    currentY = await renderNearWinnersTable(doc, tableData, currentY + 5);
+    // Add section header
+    const headerY = addNearWinnersSectionHeader(doc, options);
     
-    return currentY;
+    // Render table with near winners
+    const finalY = renderNearWinnersTable(doc, nearWinnersList, headerY);
+    
+    return finalY;
   } catch (error) {
-    console.error("Error building near winners section:", error);
-    
-    // Add error message to PDF
-    doc.setFontSize(10);
-    doc.setTextColor(255, 0, 0);
-    doc.text(
-      `Erro ao gerar seção de jogadores próximos: ${error.message}`,
-      14,
-      currentY + 10
-    );
-    
-    return currentY + 20;
+    console.error('Error adding near winners section:', error);
+    return 0;
   }
-};
-
-// Export the function with the name that's expected in pdfBuilder.ts
-export const addNearWinnersSection = buildNearWinnersSection;
-
-// Export the default function
-export default buildNearWinnersSection;
+}

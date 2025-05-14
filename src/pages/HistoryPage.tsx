@@ -99,10 +99,10 @@ export default function HistoryPage() {
                       <CardContent className="p-3 pt-0">
                         <div className="grid grid-cols-2 gap-1 text-sm">
                           <div className="text-muted-foreground">Início:</div>
-                          <div>{new Date(game.startDate).toLocaleDateString()}</div>
+                          <div>{new Date(game.start_date).toLocaleDateString()}</div>
                           
                           <div className="text-muted-foreground">Encerramento:</div>
-                          <div>{game.endDate ? new Date(game.endDate).toLocaleDateString() : '-'}</div>
+                          <div>{game.end_date ? new Date(game.end_date).toLocaleDateString() : '-'}</div>
                           
                           <div className="text-muted-foreground">Jogadores:</div>
                           <div>{game.players.length}</div>
@@ -144,9 +144,9 @@ export default function HistoryPage() {
                     {filteredGames.map((game) => (
                       <TableRow key={game.id}>
                         <TableCell className="font-medium">{game.name}</TableCell>
-                        <TableCell>{new Date(game.startDate).toLocaleDateString()}</TableCell>
+                        <TableCell>{new Date(game.start_date).toLocaleDateString()}</TableCell>
                         <TableCell>
-                          {game.endDate ? new Date(game.endDate).toLocaleDateString() : '-'}
+                          {game.end_date ? new Date(game.end_date).toLocaleDateString() : '-'}
                         </TableCell>
                         <TableCell>
                           <span

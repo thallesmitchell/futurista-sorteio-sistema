@@ -1,56 +1,43 @@
 
-/**
- * This file is maintained for backward compatibility
- * All functionality has been moved to the pdf directory
- */
+// Export functions from the PDF utility modules
+export { generateGameReport } from './pdfBuilder';
+export { generateSimplePdf } from './simplePdfGenerator';
 
-// Import the original functions
-import { generateGameReport as originalGenerateGameReport } from './pdfBuilder';
-import { generateSimplePdf as originalGenerateSimplePdf } from './simplePdfGenerator';
-import { GeneratePdfOptions } from './types';
-import { Game } from '@/contexts/game/types';
+// Re-export types
+export type { GeneratePdfOptions, PDFOptions } from './types';
 
 /**
- * Generate a PDF report for a game
+ * Main PDF generation function for compatibility with existing code
+ * 
+ * @param game Game data to generate PDF from
+ * @param options PDF configuration options
+ * @returns Promise for PDF generation
  */
-export const generateGameReport = async (game: Game, options: GeneratePdfOptions = {}) => {
-  console.log('Starting PDF generation for game:', game.id);
-  console.log('Game has winners:', game.winners?.length || 0);
-  
-  // Ensure we pass hasWinners flag correctly
-  const hasWinners = game.winners && game.winners.length > 0;
-  console.log('hasWinners flag set to:', hasWinners);
-  
+export const generatePdf = async (game: any, options: {
+  themeColor?: string;
+  simpleMode?: boolean;
+  hasWinners?: boolean;
+  includeNearWinners?: boolean;
+  includeWinners?: boolean;
+  trophySvgData?: string;
+} = {}) => {
   try {
-    await originalGenerateGameReport(game, {
-      ...options,
-      hasWinners,
-      // If we have winners, we should not include near winners
-      includeNearWinners: options.includeNearWinners && !hasWinners
-    });
+    // Convert options to use newer format
+    const newOptions: import('./types').GeneratePdfOptions = {
+      themeColor: options.themeColor,
+      includeNearWinners: options.includeNearWinners,
+      hasWinners: options.hasWinners,
+      trophySvgData: options.trophySvgData
+    };
+    
+    // Choose PDF function based on mode
+    if (options.simpleMode) {
+      return generateSimplePdf(game, newOptions);
+    } else {
+      return generateGameReport(game, newOptions);
+    }
   } catch (error) {
     console.error('Error generating PDF:', error);
-    throw error;
+    return Promise.reject(error);
   }
 };
-
-/**
- * Generate a simple player list PDF
- */
-export const generateSimplePdf = async (game: Game, options: GeneratePdfOptions = {}) => {
-  try {
-    await originalGenerateSimplePdf(game, {
-      ...options,
-      // Simple PDF is primarily a player list
-      simpleMode: true,
-      includeNearWinners: options.includeNearWinners ?? true
-    });
-  } catch (error) {
-    console.error('Error generating simple PDF:', error);
-    throw error;
-  }
-};
-
-// Re-export from builders
-export * from './builders';
-export * from './types';

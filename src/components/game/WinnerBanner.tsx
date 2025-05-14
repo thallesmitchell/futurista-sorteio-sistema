@@ -6,21 +6,23 @@ import { Player, Game, Winner } from '@/contexts/game/types';
 import { formatCurrency } from './GameFinancialCards';
 
 interface WinnerBannerProps {
-  game: Game;
   winners: (Player & { prize_amount?: number })[];
+  allDrawnNumbers: number[];
+  game?: Game;
   className?: string;
 }
 
 export const WinnerBanner: React.FC<WinnerBannerProps> = ({ 
-  game, 
   winners, 
+  allDrawnNumbers,
+  game,
   className 
 }) => {
   if (!winners || winners.length === 0) return null;
 
   // Calculate total prize if possible
-  const totalPrize = game.financialProjections?.totalPrize || 
-    calculatePrize(game);
+  const totalPrize = game?.financialProjections?.totalPrize || 
+    (game ? calculatePrize(game) : 100000);
     
   // Split prize evenly among winners if not individually specified
   const prizePerWinner = totalPrize / winners.length;

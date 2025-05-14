@@ -62,6 +62,7 @@ export default function PlayersView() {
             <WinnerBanner 
               winners={winners} 
               allDrawnNumbers={allDrawnNumbers}
+              game={game}
             />
           </div>
         )}

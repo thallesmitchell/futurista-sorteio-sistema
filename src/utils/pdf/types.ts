@@ -35,6 +35,10 @@ export interface PdfSectionOptions {
   color: string;
   /** Max number of combinations to display per player */
   maxCombosPerPlayer?: number;
+  /** Title for the section */
+  title?: string;
+  /** Starting Y position */
+  startY?: number;
 }
 
 /**

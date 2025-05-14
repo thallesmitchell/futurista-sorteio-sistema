@@ -1,6 +1,6 @@
 
 import jsPDF from 'jspdf';
-import { Game, Player } from '@/contexts/game/types';
+import { Game, Player, Winner } from '@/contexts/game/types';
 import { formatCurrency } from '@/components/game/GameFinancialCards';
 import { PdfSectionOptions } from '../types';
 
@@ -45,9 +45,13 @@ export function addWinnersSection(doc: jsPDF, game: Game, yPosition: number): nu
       doc.setTextColor(0, 0, 0);
       
       // Format name and prize (if available)
-      const prizeText = winner.prize ? ` - ${formatCurrency(winner.prize)}` : '';
+      // Get the name from name property or from related player
+      const winnerName = winner.name || `Ganhador #${index + 1}`;
+      const prizeText = winner.prize_amount ? ` - ${formatCurrency(winner.prize_amount)}` : 
+                         winner.prize ? ` - ${formatCurrency(winner.prize)}` : '';
+      
       doc.text(
-        `${winner.name}${prizeText}`,
+        `${winnerName}${prizeText}`,
         doc.internal.pageSize.width / 2,
         yPosition,
         { align: 'center' }
@@ -55,33 +59,38 @@ export function addWinnersSection(doc: jsPDF, game: Game, yPosition: number): nu
       
       yPosition += 10;
 
-      // Find winning combinations (with 6 hits)
-      const winningCombos = winner.combinations.filter(combo => 
-        combo.hits >= (game.requiredHits || 6)
-      );
+      // Find winning combinations - either from winner or related player
+      // Check if winner has winning combinations directly
+      const winningCombos = winner.combinations ? 
+        winner.combinations.filter(combo => combo.hits >= (game.requiredHits || 6)) : 
+        // For DB winners we need to find the player and get the combinations
+        game.players.find(p => p.id === winner.player_id)?.combinations
+          .filter(combo => combo.hits >= (game.requiredHits || 6)) || [];
       
-      winningCombos.forEach(combo => {
-        // Sort numbers for display
-        const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
-        
-        // Format numbers as string with zero-padding
-        const numbersText = sortedNumbers
-          .map(n => n.toString().padStart(2, '0'))
-          .join(' - ');
-        
-        // Add the winning numbers
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(100, 100, 100);
-        doc.text(
-          numbersText,
-          doc.internal.pageSize.width / 2,
-          yPosition,
-          { align: 'center' }
-        );
-        
-        yPosition += 15;
-      });
+      if (winningCombos.length > 0) {
+        winningCombos.forEach(combo => {
+          // Sort numbers for display
+          const sortedNumbers = [...combo.numbers].sort((a, b) => a - b);
+          
+          // Format numbers as string with zero-padding
+          const numbersText = sortedNumbers
+            .map(n => n.toString().padStart(2, '0'))
+            .join(' - ');
+          
+          // Add the winning numbers
+          doc.setFontSize(12);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(100, 100, 100);
+          doc.text(
+            numbersText,
+            doc.internal.pageSize.width / 2,
+            yPosition,
+            { align: 'center' }
+          );
+          
+          yPosition += 15;
+        });
+      }
       
       // Add spacing between winners
       yPosition += 5;

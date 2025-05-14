@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import GameCreationForm from '@/components/game/GameCreationForm';
 import { UserProfile } from '@/contexts/auth/types';
+import { User } from '@supabase/supabase-js';
 
 interface DashboardHeaderProps {
-  user: UserProfile | null;
+  user: User | null;
   isCreateDialogOpen: boolean;
   setIsCreateDialogOpen: (isOpen: boolean) => void;
   onCreateGameSuccess: (gameId: string) => void;

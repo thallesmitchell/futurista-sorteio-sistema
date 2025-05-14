@@ -10,16 +10,17 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { GameReport } from './GameReport';
 
 interface GameHeaderProps {
-  gameId: string;
-  gameName: string;
-  startDate: string;
-  playersCount: number;
-  drawsCount: number;
-  winners: Player[];
-  onWinnersClick: () => void;
-  onCloseGameClick: () => void;
+  gameId?: string;
+  gameName?: string;
+  startDate?: string;
+  playersCount?: number;
+  drawsCount?: number;
+  winners?: Player[];
+  onWinnersClick?: () => void;
+  onCloseGameClick?: () => void;
   showDownloadButton?: boolean;
   game?: Game;
+  showCloseButton?: boolean;
 }
 
 export const GameHeader: React.FC<GameHeaderProps> = ({
@@ -32,42 +33,53 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
   onWinnersClick,
   onCloseGameClick,
   showDownloadButton = false,
-  game
+  game,
+  showCloseButton = false
 }) => {
   const isMobile = useIsMobile();
   const hasWinners = winners && winners.length > 0;
   
-  // Format the start date
-  const formattedDate = formatDistanceToNow(new Date(startDate), {
+  // Format the start date if available
+  const formattedDate = startDate ? formatDistanceToNow(new Date(startDate), {
     addSuffix: true,
     locale: ptBR
-  });
+  }) : '';
+  
+  // Extract values from game object if provided
+  const displayGameId = gameId || game?.id || '';
+  const displayGameName = gameName || game?.name || '';
+  const displayPlayersCount = playersCount || (game?.players?.length || 0);
+  const displayDrawsCount = drawsCount || (game?.dailyDraws?.length || 0);
+  const displayStartDate = startDate || game?.start_date || '';
   
   return (
     <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-2 md:space-y-0 w-full">
       <div className="space-y-1 w-full md:w-auto">
         <div className="flex items-center gap-2">
           <h2 className="text-xl md:text-2xl font-bold leading-none tracking-tight truncate">
-            {gameName}
+            {displayGameName}
           </h2>
           <Badge variant="outline" className="text-xs">
-            ID: {gameId.substring(0, 8)}
+            ID: {displayGameId.substring(0, 8)}
           </Badge>
         </div>
         <p className="text-xs md:text-sm text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1">
-          <span className="flex items-center gap-1">
-            <CalendarDays className="h-3 w-3" />
-            {isMobile ? 'Início: ' : 'Iniciado '}{formattedDate}
-          </span>
+          {displayStartDate && (
+            <span className="flex items-center gap-1">
+              <CalendarDays className="h-3 w-3" />
+              {isMobile ? 'Início: ' : 'Iniciado '}
+              {formattedDate}
+            </span>
+          )}
           <span className="flex items-center gap-1">
             <Users className="h-3 w-3" />
-            {playersCount} {playersCount === 1 ? 'jogador' : 'jogadores'}
+            {displayPlayersCount} {displayPlayersCount === 1 ? 'jogador' : 'jogadores'}
           </span>
           <span className="flex items-center gap-1">
             <CalendarDays className="h-3 w-3" />
-            {drawsCount} {drawsCount === 1 ? 'sorteio' : 'sorteios'}
+            {displayDrawsCount} {displayDrawsCount === 1 ? 'sorteio' : 'sorteios'}
           </span>
-          {hasWinners && (
+          {hasWinners && onWinnersClick && (
             <Badge 
               className="bg-green-500 hover:bg-green-600 cursor-pointer animate-pulse-slow flex items-center gap-1"
               onClick={onWinnersClick}
@@ -84,14 +96,16 @@ export const GameHeader: React.FC<GameHeaderProps> = ({
           <GameReport game={game} variant="outline" size="sm" />
         )}
         
-        <Button 
-          variant="destructive" 
-          size="sm"
-          onClick={onCloseGameClick}
-        >
-          <XSquare className="h-4 w-4 mr-2" />
-          Encerrar Jogo
-        </Button>
+        {showCloseButton && onCloseGameClick && (
+          <Button 
+            variant="destructive" 
+            size="sm"
+            onClick={onCloseGameClick}
+          >
+            <XSquare className="h-4 w-4 mr-2" />
+            Encerrar Jogo
+          </Button>
+        )}
       </div>
     </div>
   );

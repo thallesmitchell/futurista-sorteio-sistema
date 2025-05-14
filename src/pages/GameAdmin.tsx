@@ -2,9 +2,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useGame } from '@/contexts/game';
+import { useGame } from '@/contexts/GameContext';
 import { useAuth } from '@/contexts/auth';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { User, Lock, Flag, Users, Calendar, Trophy } from 'lucide-react';
 import { Player, DailyDraw } from '@/contexts/game/types';
 import { GameHeader } from '@/components/game/GameHeader';
@@ -99,7 +99,7 @@ const GameAdmin = () => {
     if (!gameId || !game) return;
     
     try {
-      await updateGame(gameId, { status: 'closed', endDate: new Date().toISOString() });
+      await updateGame(gameId, { status: 'closed', end_date: new Date().toISOString() });
       toast({
         title: "Jogo encerrado",
         description: "O jogo foi encerrado com sucesso.",
@@ -156,10 +156,10 @@ const GameAdmin = () => {
   return (
     <div className="space-y-6">
       {/* Game Header */}
-      <GameHeader 
-        game={game} 
+      <GameHeader
+        game={game}
         showCloseButton={game.status === 'active'}
-        onCloseClick={handleGameClose}
+        onCloseGameClick={handleGameClose}
       />
       
       {/* Winners Section */}

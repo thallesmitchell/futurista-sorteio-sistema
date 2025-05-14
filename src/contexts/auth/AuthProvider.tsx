@@ -11,7 +11,7 @@ import { useSignup } from './hooks/useSignup';
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Use the auth state hook to manage authentication state
-  const authState = useAuthState();
+  const authState = useAuthState(); 
   const { login } = useLogin();
   const { logout } = useLogout();
   const { signup } = useSignup();

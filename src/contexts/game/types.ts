@@ -7,6 +7,9 @@ export interface Winner {
   combination_id: string;
   created_at: string;
   prize_amount?: number;
+  name?: string;
+  prize?: number;
+  combinations?: PlayerCombination[];
 }
 
 export interface PlayerCombination {
@@ -32,6 +35,13 @@ export interface DailyDraw {
   date: string;
 }
 
+export interface GameFinancialProjections {
+  totalSequences?: number;
+  totalCollected?: number;
+  adminProfit?: number;
+  totalPrize?: number;
+}
+
 export interface Game {
   id: string;
   name: string;
@@ -53,13 +63,6 @@ export interface Game {
   financialProjections?: GameFinancialProjections;
 }
 
-export interface GameFinancialProjections {
-  totalSequences?: number;
-  totalCollected?: number;
-  adminProfit?: number;
-  totalPrize?: number;
-}
-
 export interface FinancialProjection {
   id: string;
   name: string;
@@ -77,6 +80,7 @@ export interface FinancialProjection {
   adminProfitPercentage?: number;
   totalCollected?: number;
   totalPrize?: number;
+  filter?: (criteria: any) => FinancialProjection[];
   startDate?: string; // Alias for backwards compatibility
   endDate?: string; // Alias for backwards compatibility
 }

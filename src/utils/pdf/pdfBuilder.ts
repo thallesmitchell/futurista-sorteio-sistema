@@ -97,7 +97,7 @@ export const generateGameReport = async (
     // SECOND: If no winners, add near winners section (if requested)
     else if (options.includeNearWinners) {
       console.log('No winners, adding near winners section');
-      let nearWinnersY = addNearWinnersSection(pdf, game, allDrawnNumbers, sectionOptions);
+      const nearWinnersY = addNearWinnersSection(pdf, game, allDrawnNumbers, sectionOptions);
       if (nearWinnersY > 0) {
         currentY = nearWinnersY;
       }

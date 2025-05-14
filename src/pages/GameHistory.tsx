@@ -81,12 +81,12 @@ export default function GameHistory() {
             <div className="flex flex-wrap gap-4 text-sm">
               <div className="flex items-center">
                 <span className="text-muted-foreground mr-2">Criado em:</span>
-                <span>{new Date(game.startDate).toLocaleDateString()}</span>
+                <span>{new Date(game.start_date).toLocaleDateString()}</span>
               </div>
               
               <div className="flex items-center">
                 <span className="text-muted-foreground mr-2">Encerrado em:</span>
-                <span>{game.endDate ? new Date(game.endDate).toLocaleDateString() : '-'}</span>
+                <span>{game.end_date ? new Date(game.end_date).toLocaleDateString() : '-'}</span>
               </div>
               
               <div className="flex items-center">
