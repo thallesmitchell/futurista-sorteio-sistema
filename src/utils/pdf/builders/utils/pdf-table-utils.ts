@@ -91,3 +91,32 @@ export const drawStyledText = (
   pdf.setTextColor(0, 0, 0);
   pdf.setFont('helvetica', 'normal');
 };
+
+/**
+ * Add a subtitle to the PDF document
+ */
+export const addSubtitle = (
+  doc: jsPDF,
+  text: string,
+  fontSize: number = 14,
+  y?: number
+): number => {
+  const yPos = y || (doc.previousAutoTable?.finalY || PDF_CONFIG.margin) + 15;
+  
+  doc.setFontSize(fontSize);
+  doc.setFont('helvetica', 'bold');
+  doc.text(text, PDF_CONFIG.margin, yPos);
+  
+  // Reset font settings
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(12);
+  
+  return yPos + 10; // Return position after title for next content
+};
+
+/**
+ * Create a table header with specified columns
+ */
+export const createTableHeader = (columns: string[]): string[][] => {
+  return [columns];
+};

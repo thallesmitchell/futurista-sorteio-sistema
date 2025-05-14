@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { PDF_CONFIG } from '../base-pdf';
@@ -19,10 +18,10 @@ export const generateNearWinnersTable = (
     
     console.log(`Rendering near winners table with ${tableData.length} rows`);
     
-    // Definir larguras exatas das colunas - IMPORTANTE para manter alinhamento
+    // Define exact column widths - IMPORTANT for alignment
     const columnWidths = {
-      0: { cellWidth: 80 },  // Coluna do jogador
-      1: { cellWidth: 90 } // Coluna da sequência - usando número em vez de 'auto'
+      0: { cellWidth: 80 },  // Player column
+      1: { cellWidth: 90 }   // Sequence column
     };
     
     // Process the table data to replace the content with empty strings
@@ -32,18 +31,17 @@ export const generateNearWinnersTable = (
       return [playerName, ""] as [string, string];
     });
     
-    // Definir margens e largura total da tabela para garantir consistência
-    const tableWidth = pdf.internal.pageSize.width - 40; // 20px de margem em cada lado
+    // Define margins and total table width for consistency
+    const tableWidth = pdf.internal.pageSize.width - 40; // 20px margin on each side
     const marginLeft = 20;
     
-    // CABEÇALHO: Criar uma tabela apenas para o cabeçalho
+    // HEADER: Create a table just for the header
     autoTable(pdf, {
       startY: currentY,
       margin: { left: marginLeft },
       tableWidth: tableWidth,
-     // head: [['Jogador', 'Sequência (5 acertos)']],
-     // head: [['Jogadores na risca da prêmio!']],
-      body: [], // Sem corpo de tabela aqui
+      head: [['Jogador', 'Sequência (5 acertos)']],
+      body: [], // No table body here
       theme: 'striped',
       styles: {
         cellPadding: 5,
@@ -58,18 +56,18 @@ export const generateNearWinnersTable = (
         halign: 'center',
         fontSize: 12,
       },
-      columnStyles: columnWidths // Usar as mesmas larguras de coluna
+      columnStyles: columnWidths // Use the same column widths
     });
     
-    // Obter a posição Y após a primeira tabela (apenas cabeçalho)
+    // Get Y position after the first table (just header)
     const headerEndY = (pdf as any).lastAutoTable.finalY;
     
-    // CORPO: Agora renderizamos o corpo da tabela separadamente
+    // BODY: Now render the table body separately
     autoTable(pdf, {
       startY: headerEndY,
-      margin: { left: marginLeft }, // Mesma margem esquerda para alinhamento
-      tableWidth: tableWidth, // Mesma largura total
-      head: [], // Sem cabeçalho aqui
+      margin: { left: marginLeft }, // Same left margin for alignment
+      tableWidth: tableWidth, // Same total width
+      head: [], // No header here
       body: processedTableData,
       theme: 'striped',
       styles: {
@@ -82,12 +80,12 @@ export const generateNearWinnersTable = (
       alternateRowStyles: {
         fillColor: [248, 248, 248]
       },
-      columnStyles: columnWidths, // Usar as mesmas larguras de coluna
+      columnStyles: columnWidths, // Use the same column widths
       didDrawPage: function(data) {
         console.log('Page redrawn in table body');
       },
       didDrawCell: function(data) {
-        // Agora só lidamos com células do corpo, não há cabeçalho para interferir
+        // Now only handle cells from the body, no header to interfere
         if (data.column.index === 1) {
           const rowIndex = data.row.index;
           if (rowIndex < tableData.length) {
