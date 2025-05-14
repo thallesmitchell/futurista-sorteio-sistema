@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Player } from '@/contexts/game/types';
 import { useGame } from '@/contexts/GameContext';
@@ -9,35 +9,34 @@ interface PlayerEditHandlerProps {
   onNewWinnerFound: (hasWinners: boolean) => void;
 }
 
-export const PlayerEditHandler = forwardRef<any, PlayerEditHandlerProps>(({ gameId, onNewWinnerFound }, ref) => {
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [playerToEdit, setPlayerToEdit] = useState<Player | null>(null);
-  const [editPlayerNumbers, setEditPlayerNumbers] = useState('');
-  const { updatePlayerSequences, checkWinners } = useGame();
-  const { toast } = useToast();
+class PlayerEditHandler {
+  gameId: string;
+  onNewWinnerFound: (hasWinners: boolean) => void;
+  toast: ReturnType<typeof useToast>['toast'];
+  updatePlayerSequences: ReturnType<typeof useGame>['updatePlayerSequences'];
+  checkWinners: ReturnType<typeof useGame>['checkWinners'];
 
-  // Expose handleEditPlayer method to parent components via ref
-  useImperativeHandle(ref, () => ({
-    handleEditPlayer: (player: Player) => {
-      handleEditPlayer(player);
-    },
-    handleSavePlayerEdit: () => {
-      handleSavePlayerEdit();
-    }
-  }));
-
-  const handleEditPlayer = useCallback((player: Player) => {
-    // Convert player combinations to text format for the textarea
-    const playerNumbersText = player.combinations
-      .map(combo => combo.numbers.map(n => String(n).padStart(2, '0')).join('-'))
-      .join('\n');
+  constructor({ gameId, onNewWinnerFound }: PlayerEditHandlerProps) {
+    this.gameId = gameId;
+    this.onNewWinnerFound = onNewWinnerFound;
     
-    setPlayerToEdit(player);
-    setEditPlayerNumbers(playerNumbersText);
-    setIsEditModalOpen(true);
-  }, []);
+    // These will be set later by setDependencies
+    this.toast = () => {};
+    this.updatePlayerSequences = async () => false;
+    this.checkWinners = async () => [];
+  }
 
-  const handleSavePlayerEdit = async () => {
+  setDependencies(
+    toast: ReturnType<typeof useToast>['toast'],
+    updatePlayerSequences: ReturnType<typeof useGame>['updatePlayerSequences'],
+    checkWinners: ReturnType<typeof useGame>['checkWinners']
+  ) {
+    this.toast = toast;
+    this.updatePlayerSequences = updatePlayerSequences;
+    this.checkWinners = checkWinners;
+  }
+
+  async handleSavePlayerEdit(playerToEdit: Player, editPlayerNumbers: string) {
     if (!playerToEdit) return;
     
     try {
@@ -57,43 +56,40 @@ export const PlayerEditHandler = forwardRef<any, PlayerEditHandlerProps>(({ game
       
       // Update the player sequences
       if (sequences.length > 0) {
-        await updatePlayerSequences(gameId, playerToEdit.id, sequences);
+        await this.updatePlayerSequences(this.gameId, playerToEdit.id, sequences);
         
         // Immediately check if there are new winners after updating the sequences
-        const currentWinners = await checkWinners(gameId);
+        const currentWinners = await this.checkWinners(this.gameId);
         if (currentWinners.length > 0) {
-          onNewWinnerFound(true);
+          this.onNewWinnerFound(true);
         }
         
-        setIsEditModalOpen(false);
-        toast({
+        this.toast({
           title: "Sequências salvas",
           description: `${sequences.length} sequências foram salvas para ${playerToEdit.name}`,
         });
+        
+        return true;
       } else {
-        toast({
+        this.toast({
           title: "Erro ao salvar",
           description: "Nenhuma sequência válida encontrada. Cada linha deve ter exatamente 6 números entre 1 e 80.",
           variant: "destructive"
         });
+        
+        return false;
       }
     } catch (error) {
       console.error("Erro ao salvar sequências:", error);
-      toast({
+      this.toast({
         title: "Erro ao salvar sequências",
         description: error instanceof Error ? error.message : "Ocorreu um erro desconhecido",
         variant: "destructive"
       });
+      
+      return false;
     }
-  };
-
-  return (
-    <>
-      {/* This component now serves primarily as a logic handler */}
-    </>
-  );
-});
-
-PlayerEditHandler.displayName = "PlayerEditHandler";
+  }
+}
 
 export default PlayerEditHandler;

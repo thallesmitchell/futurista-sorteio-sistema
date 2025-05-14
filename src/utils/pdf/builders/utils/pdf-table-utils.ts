@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import { autoTable } from 'jspdf-autotable';
 import { PDFOptions, PdfSectionOptions } from '../../types';
@@ -131,3 +130,49 @@ export function addSubtitle(
   doc.text(text, 14, yPosition);
   return yPosition + 6;
 }
+
+export const renderTable = (
+  doc: jsPDF,
+  tableData: { head: string[][]; body: string[][] },
+  options: {
+    startY: number;
+    theme?: "striped" | "grid" | "plain";
+    headStyles?: {
+      fillColor?: [number, number, number]; 
+      textColor?: [number, number, number];
+      fontStyle?: "normal" | "bold" | "italic" | "bolditalic";
+    };
+    styles?: {
+      fontSize?: number;
+      cellPadding?: number;
+    };
+  }
+): number => {
+  // Set default options
+  const tableOptions = {
+    startY: options.startY || 10,
+    headStyles: {
+      fillColor: options.headStyles?.fillColor || [41, 128, 185],
+      textColor: options.headStyles?.textColor || [255, 255, 255],
+      fontStyle: options.headStyles?.fontStyle || "bold" as const
+    },
+    theme: options.theme || "striped",
+    styles: {
+      fontSize: options.styles?.fontSize || 10,
+      cellPadding: options.styles?.cellPadding || 3
+    }
+  };
+  
+  // Render the table and return the final Y position
+  (doc as any).autoTable({
+    startY: tableOptions.startY,
+    headStyles: tableOptions.headStyles,
+    theme: tableOptions.theme,
+    styles: tableOptions.styles,
+    head: tableData.head,
+    body: tableData.body
+  });
+  
+  // Return the final Y position after the table
+  return (doc as any).lastAutoTable.finalY;
+};

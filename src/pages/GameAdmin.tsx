@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { useGame } from '@/contexts/GameContext';
 import { useAuth } from '@/contexts/auth';
 import { useToast } from '@/hooks/use-toast';
-import { User, Lock, Flag, Users, Calendar, Trophy } from 'lucide-react';
 import { Player, DailyDraw } from '@/contexts/game/types';
 import { GameHeader } from '@/components/game/GameHeader';
 import { GameContentTabs } from '@/components/game/GameContentTabs';
@@ -16,15 +15,17 @@ import { GameAdminForms } from '@/components/game/GameAdminForms';
 import { GameFinancialCards } from '@/components/game/GameFinancialCards';
 import GameReport from '@/components/game/GameReport';
 import { GameWinnersSection } from '@/components/game/GameWinnersSection';
-import { DeleteGameButton } from '@/components/game/DeleteGameButton';
 import Confetti from '@/components/game/Confetti';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useGameWinners } from '@/hooks/useGameWinners';
 import { PlayerEditModal } from '@/components/game/PlayerEditModal';
+import { GameAdminLoading } from '@/components/game/GameAdminLoading';
+import { GameNotFound } from '@/components/game/GameNotFound';
+import { GameAdminActions } from '@/components/game/GameAdminActions';
 
 const GameAdmin = () => {
   const { gameId } = useParams<{ gameId: string }>();
-  const { games, fetchGame, updateGame } = useGame();
+  const { games, fetchGame, updateGame, checkWinners, updatePlayerSequences } = useGame();
   const { isAuthenticated, userProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -135,41 +136,37 @@ const GameAdmin = () => {
 
   // Game not loaded yet
   if (isLoading) {
-    return (
-      <div className="flex flex-col space-y-4">
-        <div className="animate-pulse h-16 bg-muted rounded-lg mb-4" />
-        <div className="animate-pulse h-[200px] bg-muted rounded-lg" />
-      </div>
-    );
+    return <GameAdminLoading />;
   }
 
   // Game not found
   if (!game) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[60vh] text-center">
-        <Flag className="h-16 w-16 mb-4 text-muted-foreground" />
-        <h2 className="text-2xl font-bold mb-2">Jogo não encontrado</h2>
-        <p className="text-muted-foreground mb-6">
-          Não foi possível encontrar o jogo solicitado.
-        </p>
-        <Button onClick={() => navigate('/dashboard')}>
-          Voltar para o Dashboard
-        </Button>
-      </div>
-    );
+    return <GameNotFound />;
   }
 
-  // Handle closing game (for GameHeader)
-  const handleGameClose = () => {
-    setIsConfirmCloseModalOpen(true);
-  };
+  // Create player edit handler instance
+  const playerEditHandler = new PlayerEditHandler({
+    gameId: gameId || '',
+    onNewWinnerFound: (hasWinners) => {
+      if (hasWinners) {
+        setShowConfetti(true);
+        setTimeout(() => {
+          setShowConfetti(false);
+          fetchGameData(); // Refresh data to show winners
+        }, 5000);
+      }
+    }
+  });
+  
+  // Set dependencies
+  playerEditHandler.setDependencies(toast, updatePlayerSequences, checkWinners);
 
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Game Header */}
       <GameHeader
         game={game}
-        onCloseGameClick={handleGameClose}
+        onCloseGameClick={() => setIsConfirmCloseModalOpen(true)}
         showCloseButton={true}
       />
       
@@ -223,25 +220,11 @@ const GameAdmin = () => {
       </div>
       
       {/* Admin Actions */}
-      {game.status === 'active' && (
-        <div className="mt-4 flex flex-col sm:flex-row justify-between gap-4">
-          <Button 
-            variant="outline" 
-            className="sm:w-auto"
-            onClick={() => setIsConfirmCloseModalOpen(true)}
-          >
-            <Lock className="mr-2 h-4 w-4" />
-            Encerrar Jogo
-          </Button>
-          
-          <DeleteGameButton 
-            gameId={gameId || ''} 
-            variant="outline"
-            className="sm:w-auto"
-            onSuccess={() => navigate('/dashboard')}
-          />
-        </div>
-      )}
+      <GameAdminActions 
+        gameId={gameId || ''}
+        gameStatus={game.status}
+        onCloseGame={() => setIsConfirmCloseModalOpen(true)}
+      />
       
       {/* Player Edit Modal */}
       {selectedPlayer && (
@@ -253,28 +236,13 @@ const GameAdmin = () => {
           editPlayerNumbers={editPlayerNumbers}
           setEditPlayerNumbers={setEditPlayerNumbers}
           onSave={() => {
-            // Handle player edit save
-            if (!gameId || !selectedPlayer) return;
-            
-            // Create onNewWinnerFound function for PlayerEditHandler
-            const onNewWinnerFound = (hasWinners: boolean) => {
-              if (hasWinners) {
-                setShowConfetti(true);
-                setTimeout(() => {
-                  setShowConfetti(false);
-                  fetchGameData(); // Refresh data to show winners
-                }, 5000);
-              }
-            };
-            
-            // Use the PlayerEditHandler to handle the save
-            const playerEditHandler = new PlayerEditHandler({
-              gameId,
-              onNewWinnerFound
-            });
-            
-            // Call the handleSavePlayerEdit method
-            playerEditHandler.handleSavePlayerEdit();
+            if (!selectedPlayer) return;
+            playerEditHandler.handleSavePlayerEdit(selectedPlayer, editPlayerNumbers)
+              .then(success => {
+                if (success) {
+                  setSelectedPlayer(null);
+                }
+              });
           }}
         />
       )}
