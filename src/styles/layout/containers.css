@@ -15,7 +15,13 @@
 
 /* Espaçamento consistente para contêineres de seção */
 .section-container {
-  margin-bottom: 1.5rem md:2rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .section-container {
+    margin-bottom: 2rem;
+  }
 }
 
 /* Melhorias para componentes específicos para telas específicas */

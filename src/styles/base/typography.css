@@ -8,48 +8,96 @@
 
   /* Melhoria nos títulos */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-medium leading-tight mb-2;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
     text-wrap: balance;
   }
   
   h1 {
-    @apply text-2xl sm:text-3xl mb-4;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
   }
   
   h2 {
-    @apply text-xl sm:text-2xl mb-3;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
   }
   
   h3 {
-    @apply text-lg sm:text-xl mb-2;
-  }
-
-  /* Tamanhos de fonte responsivos */
-  @screen xs {
-    h1 { @apply text-2xl mb-3; }
-    h2 { @apply text-xl mb-2; }
-    p { @apply mb-3; }
-    .container { @apply px-4; }
-  }
-
-  @screen md {
-    h1 { @apply text-3xl mb-4; }
-    h2 { @apply text-2xl mb-3; }
-    p { @apply mb-4; }
-    .container { @apply px-6; }
+    font-size: 1.125rem;
+    margin-bottom: 0.5rem;
   }
 
   /* Melhor espaçamento para itens de lista */
   li {
     margin-bottom: 0.5rem;
   }
+  
+  p {
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Tamanhos de fonte responsivos */
+@media (min-width: 640px) {
+  h1 {
+    font-size: 1.875rem;
+    margin-bottom: 1rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    margin-bottom: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  h1 {
+    font-size: 2.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  h2 {
+    font-size: 1.875rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  p {
+    margin-bottom: 1rem;
+  }
 }
 
 /* Melhorias para textos em layouts específicos */
 .dashboard-title {
-  @apply text-2xl md:text-3xl font-bold mb-1 md:mb-2;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .dashboard-title {
+    font-size: 1.875rem;
+    margin-bottom: 0.5rem;
+  }
 }
 
 .dashboard-description {
-  @apply text-muted-foreground text-sm md:text-base;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .dashboard-description {
+    font-size: 1rem;
+  }
 }

@@ -48,7 +48,7 @@ export function Toaster({ ...props }: ToasterProps) {
 
   return (
     <Sonner
-      theme="light"
+      theme="dark"
       className="toaster group"
       position="top-right"
       toastOptions={{
@@ -60,13 +60,10 @@ export function Toaster({ ...props }: ToasterProps) {
           border: `1px solid ${primaryColor}`
         },
         classNames: {
-          toast:
-            "group toast",
-          description: `group-[.toast]:opacity-90 group-[.toast]:text-${textColor}`,
-          actionButton:
-            `group-[.toast]:bg-${textColor} group-[.toast]:text-${primaryColor}`,
-          cancelButton:
-            `group-[.toast]:bg-${primaryColor}50 group-[.toast]:text-${textColor}`,
+          toast: "group toast",
+          description: "group-[.toast]:text-sm",
+          actionButton: "group-[.toast]:bg-white group-[.toast]:text-black",
+          cancelButton: "group-[.toast]:bg-primary/50 group-[.toast]:text-white",
         },
       }}
       {...props}

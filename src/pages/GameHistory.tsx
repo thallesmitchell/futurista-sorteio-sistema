@@ -1,8 +1,7 @@
 
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import MainLayout from '@/layouts/MainLayout';
-import { useGame } from '@/contexts/GameContext';
+import { useGame } from '@/contexts/game';
 import { Button } from '@/components/ui/button';
 import { TabsContent } from '@/components/ui/tabs';
 import { TabsController } from '@/components/game/TabsController';
@@ -14,18 +13,22 @@ import { ArrowLeft, Trophy } from 'lucide-react';
 import { DeleteGameButton } from '@/components/game/DeleteGameButton';
 import { GameReport } from '@/components/game/GameReport';
 import { useGameWinners } from '@/hooks/useGameWinners';
+import MainLayout from '@/layouts/MainLayout';
 
 export default function GameHistory() {
   const { gameId } = useParams<{ gameId: string }>();
   const navigate = useNavigate();
-  const { games, setCurrentGame } = useGame();
+  const { games, currentGame, setCurrentGame } = useGame();
   const [isWinnersModalOpen, setIsWinnersModalOpen] = useState(false);
 
+  // Find the current game from the games array
   const game = games.find(g => g.id === gameId);
+  
+  // Get all drawn numbers
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
   
-  // Use our new hook to fetch winners directly from the database
-  const { winners } = useGameWinners(gameId, game?.players);
+  // Use our hook to fetch winners directly from the database
+  const { winners, loading: winnersLoading } = useGameWinners(gameId, game?.players);
   
   // Set current game for context
   useEffect(() => {
@@ -42,12 +45,21 @@ export default function GameHistory() {
     };
   }, [game, gameId, navigate, setCurrentGame]);
 
-  // Show 404 if game not found
+  // Show loading state while game or winners are loading
   if (!game) {
-    return <div>Game not found</div>;
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-[50vh]">
+          <div className="text-center">
+            <h2 className="text-xl font-medium mb-2">Carregando dados do jogo...</h2>
+            <p className="text-muted-foreground">Aguarde um momento...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
   }
 
-  const hasWinners = winners.length > 0;
+  const hasWinners = winners && winners.length > 0;
 
   const handleDeleteSuccess = () => {
     navigate('/history');
@@ -55,7 +67,7 @@ export default function GameHistory() {
 
   return (
     <MainLayout>
-      <div className="space-y-6 animate-fade-in table-container">
+      <div className="space-y-6 animate-fade-in">
         {/* Game Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">

@@ -1,8 +1,4 @@
 
 // This file is maintained for backward compatibility
-import { AuthProvider, useAuth } from './auth';
-import type { UserProfile, AuthContextType } from './auth/types';
-
-// Re-export for backwards compatibility
-export { AuthProvider, useAuth };
-export type { UserProfile, AuthContextType };
+// All functionality has been moved to the auth directory
+export * from './auth';

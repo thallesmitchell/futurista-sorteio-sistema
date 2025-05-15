@@ -1,11 +1,12 @@
 
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth';
 import Sidebar from '@/components/Sidebar';
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster } from '@/components/ui/toaster';
 import { MobileNavBar } from '@/components/mobile/MobileNavBar';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -19,7 +20,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   useEffect(() => {
     // Redirecionar para login se não estiver autenticado
     if (!isAuthenticated) {
-      navigate('/');
+      navigate('/login');
     }
   }, [isAuthenticated, navigate]);
 
@@ -44,6 +45,3 @@ export default function MainLayout({ children }: MainLayoutProps) {
     </div>
   );
 }
-
-// Import cn function
-import { cn } from '@/lib/utils';

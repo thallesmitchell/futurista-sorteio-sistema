@@ -48,3 +48,37 @@
     margin: 0.75rem !important;
   }
 }
+
+/* Classe para truncar texto em tabelas em dispositivos móveis */
+.td-truncate {
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (min-width: 640px) {
+  .td-truncate {
+    max-width: none;
+    white-space: normal;
+  }
+}
+
+/* Estilos para containers em diferentes breakpoints */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+}
+
+/* Tamanhos de fonte responsivos */
+@media (max-width: 640px) {
+  table {
+    font-size: 0.875rem !important;
+  }
+  
+  .mobile-form-input {
+    font-size: 0.875rem !important;
+  }
+}

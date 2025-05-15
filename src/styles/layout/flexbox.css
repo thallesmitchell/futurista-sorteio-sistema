@@ -22,11 +22,32 @@
 
 /* Melhorias específicas para o Dashboard */
 .dashboard-header {
-  @apply flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-5 mb-6 md:mb-8;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .dashboard-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+  }
 }
 
 .dashboard-actions {
-  @apply flex mt-2 md:mt-0;
+  display: flex;
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .dashboard-actions {
+    margin-top: 0;
+  }
 }
 
 /* Correção para espaçamento de abas */
@@ -83,12 +104,6 @@
     gap: 0.75rem;
   }
   
-  /* Corrigir problemas específicos de flexbox do iOS */
-  .flex {
-    display: flex;
-    gap: 0.75rem;
-  }
-
   .mobile-stack {
     flex-direction: column !important;
     gap: 0.75rem;

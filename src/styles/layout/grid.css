@@ -2,8 +2,15 @@
 /* Estilos para layouts grid */
 /* Espaçamento melhorado para elementos baseados em grade */
 .game-grid {
-  @apply grid gap-4 md:gap-5;
+  display: grid;
+  gap: 1rem;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+@media (min-width: 768px) {
+  .game-grid {
+    gap: 1.25rem;
+  }
 }
 
 /* Melhorar layout em masonry para cards de jogadores */

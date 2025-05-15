@@ -1,91 +1,80 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { Player } from '@/contexts/game/types';
+import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 /**
- * Custom hook to fetch game winners directly from the database
- * This hook is the single source of truth for winner data
- * 
- * @param gameId The game ID to fetch winners for
- * @param players The game's players (needed to map winner IDs to player objects)
- * @returns An array of winner players
+ * Hook to fetch winners for a game directly from the database
+ * This provides more reliable data than relying on the in-memory cache
  */
-export const useGameWinners = (gameId: string | undefined, players: Player[] | undefined) => {
-  const [winners, setWinners] = useState<Player[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+export function useGameWinners(gameId?: string, players?: Player[]) {
+  const [winners, setWinners] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!gameId || !players || !Array.isArray(players)) {
-      setWinners([]);
-      return;
-    }
+    async function fetchWinners() {
+      if (!gameId) {
+        setWinners([]);
+        setLoading(false);
+        return;
+      }
 
-    const fetchWinners = async () => {
+      setLoading(true);
+      
       try {
-        setIsLoading(true);
-        setError(null);
+        console.log("Fetching winners from database for game:", gameId);
         
-        console.log('Fetching winners from database for game:', gameId);
-        
-        // Get unique player IDs that are winners for this game
-        const { data: winnersData, error } = await supabase
+        // Fetch winners directly from database for reliability
+        const { data, error } = await supabase
           .from('winners')
-          .select('player_id')
+          .select(`
+            id,
+            player_id,
+            combination_id,
+            game_id,
+            prize_amount,
+            created_at
+          `)
           .eq('game_id', gameId);
-
+        
         if (error) {
           throw error;
         }
 
-        if (winnersData && winnersData.length > 0) {
-          console.log('Found winners in database:', winnersData.length);
-          
-          // Extract unique player IDs
-          const uniquePlayerIds = [...new Set(winnersData.map(w => w.player_id))];
-          
-          // Map winner IDs to actual player objects from the players array
-          const winnerPlayers = players.filter(player => 
-            uniquePlayerIds.includes(player.id)
-          );
-          
-          console.log('Mapped winners to player data:', winnerPlayers.length);
-          
-          if (winnerPlayers.length > 0) {
-            console.log('Winner players found:', winnerPlayers.map(p => p.name).join(', '));
-          } else {
-            console.log('No winner player objects found in the players array');
-          }
-          
-          setWinners(winnerPlayers);
-        } else {
-          console.log('No winners found for game:', gameId);
+        if (!data || data.length === 0) {
+          console.log("No winners found for game:", gameId);
           setWinners([]);
+        } else {
+          // Enhance winner data with player and combination information
+          const enhancedWinners = data.map(winner => {
+            const player = players?.find(p => p.id === winner.player_id);
+            const combination = player?.combinations?.find(c => c.id === winner.combination_id);
+            
+            return {
+              ...winner,
+              player: player || { name: 'Jogador Desconhecido' },
+              combination: combination || { numbers: [] }
+            };
+          });
+          
+          setWinners(enhancedWinners);
         }
-      } catch (err) {
-        console.error('Error fetching winners:', err);
-        setError(err instanceof Error ? err : new Error('Unknown error fetching winners'));
-        
-        // Show toast for database error but don't break the UI
+      } catch (error) {
+        console.error("Error fetching winners:", error);
         toast({
-          title: "Erro ao buscar ganhadores",
-          description: err instanceof Error ? err.message : "Erro desconhecido",
+          title: "Erro ao carregar ganhadores",
+          description: "Não foi possível carregar os dados dos ganhadores.",
           variant: "destructive"
         });
-        
-        setWinners([]);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
-    };
+    }
 
     fetchWinners();
   }, [gameId, players, toast]);
 
-  return { winners, isLoading, error };
-};
-
-export default useGameWinners;
+  return { winners, loading };
+}

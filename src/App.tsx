@@ -12,34 +12,38 @@ import ProfileSettings from "@/pages/ProfileSettings";
 import GameAdmin from "@/pages/GameAdmin";
 import PlayersView from "@/pages/PlayersView";
 import GameHistory from "@/pages/GameHistory";
+import HistoryPage from "@/pages/HistoryPage";
 import NotFound from "@/pages/NotFound";
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 import FinancialView from "@/pages/FinancialView";
-import './App.css';
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <ThemeProvider>
-          <GameProvider>
-            <Routes>
-              <Route path="/login" element={<AuthLayout><LoginPage /></AuthLayout>} />
-              <Route path="/" element={<Navigate to="/dashboard" />} />
-              <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
-              <Route path="/game/:gameId" element={<MainLayout><GameAdmin /></MainLayout>} />
-              <Route path="/players/:gameId?" element={<MainLayout><PlayersView /></MainLayout>} />
-              <Route path="/history" element={<MainLayout><GameHistory /></MainLayout>} />
-              <Route path="/finance" element={<MainLayout><FinancialView /></MainLayout>} />
-              <Route path="/profile" element={<MainLayout><ProfileSettings /></MainLayout>} />
-              <Route path="/admin" element={<MainLayout><SuperAdminDashboard /></MainLayout>} />
-              <Route path="/super-admin" element={<MainLayout><SuperAdminDashboard /></MainLayout>} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <Toaster />
-          </GameProvider>
-        </ThemeProvider>
-      </AuthProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <ThemeProvider>
+            <GameProvider>
+              <Routes>
+                <Route path="/login" element={<AuthLayout><LoginPage /></AuthLayout>} />
+                <Route path="/" element={<Navigate to="/dashboard" />} />
+                <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
+                <Route path="/game/:gameId" element={<MainLayout><GameAdmin /></MainLayout>} />
+                <Route path="/players/:gameId?" element={<MainLayout><PlayersView /></MainLayout>} />
+                <Route path="/history" element={<MainLayout><HistoryPage /></MainLayout>} />
+                <Route path="/history/:gameId" element={<MainLayout><GameHistory /></MainLayout>} />
+                <Route path="/finance" element={<MainLayout><FinancialView /></MainLayout>} />
+                <Route path="/profile" element={<MainLayout><ProfileSettings /></MainLayout>} />
+                <Route path="/admin" element={<MainLayout><SuperAdminDashboard /></MainLayout>} />
+                <Route path="/super-admin" element={<MainLayout><SuperAdminDashboard /></MainLayout>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              <Toaster />
+            </GameProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </ErrorBoundary>
     </Router>
   );
 }
