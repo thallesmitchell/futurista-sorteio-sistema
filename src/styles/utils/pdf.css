@@ -1,0 +1,34 @@
+
+/* Utilitários para PDF */
+/* Correções para renderização de PDF */
+.pdf-content {
+  background-color: #020817 !important;
+  color: #FFFFFF !important;
+  padding: 1.5rem;
+}
+
+.pdf-player-box {
+  background-color: #0D1526 !important;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.pdf-masonry {
+  background-color: #020817 !important;
+  column-gap: 1.5rem;
+}
+
+/* Melhor renderização de PDF em mobile */
+@media print {
+  .pdf-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 1.5rem;
+  }
+  
+  /* Garantir que cor de fundo adequada seja mantida */
+  html, body {
+    background-color: #020817 !important;
+    color: #FFFFFF !important;
+  }
+}

@@ -1,0 +1,28 @@
+
+/* Utilitários de espaçamento */
+/* Forma de grupo */
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+/* Torna banner de vencedores permanente */
+.permanent-winner-banner {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  margin: 1rem 0;
+}
+
+/* Área de swipe para mobile */
+.swipe-area {
+  @apply touch-pan-y overflow-y-auto overscroll-y-contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem;
+  text-align: center;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+}

@@ -1,0 +1,36 @@
+
+/* Estilos para botões */
+.button-with-icon {
+  @apply inline-flex items-center justify-center;
+}
+
+.button-icon {
+  @apply mr-1.5 -ml-0.5 size-4 md:size-5;
+}
+
+/* Botões com tamanho adequado para mobile */
+.mobile-btn {
+  @apply min-h-12 min-w-12;
+  padding: 0.75rem 1rem;
+}
+
+/* Melhor espaçamento para botões */
+button + button {
+  margin-left: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  button + button {
+    margin-left: 0.5rem;
+  }
+  
+  .mobile-stack button + button {
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+}
+
+/* Botões de ação com espaçamentos melhores */
+.button-group {
+  @apply flex flex-wrap gap-2 md:gap-3;
+}

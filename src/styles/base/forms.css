@@ -1,0 +1,76 @@
+
+/* Estilos para formulários e inputs */
+@layer base {
+  /* Melhoria em links e botões para touch */
+  a, button, 
+  input[type="button"], 
+  input[type="submit"] {
+    @apply cursor-pointer;
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Elementos de formulário melhorados */
+  input, select, textarea {
+    font-size: 16px !important; /* Evita zoom no iOS */
+    padding: 0.625rem 0.75rem !important;
+    margin-bottom: 1rem;
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+.input-group {
+  @apply flex flex-col mb-4;
+}
+
+.input-label {
+  @apply mb-1.5 text-sm font-medium;
+}
+
+.input-helper {
+  @apply mt-1 text-xs text-muted-foreground;
+}
+
+/* Correções para campos de entrada no iOS */
+@supports (-webkit-touch-callout: none) {
+  input, textarea, select {
+    font-size: 16px !important;
+    margin-bottom: 1rem;
+  }
+  
+  /* Lidar com teclado do iOS para modais */
+  body.keyboard-open {
+    height: calc(100% - 50vh);
+    overflow: hidden;
+  }
+  
+  body.keyboard-open .mobile-dialog {
+    transform: translateY(-30%);
+  }
+}
+
+/* Ajustes para formulários em dispositivos móveis */
+@media (max-width: 640px) {
+  .form-row {
+    @apply flex flex-col gap-3;
+  }
+  
+  .form-actions {
+    @apply flex flex-col gap-2;
+  }
+  
+  .form-actions button {
+    @apply w-full;
+  }
+}
+
+.mobile-form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.mobile-form-input {
+  font-size: 0.875rem !important;
+  margin-bottom: 0.875rem;
+}

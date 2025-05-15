@@ -1,0 +1,26 @@
+
+/* Estilos para layouts grid */
+/* Espaçamento melhorado para elementos baseados em grade */
+.game-grid {
+  @apply grid gap-4 md:gap-5;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+/* Melhorar layout em masonry para cards de jogadores */
+.masonry-grid {
+  column-gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .masonry-grid {
+    column-count: 3;
+    column-gap: 1.5rem;
+  }
+}
+
+@media (max-width: 475px) {
+  /* Melhor espaçamento para layouts grid */
+  .grid {
+    gap: 0.625rem !important;
+  }
+}

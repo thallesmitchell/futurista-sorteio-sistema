@@ -1,0 +1,72 @@
+
+/* Estilos para layouts flexbox */
+/* Containers flexíveis e grid melhorados */
+.flex, .grid {
+  width: 100%;
+  max-width: 100%;
+  gap: 1rem;
+}
+
+/* Correção para espaçamento em contêineres flex */
+.flex-container {
+  display: flex;
+  gap: 0.75rem md:1rem;
+  flex-wrap: wrap;
+}
+
+/* Melhorias específicas para o Dashboard */
+.dashboard-header {
+  @apply flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-5 mb-6 md:mb-8;
+}
+
+.dashboard-actions {
+  @apply flex mt-2 md:mt-0;
+}
+
+/* Correção para espaçamento de abas */
+.tabs-container {
+  margin-bottom: 1rem md:1.5rem;
+}
+
+.tab-content {
+  padding-top: 1rem md:1.25rem;
+}
+
+/* Melhor espaçamento para listas */
+.list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem md:1rem;
+}
+
+/* Espaçamento consistente para formulários */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem md:1rem;
+  margin-bottom: 1.25rem md:1.5rem;
+}
+
+@media (max-width: 640px) {
+  .flex {
+    gap: 0.75rem;
+  }
+  
+  /* Corrigir problemas específicos de flexbox do iOS */
+  .flex {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .mobile-stack {
+    flex-direction: column !important;
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 475px) {
+  .flex {
+    flex-wrap: wrap !important;
+    gap: 0.625rem;
+  }
+}

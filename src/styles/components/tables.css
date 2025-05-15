@@ -1,0 +1,31 @@
+
+/* Estilos para tabelas */
+/* Tabelas responsivas */
+table {
+  width: 100%;
+  table-layout: fixed;
+  margin-bottom: 1rem;
+}
+
+/* Container de tabela melhorado */
+.table-container {
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.25rem;
+  width: 100%;
+}
+
+/* Ajustes para textos em tabelas em mobile */
+@media (max-width: 640px) {
+  table {
+    font-size: 0.875rem !important;
+  }
+
+  .td-truncate {
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}

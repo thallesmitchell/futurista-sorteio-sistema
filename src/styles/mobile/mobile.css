@@ -1,0 +1,29 @@
+
+/* Estilos específicos para dispositivos móveis */
+@media (max-width: 640px) {
+  /* Melhor padding para containers em mobile */
+  .container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  /* Melhorar espaçamento para butões com ícones mal alinhados */
+  .button-with-icon {
+    @apply inline-flex items-center justify-center;
+  }
+  
+  /* Melhor espaçamento para botões em mobile */
+  .mobile-stack button + button {
+    margin-left: 0 !important;
+    margin-top: 0.75rem !important;
+  }
+}
+
+/* Ajustes específicos para iOS */
+@supports (-webkit-touch-callout: none) {
+  /* Corrigir problemas específicos de flexbox do iOS */
+  .flex {
+    display: flex;
+    gap: 0.75rem;
+  }
+}

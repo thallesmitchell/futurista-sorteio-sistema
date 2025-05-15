@@ -1,0 +1,50 @@
+
+/* Utilitários para responsividade */
+/* Melhorias para navegação mobile */
+@media (max-width: 640px) {
+  .mobile-full-width {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-bottom: 1rem;
+  }
+  
+  .mobile-text-center {
+    text-align: center !important;
+  }
+  
+  /* Ajustes para diálogos em mobile quando o teclado está visível */
+  .mobile-dialog {
+    position: fixed;
+    transition: transform 0.3s ease;
+    padding: 1rem;
+  }
+  
+  /* Ajuste de posição do diálogo quando o teclado está visível */
+  .keyboard-open .mobile-dialog {
+    transform: translate(-50%, -65%) !important;
+  }
+}
+
+/* Melhorias de layout responsivo para telas muito pequenas */
+@media (max-width: 475px) {
+  .xs\:hidden {
+    display: none !important;
+  }
+  
+  .xs\:block {
+    display: block !important;
+  }
+  
+  .xs\:w-full {
+    width: 100% !important;
+    margin-bottom: 0.75rem;
+  }
+  
+  .xs\:p-3 {
+    padding: 0.75rem !important;
+  }
+  
+  .xs\:m-3 {
+    margin: 0.75rem !important;
+  }
+}
