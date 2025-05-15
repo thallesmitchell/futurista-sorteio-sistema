@@ -13,7 +13,6 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
           className
         )}
         ref={ref}
-        // Removido o inputMode para evitar forçar teclado numérico indevidamente
         {...props}
       />
     )
