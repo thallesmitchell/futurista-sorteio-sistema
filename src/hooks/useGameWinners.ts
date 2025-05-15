@@ -10,18 +10,18 @@ import { useToast } from '@/hooks/use-toast';
  */
 export function useGameWinners(gameId?: string, players?: Player[]) {
   const [winners, setWinners] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     async function fetchWinners() {
       if (!gameId) {
         setWinners([]);
-        setLoading(false);
+        setIsLoading(false);
         return;
       }
 
-      setLoading(true);
+      setIsLoading(true);
       
       try {
         console.log("Fetching winners from database for game:", gameId);
@@ -69,12 +69,12 @@ export function useGameWinners(gameId?: string, players?: Player[]) {
           variant: "destructive"
         });
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     }
 
     fetchWinners();
   }, [gameId, players, toast]);
 
-  return { winners, loading };
+  return { winners, isLoading };
 }

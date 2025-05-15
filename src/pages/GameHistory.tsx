@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useGame } from '@/contexts/game';
@@ -28,7 +27,7 @@ export default function GameHistory() {
   const allDrawnNumbers = game?.dailyDraws ? game.dailyDraws.flatMap(draw => draw.numbers) : [];
   
   // Use our hook to fetch winners directly from the database
-  const { winners, loading: winnersLoading } = useGameWinners(gameId, game?.players);
+  const { winners, isLoading: winnersLoading } = useGameWinners(gameId, game?.players);
   
   // Set current game for context
   useEffect(() => {
