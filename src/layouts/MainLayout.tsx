@@ -32,8 +32,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
     <div className="flex min-h-screen w-full bg-gradient-to-br from-background to-background/90">
       {!isMobile && <Sidebar />}
       <main className={cn(
-        "flex-1 table-container",
-        isMobile ? "p-2 pb-20" : "p-2 sm:p-4 md:p-6 lg:p-8"
+        "flex-1 overflow-auto",
+        isMobile ? "px-3 py-3 pb-20" : "p-3 sm:p-4 md:p-5 lg:p-6"
       )}>
         <div className="max-w-7xl mx-auto w-full">
           {children}

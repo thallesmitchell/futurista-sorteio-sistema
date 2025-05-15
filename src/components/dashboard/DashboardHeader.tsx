@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import GameCreationForm from '@/components/game/GameCreationForm';
 import { User } from '@supabase/supabase-js';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DashboardHeaderProps {
   user: User | null;
@@ -19,11 +20,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   setIsCreateDialogOpen,
   onCreateGameSuccess
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
-    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-5 mb-8">
+    <div className="dashboard-header">
       <div className="w-full md:w-auto">
-        <h1 className="text-2xl font-bold mb-2">Painel de Controle</h1>
-        <p className="text-muted-foreground">
+        <h1 className="dashboard-title">Painel de Controle</h1>
+        <p className="dashboard-description">
           Olá, {user?.email?.split('@')[0] || 'Admin'}.
           Gerencie seus jogos e acompanhe resultados.
         </p>
@@ -36,7 +39,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             Criar Novo Jogo
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-md p-5">
+        <DialogContent className={`${isMobile ? 'p-4 mobile-dialog' : 'p-5'} sm:max-w-md`}>
           <GameCreationForm
             onSuccess={onCreateGameSuccess}
             onCancel={() => setIsCreateDialogOpen(false)}

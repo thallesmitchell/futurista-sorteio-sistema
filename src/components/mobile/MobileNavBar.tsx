@@ -23,11 +23,11 @@ const NavItem: React.FC<NavItemProps> = ({ icon, label, active, onClick }) => (
   <button 
     onClick={onClick} 
     className={cn(
-      "flex flex-col items-center justify-center flex-1 py-3 px-2",
+      "flex flex-col items-center justify-center flex-1 py-3 px-1.5",
       active ? "text-primary" : "text-muted-foreground"
     )}
   >
-    <div className="mb-1.5">{icon}</div>
+    <div className="mb-1">{icon}</div>
     <span className="text-xs font-medium">{label}</span>
   </button>
 );
@@ -122,7 +122,7 @@ export function MobileNavBar() {
   return (
     <>
       <div className="fixed bottom-0 left-0 right-0 bg-background border-t border-border shadow-lg z-40 rounded-t-xl">
-        <div className="flex items-center justify-around">
+        <nav className="flex items-center justify-around">
           <NavItem 
             icon={<Home size={20} />} 
             label="Início" 
@@ -137,7 +137,7 @@ export function MobileNavBar() {
           />
           <NavItem 
             icon={
-              <div className="bg-primary text-primary-foreground rounded-full p-3 -mt-6 shadow-lg border-4 border-background">
+              <div className="bg-primary text-primary-foreground rounded-full p-3 -mt-7 shadow-lg border-4 border-background">
                 <Plus size={24} />
               </div>
             } 
@@ -156,38 +156,45 @@ export function MobileNavBar() {
             active={activeRoute === '/settings'} 
             onClick={() => navigateTo('/settings')} 
           />
-        </div>
+        </nav>
         <div className="h-safe-bottom bg-background"></div>
       </div>
       
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-[425px] p-5">
+        <DialogContent className="sm:max-w-[425px] p-5 mobile-dialog">
           <form onSubmit={onSubmit}>
-            <DialogHeader className="mb-4">
-              <DialogTitle className="mb-2">Criar Novo Jogo</DialogTitle>
-              <DialogDescription>
+            <DialogHeader className="mb-4 text-left">
+              <DialogTitle className="text-xl mb-2">Criar Novo Jogo</DialogTitle>
+              <DialogDescription className="text-sm">
                 Preencha os dados para criar um novo jogo.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-5 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor="name" className="text-right col-span-1">
+            <div className="grid gap-4 py-3">
+              <div className="grid grid-cols-4 items-center gap-3">
+                <label htmlFor="name" className="text-right col-span-1 text-sm">
                   Nome
                 </label>
-                <Input
-                  id="name"
-                  placeholder="Nome do jogo"
-                  className="col-span-3"
-                  {...form.register('name', { required: true })}
-                  autoComplete="off"
-                />
-                {form.formState.errors.name && (
-                  <p className="text-sm text-red-500 col-span-4">O nome é obrigatório</p>
-                )}
+                <div className="col-span-3">
+                  <Input
+                    id="name"
+                    placeholder="Nome do jogo"
+                    className="w-full mb-0"
+                    {...form.register('name', { required: true })}
+                    autoComplete="off"
+                  />
+                  {form.formState.errors.name && (
+                    <p className="text-xs text-red-500 mt-1">O nome é obrigatório</p>
+                  )}
+                </div>
               </div>
             </div>
-            <DialogFooter className="mt-2">
-              <Button type="submit">Criar Jogo</Button>
+            <DialogFooter className="mt-4 gap-2 sm:gap-0">
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto">
+                Cancelar
+              </Button>
+              <Button type="submit" className="w-full sm:w-auto">
+                Criar Jogo
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

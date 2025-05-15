@@ -2,7 +2,7 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 1.5rem;
+  padding: 1rem;
   text-align: center;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
 }
@@ -13,9 +13,11 @@
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
@@ -36,22 +38,25 @@
 }
 
 .card {
-  padding: 1.5rem;
+  padding: 1.25rem;
   margin-bottom: 1rem;
+  border-radius: var(--radius);
 }
 
 .read-the-docs {
   color: #888;
 }
 
-/* Override for any serif fonts */
+/* Override para garantir fonte sans-serif em toda a aplicação */
 h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, select, textarea {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
 }
 
-/* Improved spacing for containers */
+/* Espaçamento melhorado para containers */
 .container {
   padding: 1rem;
+  width: 100%;
+  max-width: 100%;
 }
 
 @media (min-width: 768px) {
@@ -60,12 +65,12 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, select, textarea {
   }
 }
 
-/* Consistent form spacing */
+/* Espaçamento consistente para formulários */
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
 }
 
-/* Improved button spacing */
+/* Melhor espaçamento para botões */
 button + button {
   margin-left: 0.75rem;
 }
@@ -73,5 +78,21 @@ button + button {
 @media (max-width: 640px) {
   button + button {
     margin-left: 0.5rem;
+  }
+  
+  .mobile-stack button + button {
+    margin-left: 0;
+    margin-top: 0.5rem;
+  }
+}
+
+/* Melhorias para telas pequenas */
+@media (max-width: 480px) {
+  #root {
+    padding: 0.75rem;
+  }
+  
+  .card {
+    padding: 1rem;
   }
 }
