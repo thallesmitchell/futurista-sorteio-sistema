@@ -17,6 +17,7 @@ import NotFound from "@/pages/NotFound";
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 import FinancialView from "@/pages/FinancialView";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import Index from "@/pages/Index";
 
 function App() {
   return (
@@ -27,7 +28,7 @@ function App() {
             <GameProvider>
               <Routes>
                 <Route path="/login" element={<AuthLayout><LoginPage /></AuthLayout>} />
-                <Route path="/" element={<Navigate to="/dashboard" />} />
+                <Route path="/" element={<Index />} />
                 <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
                 <Route path="/game/:gameId" element={<MainLayout><GameAdmin /></MainLayout>} />
                 <Route path="/players/:gameId?" element={<MainLayout><PlayersView /></MainLayout>} />

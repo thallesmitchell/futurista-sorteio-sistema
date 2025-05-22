@@ -1,16 +1,18 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/auth'; // Fixed import path
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/AuthLayout';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast'; // Fixed toast import
 
 export default function LoginPage() {
   const { login } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +25,10 @@ export default function LoginPage() {
       // Special case for host/super admin
       if (email === 'host@example.com' || email === 'host') {
         const success = await login(email === 'host' ? 'host@example.com' : email, password);
-        if (!success) {
+        if (success) {
+          // Redirect super admin to their dashboard
+          navigate('/super-admin');
+        } else {
           toast({
             title: "Acesso negado",
             description: "Credenciais de super administrador inválidas.",
@@ -32,7 +37,11 @@ export default function LoginPage() {
         }
       } else {
         // Regular admin login
-        await login(email, password);
+        const success = await login(email, password);
+        if (success) {
+          // Redirect to dashboard on successful login
+          navigate('/dashboard');
+        }
       }
     } finally {
       setIsLoading(false);

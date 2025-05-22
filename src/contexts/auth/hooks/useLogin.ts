@@ -3,7 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Hook for handling user login
+ * Hook for handling user login with improved session management
  */
 export const useLogin = () => {
   const { toast } = useToast();
@@ -11,12 +11,29 @@ export const useLogin = () => {
   const login = async (email: string, password: string): Promise<boolean> => {
     console.log('Attempting login for:', email);
     try {
-      // Clean up any previous auth state
+      // Clean up any previous auth state thoroughly
       Object.keys(localStorage).forEach((key) => {
         if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
           localStorage.removeItem(key);
         }
       });
+      
+      // Clear session storage as well if it exists
+      if (typeof sessionStorage !== 'undefined') {
+        Object.keys(sessionStorage).forEach((key) => {
+          if (key.startsWith('supabase.auth.') || key.includes('sb-')) {
+            sessionStorage.removeItem(key);
+          }
+        });
+      }
+      
+      // Attempt to sign out globally first
+      try {
+        await supabase.auth.signOut({ scope: 'global' });
+      } catch (err) {
+        console.log('Global sign out failed, continuing with login', err);
+        // Continue with login regardless of global sign out success
+      }
       
       // Attempt to sign in
       const { data, error } = await supabase.auth.signInWithPassword({

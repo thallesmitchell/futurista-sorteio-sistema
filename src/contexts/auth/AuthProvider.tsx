@@ -45,9 +45,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    // Set up auth state change listener
+    // First set up auth state change listener before checking session
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
+        
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           setSession(session);
           if (session?.user) {
@@ -69,6 +71,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
               } catch (error) {
                 console.error('Error fetching user profile:', error);
+              } finally {
+                auth.setIsLoading(false);
               }
             }, 0);
           }
@@ -80,9 +84,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           auth.setUserProfile(null);
           auth.setIsSuperAdmin(false);
           setSession(null);
+          auth.setIsLoading(false);
         }
-        
-        auth.setIsLoading(false);
       }
     );
 
